@@ -1,16 +1,13 @@
 ---
 description: ENFORCE test standards from TESTS.md when WRITING or MODIFYING tests to ENSURE consistent test quality
 globs: ["**/*.rs", "**/tests/**/*"]
-tags: [testing, rust, quality]
-priority: 1
-version: 1.0.0
 ---
 
 # Test Standards Rule
 
 ## Context
 - Applied when writing or modifying test files
-- Applies to all Rust test files and files in /tests directory
+- Applies to all Rust files that include tests and files in /tests directory
 - Follows standards defined in docs/tests/TESTS.md
 
 ## Requirements
