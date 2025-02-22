@@ -1,0 +1,55 @@
+---
+description: ENFORCE dependency management standards when ADDING or MODIFYING dependencies to ENSURE consistent and maintainable workspace dependencies
+globs: [**/Cargo.toml]
+---
+
+# Dependency Management Standards
+
+## Context
+- Applies to all Cargo.toml files
+- Manages workspace dependencies
+- Ensures consistency across crates
+
+## Requirements
+
+### Workspace Dependencies
+- Define all deps in root Cargo.toml
+- Use [workspace.dependencies]
+- Individual crates use workspace = true
+- Configure features at workspace level
+
+### Adding Dependencies
+1. Add to [workspace.dependencies]
+2. Specify version and features
+3. Reference in crates with workspace = true
+4. Never specify versions in crates
+
+### Version Management
+- Single version per dependency
+- Consistent versions across workspace
+- Document breaking changes
+- Check feature flag existence
+
+### Feature Flags
+When changing the feature flags of a dependency: Always check with the Rust documentation (https://docs.rs/crate/<crate>/<version>/features) whether a feature flag is valid for the specific version
+
+## Examples
+
+<example>
+# Good dependency management in root Cargo.toml
+[workspace.dependencies]
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+
+# In individual crate Cargo.toml
+[dependencies]
+tokio = { workspace = true }
+serde = { workspace = true }
+</example>
+
+<example type="invalid">
+# Bad dependency management in crate Cargo.toml
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }  # Version specified in crate
+serde = "1.0"  # Not using workspace inheritance
+</example>

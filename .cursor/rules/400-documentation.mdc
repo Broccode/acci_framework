@@ -1,0 +1,67 @@
+---
+description: ENFORCE documentation standards when WRITING or MODIFYING documentation to ENSURE clear and maintainable documentation
+globs: [src/**/*.rs, docs/**/*.md, crates/**/*.rs]
+tags: [documentation, rust, standards]
+priority: 1
+version: 1.0.0
+---
+
+# Documentation Standards
+
+## Context
+- Applies to all documentation
+- Covers code and repository docs
+- Ensures clarity and maintainability
+
+## Requirements
+
+### Code Documentation
+- Document all public APIs
+- Include runnable examples
+- Document unsafe blocks thoroughly
+- Use English only
+- Follow rustdoc conventions
+
+### Repository Documentation
+- Maintain key files in English:
+  - CHANGELOG.md
+  - ARCHITECTURE.md
+  - PLAN.md
+- Include licensing information
+- Keep documentation clear and concise
+
+### Language Requirements
+- All code comments in English
+- All rustdoc in English
+- All identifiers in English
+- All repository docs in English
+
+### Documentation Quality
+- Clear and concise writing
+- Runnable examples
+- Tested documentation examples
+- Standard rustdoc format
+
+## Examples
+
+<example>
+/// Processes the input data and returns the result
+///
+/// # Examples
+///
+/// ```
+/// let result = process_data("input");
+/// assert_eq!(result, "INPUT");
+/// ```
+pub fn process_data(input: &str) -> String {
+    input.to_uppercase()
+}
+</example>
+
+<example type="invalid">
+// Bad documentation - mixed languages and no examples
+/// Verarbeitet die Eingabedaten
+pub fn process_data(input: &str) -> String {
+    input.to_uppercase()
+}
+</example>

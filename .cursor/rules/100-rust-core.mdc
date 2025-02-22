@@ -1,0 +1,56 @@
+---
+description: ENFORCE Rust core development standards when WRITING or MODIFYING Rust code to ENSURE high-quality, safe, and maintainable code
+globs: [src/**/*.rs, crates/**/*.rs]
+tags: [rust, core, safety, standards]
+priority: 1
+version: 1.0.0
+---
+
+# Rust Core Development Standards
+
+## Context
+- Applied to all Rust code in the project
+- Covers memory safety, type system, and error handling
+- Must be followed for all production code
+
+## Requirements
+
+### Memory Management
+- No unsafe blocks without thorough documentation
+- Use owned types for clear ownership
+- References for read-only data sharing
+- Implement Drop for resource management
+- Avoid Rc/Arc unless explicitly needed
+
+### Type System
+- Type inference with explicit public interfaces
+- Use newtype pattern for type constraints
+- Implement From/Into for conversions
+- Prefer associated types over generics
+- Use PhantomData for type relationships
+
+### Error Handling
+- Return Result for fallible operations
+- Use anyhow for application errors
+- Use thiserror for library errors
+- No unwrap/expect in production
+- Custom error types for libraries
+
+## Examples
+
+<example>
+// Good memory management
+fn process_data(data: String) -> Result<String, Error> {
+    // Data ownership is clear
+    let processed = data.trim().to_uppercase();
+    Ok(processed)
+}
+</example>
+
+<example type="invalid">
+// Bad error handling
+fn unsafe_process(data: &str) -> String {
+    // Unwrap in production code
+    data.parse::<i32>().unwrap().to_string()
+}
+</example>

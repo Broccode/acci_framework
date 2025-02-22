@@ -1,0 +1,64 @@
+---
+description: ENFORCE async programming standards when IMPLEMENTING async functionality to ENSURE reliable and performant concurrent code
+globs: [src/**/*.rs, crates/**/*.rs]
+tags: [rust, async, tokio, concurrency]
+priority: 1
+version: 1.0.0
+---
+
+# Async Programming Standards
+
+## Context
+- Applied to all async Rust code
+- Uses tokio runtime
+- Focuses on reliability and performance
+
+## Requirements
+
+### Runtime and Patterns
+- Use tokio for async runtime
+- Prefer Stream over future vectors
+- Keep async boundaries at edges
+- Use async-trait for async traits
+
+### Cancellation
+- Handle cancellation gracefully
+- Implement proper cleanup
+- Use structured concurrency
+- Test cancellation scenarios
+
+### Testing
+- Test Stream operations under load
+- Verify backpressure handling
+- Test resource cleanup
+- Validate error propagation
+- Test concurrent access
+- Verify cancellation behavior
+
+### Monitoring
+- Track task completion times
+- Monitor task queuing
+- Observe cancellation patterns
+- Profile async stack traces
+
+## Examples
+
+<example>
+// Good async implementation
+async fn process_stream(mut stream: impl Stream<Item = Result<Data, Error>> + Unpin) -> Result<Vec<Data>, Error> {
+    let mut results = Vec::new();
+    while let Some(item) = stream.next().await {
+        results.push(item?);
+    }
+    Ok(results)
+}
+</example>
+
+<example type="invalid">
+// Bad async implementation - blocking in async context
+async fn blocking_process(data: Vec<Data>) -> Result<Vec<Data>, Error> {
+    // Blocking operation in async context
+    std::thread::sleep(std::time::Duration::from_secs(1));
+    Ok(data)
+}
+</example>
