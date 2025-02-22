@@ -1,0 +1,18 @@
+# rust-toolchain.toml
+[toolchain]
+channel = "nightly"
+components = [
+    "rustfmt",     # Code formatting
+    "clippy",      # Linting
+    "rust-src",    # Source code (needed for some IDE features)
+    "rust-analyzer", # Language server
+    "llvm-tools-preview" # Required for code coverage
+]
+
+profile = "minimal"
+targets = [
+    "x86_64-unknown-linux-gnu",     # Linux x86_64
+    "aarch64-apple-darwin",         # macOS Apple Silicon (M1/M2/M3)
+    "wasm32-unknown-unknown",       # WebAssembly
+    "powerpc64le-unknown-linux-gnu" # Linux PowerPC 64-bit LE
+]

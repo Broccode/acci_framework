@@ -1,0 +1,22 @@
+# Rust formatting configuration
+# See https://rust-lang.github.io/rustfmt/
+
+# Basic formatting
+max_width = 100
+tab_spaces = 4
+hard_tabs = false
+
+# Imports
+reorder_imports = true
+
+# Code organization
+reorder_modules = true
+merge_derives = true
+
+# Function formatting
+fn_params_layout = "Tall"
+
+# Other settings
+match_block_trailing_comma = true
+use_field_init_shorthand = true
+use_try_shorthand = true

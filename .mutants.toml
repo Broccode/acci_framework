@@ -1,0 +1,30 @@
+[mutants]
+# Timeout for each test run (seconds)
+timeout = 300
+
+# Number of parallel test runs
+jobs = 4
+
+# Directories to mutate
+paths = [
+    "crates/acci-core/src",
+    "crates/acci-auth/src",
+    "crates/acci-api/src",
+    "crates/acci-db/src"
+]
+
+# Files to exclude
+exclude = [
+    "**/tests/*",
+    "**/benches/*",
+    "**/examples/*"
+]
+
+# Mutation operators to use
+operators = [
+    "arithmetic",
+    "comparison",
+    "control_flow",
+    "function_calls",
+    "literals"
+]

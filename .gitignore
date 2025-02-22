@@ -1,1 +1,33 @@
 /target
+.DS_Store
+.idea/
+
+.vscode
+
+.env
+.env.dev
+.env.prod
+.env.test
+
+config.dev.toml
+config.prod.toml
+
+.devbox
+.rustup
+
+# Coverage files
+lcov.info
+coverage/
+target/llvm-cov/
+
+bom.json
+acci.cdx.xml
+
+node_modules/
+
+.repomix-output.txt
+
+# Private individual user cursor rules
+.cursor/rules/_*.mdc
+
+mutants.out*/

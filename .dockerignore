@@ -1,0 +1,58 @@
+# Rust specific
+target/
+**/*.rs.bk
+*.pdb
+node_modules/
+
+# Development files
+.git/
+.gitignore
+.env
+.env.*
+*.log
+.DS_Store
+
+# IDE specific
+.idea/
+.vscode/
+*.swp
+*.swo
+.vim/
+*.iml
+
+# Debug files
+**/*.debug
+**/*.dSYM/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Build artifacts
+*.o
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Cache directories
+.cargo/
+.rustup/
+**/*.rs.fmt
+
+lcov.info
+coverage/
+bom.json
+acci.cdx.xml
+.repomix-output.txt
+mutants.out*/
+
+# Keep necessary files
+!Cargo.toml
+!Cargo.lock
+!src/
+!crates/
+!config/
+!doc/
