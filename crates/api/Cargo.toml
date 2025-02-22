@@ -1,0 +1,40 @@
+[package]
+name = "acci-api"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Backend Framework
+axum = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+
+# Async & Utils
+tokio = { workspace = true }
+futures = { workspace = true }
+async-trait = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+time = { workspace = true }
+
+# Error Handling
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+# Logging & Metrics
+tracing = { workspace = true }
+metrics = { workspace = true }
+metrics-exporter-prometheus = { workspace = true }
+
+# Local Dependencies
+acci-core = { path = "../core" }
+acci-auth = { path = "../auth" }
+
+[dev-dependencies]
+tokio-test = { workspace = true }
+rstest = { workspace = true }
+mockall = { workspace = true }

@@ -1,0 +1,31 @@
+[package]
+name = "acci-web"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Frontend Framework
+leptos = { workspace = true }
+leptos_router = { workspace = true }
+leptos_meta = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+# Error Handling
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+
+# Local Dependencies
+acci-core = { path = "../core" }
+acci-auth = { path = "../auth" }
+
+[dev-dependencies]
+rstest = { workspace = true }
+mockall = { workspace = true }
