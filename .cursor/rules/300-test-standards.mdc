@@ -1,0 +1,134 @@
+---
+description: ENFORCE test standards from TESTS.md when WRITING or MODIFYING tests to ENSURE consistent test quality
+globs: ["**/*.rs", "**/tests/**/*"]
+tags: [testing, rust, quality]
+priority: 1
+version: 1.0.0
+---
+
+# Test Standards Rule
+
+## Context
+- Applied when writing or modifying test files
+- Applies to all Rust test files and files in /tests directory
+- Follows standards defined in docs/tests/TESTS.md
+
+## Requirements
+
+### Test Organization
+- Unit tests MUST be in the same file as the tested code
+- Integration tests MUST be in the `/tests` directory
+- All mocks MUST be defined in `/tests/src/mocks`
+- Common test utilities MUST be in `/tests/src/helpers`
+- Test fixtures MUST be in `/tests/src/fixtures`
+
+### Unit Tests
+- MUST NOT use mocks or external dependencies
+- MUST focus on individual functions and their logic
+- MUST be fast executing for immediate feedback
+- MUST run with `cargo test`
+
+### Integration Tests
+- MUST test interaction of multiple components
+- MAY use external dependencies and mocks
+- MUST run with `cargo test --test '*'`
+- MUST use testcontainers-rs for container-based tests
+
+### Test Implementation
+- MUST implement proper cancellation handling for async tests
+- MUST test async operations thoroughly
+- MUST validate Stream-based operations under load
+- MUST test backpressure handling
+- MUST verify resource cleanup
+- MUST test timeout scenarios
+- MUST validate error propagation in async contexts
+- MUST test concurrent access patterns
+- MUST verify cancellation behavior
+
+### Performance Monitoring
+- MUST track task completion times
+- MUST monitor task queuing
+- MUST observe cancellation patterns
+- MUST profile async stack traces
+
+### Documentation
+- MUST document test purpose and approach
+- MUST include examples for complex test scenarios
+- MUST explain test data and fixtures
+- MUST document any test-specific configuration
+
+## Examples
+
+<example>
+// Good: Unit test in same file as code
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_add_positive_numbers() {
+        let result = add(2, 3);
+        assert_eq!(result, 5);
+    }
+}
+</example>
+
+<example type="invalid">
+// Bad: Unit test with external dependencies
+#[test]
+fn test_process_data() {
+    let db = Database::new(); // External dependency
+    let result = process_data(&db);
+    assert!(result.is_ok());
+}
+</example>
+
+<example>
+// Good: Integration test with proper setup
+#[tokio::test]
+async fn test_api_integration() {
+    let container = PostgresContainer::new();
+    let db = setup_test_db(&container).await;
+    let api = ApiClient::new(db);
+
+    let result = api.process_request().await;
+    assert!(result.is_ok());
+
+    cleanup_test_db(&container).await;
+}
+</example>
+
+<example>
+// Good: Async test with proper cancellation
+#[tokio::test]
+async fn test_stream_processing() {
+    let (tx, rx) = tokio::sync::mpsc::channel(10);
+    let handle = tokio::spawn(process_stream(rx));
+
+    tx.send(TestData::new()).await.unwrap();
+
+    // Test cancellation
+    handle.abort();
+    assert!(handle.await.unwrap_err().is_cancelled());
+}
+</example>
+
+<example type="invalid">
+// Bad: Integration test in wrong location
+// This should be in /tests directory, not in the source file
+mod tests {
+    #[test]
+    fn test_full_workflow() {
+        let api = setup_full_system();
+        api.run_workflow();
+    }
+}
+</example>
+
+## Critical Rules
+<critical>
+- NEVER mix unit and integration tests
+- NEVER use real external services in unit tests
+- NEVER skip cleanup in integration tests
+- ALWAYS follow the test organization structure
+- ALWAYS implement proper async test patterns
+</critical>
