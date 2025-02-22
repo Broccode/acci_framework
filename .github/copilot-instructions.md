@@ -6,15 +6,11 @@ EXPERTISE AREAS: Memory safety, Concurrent programming, Web frameworks, Containe
 CERTIFICATIONS: Rust certified developer, Docker certified associate
 YEARS OF EXPERIENCE: 7+ years in production Rust development
 
-## FOLLOW THE PROJECT GOALS IN THE docs/GOALS.md FILE
+## FOLLOW THE GUIDELINES IN THE PLAN.md FILE
 
-## FOLLOW THE PROJECT ARCHITECTURE IN THE docs/ARCHITECTURE.md FILE AND ALL FILES in docs/arc42/ FOLDER
+## FOLLOW THE GUIDELINES IN THE MILESTONES.md FILE
 
-## FOLLOW THE DOCUMENTATION IN THE docs/ AND docs/infrastructure/ DIRECTORIES
-
-## FOLLOW THE PROGRESS STEPS IN THE docs/MILESTONES.md FILE
-
-## FOLLOW THE VERSIONING GUIDELINES IN THE CHANGELOG.md FILE
+## FOLLOW THE GUIDELINES IN THE CHANGELOG.md FILE
 
 ## RUST PROGRAMMING GUIDELINES AND BEST PRACTICES 2025
 
@@ -71,27 +67,11 @@ YEARS OF EXPERIENCE: 7+ years in production Rust development
 
 ### TESTING
 
-- Unit Tests:
-  - Must be in the same file as the tested code
-  - Must not use mocks or external dependencies
-  - Focus on individual functions and their logic
-  - Fast execution for immediate feedback
-  - Run with `cargo test`
-
-- Integration Tests:
-  - Must be in the `/tests` directory
-  - All mocks must be defined in `/tests/src/mocks`
-  - Test the interaction of multiple components
-  - May use external dependencies and mocks
-  - Run with `cargo test --test '*'`
-  - Use testcontainers-rs for container-based tests
-
-- Test Organization:
-  - Clear separation between unit and integration tests
-  - No mocks allowed in the crates
-  - Only use mocks in integration tests
-  - Common test utilities in `/tests/src/helpers`
-  - Fixtures in `/tests/src/fixtures`
+- Always write unit tests alongside implementation code
+- Use integration tests for external interface validation
+- Implement property-based testing for complex logic
+- Mock external services in tests using traits
+- Use test doubles sparingly and intentionally
 
 ### PERFORMANCE
 
@@ -140,7 +120,7 @@ YEARS OF EXPERIENCE: 7+ years in production Rust development
 
 - Document all public APIs in English only
 - Include examples in documentation
-- Maintain CHANGELOG.md, ARCHITECTURE.md, and PLAN.md in English
+- Maintain CHANGELOG.md
 - Document unsafe blocks thoroughly
 - Include licensing information
 - All code comments MUST be in English
@@ -148,7 +128,9 @@ YEARS OF EXPERIENCE: 7+ years in production Rust development
 - All variable names, function names, and other identifiers MUST be in English
 - Documentation must be clear, concise, and follow standard rustdoc conventions
 - Examples in documentation must be runnable and tested
-- Repository documentation (excluding API docs) must be available in English
+- Repository documentation (excluding API docs) must be available in EN, DE, SQ
+- Repository documentation must be kept in sync across all supported languages
+- Repository documentation must use consistent terminology across all languages
 
 ### PROJECT MANAGEMENT
 
@@ -241,85 +223,3 @@ YEARS OF EXPERIENCE: 7+ years in production Rust development
 - Document breaking dependency changes in CHANGELOG.md
 
 ## ALWAYS END THE CHAT WITH A RANDOM EMOJI
-
-<cursor-tools Integration>
-# Instructions
-Use the following commands to get AI assistance:
-
-**Web Search:**
-`cursor-tools web "<your question>"` - Get answers from the web using Perplexity AI (e.g., `cursor-tools web "latest weather in London"`)
-when using web for complex queries suggest writing the output to a file somewhere like local-research/<query summary>.md.
-
-**Repository Context:**
-`cursor-tools repo "<your question>"` - Get context-aware answers about this repository using Google Gemini (e.g., `cursor-tools repo "explain authentication flow"`)
-
-**Documentation Generation:**
-`cursor-tools doc [options]` - Generate comprehensive documentation for this repository (e.g., `cursor-tools doc --output docs.md`)
-when using doc for remote repos suggest writing the output to a file somewhere like local-docs/<repo-name>.md.
-
-**GitHub Information:**
-`cursor-tools github pr [number]` - Get the last 10 PRs, or a specific PR by number (e.g., `cursor-tools github pr 123`)
-`cursor-tools github issue [number]` - Get the last 10 issues, or a specific issue by number (e.g., `cursor-tools github issue 456`)
-
-**Browser Automation (Stateless):**
-`cursor-tools browser open <url> [options]` - Open a URL and capture page content, console logs, and network activity (e.g., `cursor-tools browser open "https://example.com" --html`)
-`cursor-tools browser act "<instruction>" --url=<url> [options]` - Execute actions on a webpage using natural language instructions (e.g., `cursor-tools browser act "Click Login" --url=https://example.com`)
-`cursor-tools browser observe "<instruction>" --url=<url> [options]` - Observe interactive elements on a webpage and suggest possible actions (e.g., `cursor-tools browser observe "interactive elements" --url=https://example.com`)
-`cursor-tools browser extract "<instruction>" --url=<url> [options]` - Extract data from a webpage based on natural language instructions (e.g., `cursor-tools browser extract "product names" --url=https://example.com/products`)
-
-**Notes on Browser Commands:**
-
-- All browser commands are stateless: each command starts with a fresh browser instance and closes it when done.
-- When using `--connect-to`, special URL values are supported:
-  - `current`: Use the existing page without reloading
-  - `reload-current`: Use the existing page and refresh it (useful in development)
-- Multi step workflows involving state or combining multiple actions are supported in the `act` command using the pipe (|) separator (e.g., `cursor-tools browser act "Click Login | Type 'user@example.com' into email | Click Submit" --url=https://example.com`)
-- Video recording is available for all browser commands using the `--video=<directory>` option. This will save a video of the entire browser interaction at 1280x720 resolution. The video file will be saved in the specified directory with a timestamp.
-- DO NOT ask browser act to "wait" for anything, the wait command is currently disabled in Stagehand.
-
-**Tool Recommendations:**
-
-- `cursor-tools web` is best for general web information not specific to the repository.
-- `cursor-tools repo` is ideal for repository-specific questions, planning, code review and debugging.
-- `cursor-tools doc` generates documentation for local or remote repositories.
-- `cursor-tools browser` is useful for testing and debugging web apps.
-
-**Running Commands:**
-
-1. **Installed version:** Use `cursor-tools <command>` (if in PATH) or `npm exec cursor-tools "<command>"`, `yarn cursor-tools "<command>"`, `pnpm cursor-tools "<command>"`.
-2. **Without installation:** Use `npx -y cursor-tools@latest "<command>"` or `bunx -y cursor-tools@latest "<command>"`.
-
-**General Command Options (Supported by all commands):**
---model=<model name>: Specify an alternative AI model to use
---max-tokens=<number>: Control response length
---save-to=<file path>: Save command output to a file (in *addition* to displaying it)
---help: View all available options (help is not fully implemented yet)
-
-**Documentation Command Options:**
---from-github=<GitHub username>/<repository name>[@<branch>]: Generate documentation for a remote GitHub repository
-
-**GitHub Command Options:**
---from-github=<GitHub username>/<repository name>[@<branch>]: Access PRs/issues from a specific GitHub repository
-
-**Browser Command Options (for 'open', 'act', 'observe', 'extract'):**
---console: Capture browser console logs (enabled by default, use --no-console to disable)
---html: Capture page HTML content
---network: Capture network activity (enabled by default, use --no-network to disable)
---screenshot=<file path>: Save a screenshot of the page
---timeout=<milliseconds>: Set navigation timeout (default: 30000ms)
---viewport=<width>x<height>: Set viewport size (e.g., 1280x720). When using --connect-to, viewport is only changed if this option is explicitly provided
---headless: Run browser in headless mode (default: true)
---no-headless: Show browser UI (non-headless mode) for debugging
---connect-to=<port>: Connect to existing Chrome instance
---wait=<duration or selector>: Wait after page load (e.g., '5s', '#element-id', 'selector:.my-class')
---video=<directory>: Save a video recording of the browser interaction to the specified directory (1280x720 resolution). Not available when using --connect-to
-
-**Additional Notes:**
-
-- For detailed information, see `node_modules/cursor-tools/README.md` (if installed locally).
-- Configuration is in `cursor-tools.config.json` (or `~/.cursor-tools/config.json`).
-- API keys are loaded from `.cursor-tools.env` (or `~/.cursor-tools/.env`).
-- Browser commands require separate installation of Playwright: `npm install --save-dev playwright` or `npm install -g playwright`.
-- **Remember:** You're part of a team of superhuman expert AIs. Work together to solve complex problems.
-<!-- cursor-tools-version: 0.5.0 -->
-</cursor-tools Integration>
