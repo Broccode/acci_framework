@@ -29,6 +29,10 @@ anyhow = { workspace = true }
 # Logging
 tracing = { workspace = true }
 
+# Validation
+regex = "1.10"
+lazy_static = "1.4"
+
 [dev-dependencies]
 tokio-test = { workspace = true }
 rstest = { workspace = true }
