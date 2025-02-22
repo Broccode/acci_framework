@@ -11,6 +11,7 @@ jsonwebtoken = { workspace = true }
 argon2 = { workspace = true }
 rand = { workspace = true }
 zxcvbn = { workspace = true }
+uuid = { workspace = true }
 
 # Async & Utils
 tokio = { workspace = true }
