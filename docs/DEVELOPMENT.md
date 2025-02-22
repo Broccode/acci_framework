@@ -55,7 +55,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ### 2. Install Required Cargo Tools
 
 ```bash
-# Install all required cargo tools in one command
+# Install development tools
 cargo install \
     cargo-audit \
     cargo-deny \
@@ -63,20 +63,34 @@ cargo install \
     cargo-tarpaulin \
     cargo-mutants \
     cargo-nextest \
-    criterion \
-    proptest \
-    afl \
     sqlx-cli
 ```
 
-### 3. Install Docker and Docker Compose
+### 3. Add Required Development Dependencies
+
+Add these testing and benchmarking libraries to your project's `Cargo.toml`:
+
+```toml
+[dev-dependencies]
+criterion = "0.5"
+proptest = "1.6"
+afl = "0.15"
+```
+
+Or use cargo-add to add them:
+
+```bash
+cargo add --dev criterion proptest afl
+```
+
+### 4. Install Docker and Docker Compose
 
 Please follow the official installation instructions for your operating system:
 
 - [Docker Installation Guide](https://docs.docker.com/get-docker/)
 - [Docker Compose Installation Guide](https://docs.docker.com/compose/install/)
 
-### 4. Configure IDE
+### 5. Configure IDE
 
 For the best development experience, we recommend using an IDE with Rust support through rust-analyzer. Popular choices include:
 

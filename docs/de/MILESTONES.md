@@ -15,7 +15,7 @@ Jeder Meilenstein folgt dieser Struktur:
 - **Zeitplan:** Geschätzte Dauer
 - **Testfokus:** Wichtige Testbereiche
 
-## Meilenstein 1: Grundlagen und Basis-Authentifizierung (Q2 2024)
+## Meilenstein 1: Grundlagen und Basis-Authentifizierung (Q1 2025)
 
 ### Ziel
 
@@ -54,7 +54,7 @@ Aufbau der Framework-Grundlagen und Implementierung der Basis-Authentifizierung.
 - Grundlegende Sicherheitsmaßnahmen
 - Performance-Benchmarks
 
-## Meilenstein 2: Multi-Tenancy und erweiterte Sicherheit (Q3 2024)
+## Meilenstein 2: Multi-Tenancy und erweiterte Sicherheit (Q1 2025)
 
 ### Ziel
 
@@ -93,7 +93,7 @@ Implementierung der Multi-Tenancy-Architektur und Erweiterung der Sicherheitsfun
 - Cross-Tenant-Operationen
 - Vollständigkeit der Audit-Protokollierung
 
-## Meilenstein 3: Kern-Geschäftslogik und DDD-Implementierung (Q4 2024)
+## Meilenstein 3: Kern-Geschäftslogik und DDD-Implementierung (Q1 2025)
 
 ### Ziel
 
@@ -132,7 +132,7 @@ Implementierung der Kern-Geschäftslogik unter Verwendung von Domain-Driven Desi
 - Plugin-System-Stabilität
 - API-Gateway-Performance
 
-## Meilenstein 4: Integration und Erweiterbarkeit (Q1 2025)
+## Meilenstein 4: Integration und Erweiterbarkeit (Q2 2025)
 
 ### Ziel
 
@@ -210,7 +210,7 @@ Implementierung umfassender i18n-Unterstützung und Verbesserung der Benutzererf
 - Barrierefreiheit-Konformität
 - Performance-Metriken
 
-## Meilenstein 6: Enterprise-Funktionen und Compliance (Q3 2025)
+## Meilenstein 6: Enterprise-Funktionen und Compliance (Q2 2025)
 
 ### Ziel
 

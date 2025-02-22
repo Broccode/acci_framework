@@ -7,8 +7,8 @@ This document provides a detailed breakdown of Milestone 1, which focuses on est
 ## Timeline
 
 **Duration:** 7 weeks
-**Start:** Q2 2024
-**End:** Q2 2024
+**Start:** Q1 2025
+**End:** Q2 2025
 
 ## Detailed Steps
 

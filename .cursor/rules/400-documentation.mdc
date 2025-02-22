@@ -1,9 +1,6 @@
 ---
 description: ENFORCE documentation standards when WRITING or MODIFYING documentation to ENSURE clear and maintainable documentation
 globs: [src/**/*.rs, docs/**/*.md, crates/**/*.rs]
-tags: [documentation, rust, standards]
-priority: 1
-version: 1.0.0
 ---
 
 # Documentation Standards
@@ -26,7 +23,7 @@ version: 1.0.0
 - Maintain key files in English:
   - CHANGELOG.md
   - ARCHITECTURE.md
-  - PLAN.md
+  - MILESTONES.md
 - Include licensing information
 - Keep documentation clear and concise
 

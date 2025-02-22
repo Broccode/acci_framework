@@ -7,8 +7,8 @@ Dieses Dokument bietet eine detaillierte Aufschlüsselung von Meilenstein 1, der
 ## Zeitplan
 
 **Dauer:** 7 Wochen
-**Start:** Q2 2024
-**Ende:** Q2 2024
+**Start:** Q1 2025
+**Ende:** Q2 2025
 
 ## Detaillierte Schritte
 
