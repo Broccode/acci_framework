@@ -1,0 +1,94 @@
+---
+description: ENFORCE changelog standards when MODIFYING code or RELEASING versions to ENSURE consistent version tracking and release management
+globs: [CHANGELOG.md, **/Cargo.toml]
+tags: [changelog, versioning, release]
+priority: 1
+version: 1.0.0
+---
+
+# Changelog Management Standards
+
+## Context
+- Applies to all code changes and releases
+- Based on Keep a Changelog format
+- Follows Semantic Versioning
+
+## Requirements
+
+### Version Numbering (X.Y.Z)
+- Major (X): Breaking changes
+- Minor (Y): New features (backwards compatible)
+- Patch (Z): Bug fixes (backwards compatible)
+
+### Change Categories
+- Added: New features
+- Changed: Changes in existing functionality
+- Deprecated: Soon-to-be removed features
+- Removed: Removed features
+- Fixed: Bug fixes
+- Security: Vulnerability fixes
+- Technical: Technical changes/dependencies
+
+### Development Workflow
+- Add all changes under [Unreleased]
+- Keep entries concise but descriptive
+- Group related changes by category
+- Newest changes at the top
+- Write clear, descriptive notes
+
+### Release Process
+1. Review [Unreleased] changes
+2. Determine version bump:
+   - Features → Minor
+   - Fixes → Patch
+   - Breaking → Major
+3. Move changes to new version section with date
+4. Update version in root Cargo.toml
+5. Commit as "release: Version X.Y.Z"
+6. Create git tag
+
+## Examples
+
+<example>
+# Good changelog entry under [Unreleased]
+## Added
+- New authentication middleware for JWT validation
+- Support for custom error responses
+
+## Fixed
+- Connection pool timeout handling in high load scenarios
+- Incorrect error propagation in async handlers
+
+## Technical
+- Updated tokio to 1.35.0 for improved async performance
+</example>
+
+<example type="invalid">
+# Bad changelog entry
+## Changes
+- Fixed some bugs
+- Added new features
+- Updated dependencies
+</example>
+
+<example>
+# Good version release
+## [1.2.0] - 2024-03-15
+
+## Added
+- REST API endpoints for user management
+- Structured logging with correlation IDs
+
+## Fixed
+- Race condition in connection handling
+- Memory leak in WebSocket handler
+
+## [Unreleased]
+</example>
+
+<example type="invalid">
+# Bad version release
+## [1.2.0]
+- Various improvements and fixes
+- Some new features
+</example>
