@@ -1,5 +1,5 @@
 [package]
-name = "acci-auth"
+name = "acci_auth"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -39,6 +39,9 @@ sea-query = { workspace = true }
 
 # Rate Limiting
 governor = "0.6"
+
+# Local Dependencies
+acci_core = { path = "../core" }
 
 [dev-dependencies]
 tokio-test = { workspace = true }

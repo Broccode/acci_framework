@@ -138,3 +138,10 @@ Create a git tag for the version (e.g., v0.2.0)
     - Users table with UUID, email, and password hash
     - Automatic timestamp handling
     - Email indexing
+
+### Fixed
+
+- Package naming consistency
+  - Changed all package names from kebab-case to snake_case
+  - Updated all local dependencies to use snake_case names
+  - Affected packages: acci_core, acci_auth, acci_api, acci_web

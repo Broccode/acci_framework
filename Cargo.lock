@@ -3,11 +3,11 @@
 version = 4
 
 [[package]]
-name = "acci-api"
+name = "acci_api"
 version = "0.1.0"
 dependencies = [
- "acci-auth",
- "acci-core",
+ "acci_auth",
+ "acci_core",
  "anyhow",
  "async-trait",
  "axum",
@@ -28,9 +28,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "acci-auth"
+name = "acci_auth"
 version = "0.1.0"
 dependencies = [
+ "acci_core",
  "anyhow",
  "argon2",
  "async-trait",
@@ -59,44 +60,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "acci-core"
+name = "acci_core"
 version = "0.1.0"
 dependencies = [
- "acci-auth",
  "anyhow",
- "async-trait",
- "futures",
+ "dotenvy",
  "metrics",
- "mockall",
+ "metrics-exporter-prometheus",
  "rstest",
- "sea-query",
  "serde",
- "serde_json",
  "sqlx",
  "thiserror 2.0.11",
- "time",
- "tokio",
  "tokio-test",
  "tracing",
- "uuid",
-]
-
-[[package]]
-name = "acci-web"
-version = "0.1.0"
-dependencies = [
- "acci-auth",
- "acci-core",
- "anyhow",
- "leptos",
- "leptos_meta",
- "leptos_router",
- "mockall",
- "rstest",
- "serde",
- "serde_json",
- "thiserror 2.0.11",
- "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -108,6 +85,24 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "acci_web"
+version = "0.1.0"
+dependencies = [
+ "acci_auth",
+ "acci_core",
+ "anyhow",
+ "leptos",
+ "leptos_meta",
+ "leptos_router",
+ "mockall",
+ "rstest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.11",
+ "tracing",
 ]
 
 [[package]]

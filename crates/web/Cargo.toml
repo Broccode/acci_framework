@@ -1,5 +1,5 @@
 [package]
-name = "acci-web"
+name = "acci_web"
 version.workspace = true
 edition.workspace = true
 authors.workspace = true
@@ -23,8 +23,8 @@ anyhow = { workspace = true }
 tracing = { workspace = true }
 
 # Local Dependencies
-acci-core = { path = "../core" }
-acci-auth = { path = "../auth" }
+acci_core = { path = "../core" }
+acci_auth = { path = "../auth" }
 
 [dev-dependencies]
 rstest = { workspace = true }
