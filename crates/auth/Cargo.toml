@@ -33,7 +33,15 @@ tracing = { workspace = true }
 regex = "1.10"
 lazy_static = "1.4"
 
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "time", "json", "ipnetwork"] }
+sea-query = "0.30"
+
+# Rate Limiting
+governor = "0.6"
+
 [dev-dependencies]
 tokio-test = { workspace = true }
 rstest = { workspace = true }
 mockall = { workspace = true }
+testcontainers = "0.15"

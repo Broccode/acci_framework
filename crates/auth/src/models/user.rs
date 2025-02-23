@@ -45,6 +45,8 @@ pub enum UserError {
     UnverifiedUser,
     #[error("Database error: {0}")]
     DatabaseError(String),
+    #[error("Rate limit exceeded")]
+    RateLimitExceeded,
 }
 
 impl User {
