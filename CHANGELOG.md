@@ -139,6 +139,8 @@ Create a git tag for the version (e.g., v0.2.0)
     - Automatic timestamp handling
     - Email indexing
 - Database testing infrastructure
+  - Integration with testcontainers for isolated PostgreSQL instances
+  - Automatic database creation and migration for tests
   - Connection pool tests
   - Concurrent query tests
   - Transaction handling tests

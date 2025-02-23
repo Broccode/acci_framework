@@ -28,3 +28,5 @@ tokio = { workspace = true }
 tokio-test = { workspace = true }
 rstest = { workspace = true }
 futures = { workspace = true }
+testcontainers = "0.15"
+uuid = { workspace = true }
