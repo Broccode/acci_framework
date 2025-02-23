@@ -39,3 +39,6 @@ impl Database {
         &self.pool
     }
 }
+
+#[cfg(test)]
+mod tests;

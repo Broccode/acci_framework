@@ -24,5 +24,7 @@ dotenvy = { workspace = true }
 serde = { workspace = true }
 
 [dev-dependencies]
+tokio = { workspace = true }
 tokio-test = { workspace = true }
 rstest = { workspace = true }
+futures = { workspace = true }

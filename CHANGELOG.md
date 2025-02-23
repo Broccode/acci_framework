@@ -138,6 +138,12 @@ Create a git tag for the version (e.g., v0.2.0)
     - Users table with UUID, email, and password hash
     - Automatic timestamp handling
     - Email indexing
+- Database testing infrastructure
+  - Connection pool tests
+  - Concurrent query tests
+  - Transaction handling tests
+  - Error handling tests
+  - Test fixtures and utilities
 
 ### Fixed
 
