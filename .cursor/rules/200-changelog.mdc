@@ -1,9 +1,6 @@
 ---
 description: ENFORCE changelog standards when MODIFYING code or RELEASING versions to ENSURE consistent version tracking and release management
 globs: [CHANGELOG.md, **/Cargo.toml]
-tags: [changelog, versioning, release]
-priority: 1
-version: 1.0.0
 ---
 
 # Changelog Management Standards
@@ -42,8 +39,8 @@ version: 1.0.0
    - Features → Minor
    - Fixes → Patch
    - Breaking → Major
-3. Move changes to new version section with date
-4. Update version in root Cargo.toml
+3. Update version in root Cargo.toml
+4. In CHANGELOG.md, move changes to new version section with date
 5. Commit as "release: Version X.Y.Z"
 6. Create git tag
 
