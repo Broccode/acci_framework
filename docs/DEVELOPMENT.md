@@ -22,7 +22,7 @@ The project uses the nightly Rust toolchain. The specific version and components
 
 ### Testing Tools
 
-- **cargo-tarpaulin**: Generates code coverage reports for the test suite
+- **cargo-llvm-cov**: Generates code coverage reports for the test suite using LLVM's native coverage functionality
 - **cargo-mutants**: Performs mutation testing to assess test suite effectiveness
 - **cargo-nextest**: Provides a more feature-rich test runner with better reporting
 - **criterion**: Framework for writing and running benchmarks
@@ -60,10 +60,13 @@ cargo install \
     cargo-audit \
     cargo-deny \
     cargo-cyclonedx \
-    cargo-tarpaulin \
+    cargo-llvm-cov \
     cargo-mutants \
     cargo-nextest \
     sqlx-cli
+
+# Install required Rust components
+rustup component add llvm-tools-preview
 ```
 
 ### 3. Add Required Development Dependencies

@@ -106,7 +106,7 @@ fake = { workspace = true }
 3. Generate test coverage:
 
    ```bash
-   cargo tarpaulin --out Xml
+   cargo llvm-cov --out Xml
    ```
 
 ## Further Reading
