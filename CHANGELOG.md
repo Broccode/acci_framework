@@ -119,3 +119,13 @@ Commit all changes with message "release: Version X.Y.Z"
 Create a git tag for the version (e.g., v0.2.0)
 
 ## [Unreleased]
+
+### Added
+
+- Initial CI/CD pipeline setup with GitHub Actions
+  - Basic test workflow with PostgreSQL integration
+  - Code coverage reporting using cargo-tarpaulin and Coveralls
+  - Security audit workflow with cargo-audit and cargo-deny
+  - Automated documentation generation and deployment to GitHub Pages
+  - Release management workflow with automated changelog generation
+  - Automated crate publishing to crates.io
