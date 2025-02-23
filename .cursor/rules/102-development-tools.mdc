@@ -1,0 +1,98 @@
+---
+description: ENFORCE development tool standards when IMPLEMENTING or MODIFYING code to ENSURE consistent development environment
+globs: ["**/*.rs", "**/*.toml", "**/*.sql", "**/*.md"]
+tags: ["development", "tools", "quality", "testing", "security"]
+priority: 2
+version: 1.0.0
+---
+
+# Development Tools Standards
+
+## Context
+- Applies to all development activities
+- Ensures consistent tooling across the project
+- Maintains code quality and security standards
+- Based on DEVELOPMENT.md specifications
+
+## Requirements
+
+### Core Development Tools
+- Use nightly Rust toolchain as specified in rust-toolchain.toml
+- Implement rustfmt for code formatting
+- Apply clippy for linting and best practices
+- Utilize rust-analyzer for IDE support
+
+### Code Quality Tools
+- Run cargo-audit for security vulnerability checks
+- Enforce cargo-deny for dependency policies
+- Generate SBOM using cargo-cyclonedx
+- Apply cargo-llvm-cov for code coverage analysis
+- Use cargo-mutants for mutation testing
+- Implement cargo-nextest for enhanced test running
+- Utilize criterion for benchmarking
+- Apply proptest for property-based testing
+- Implement afl for fuzzing tests
+- Use arbitrary for structure-aware fuzzing
+
+### Database and Infrastructure
+- Use sqlx-cli for database management
+- Implement metrics-rs for application metrics
+- Export metrics via metrics-exporter-prometheus
+- Utilize Docker and Docker Compose for containerization
+
+### IDE Configuration
+- Configure IDE with rust-analyzer support
+- Enable automatic formatting on save
+- Implement linting integration
+- Set up test runner integration
+
+## Examples
+
+<example>
+// Good: Using proper testing tools
+#[cfg(test)]
+mod tests {
+    use criterion::{black_box, criterion_group, criterion_main, Criterion};
+    use proptest::prelude::*;
+
+    proptest! {
+        #[test]
+        fn test_valid_input(s in ".*") {
+            process_input(&s);
+        }
+    }
+
+    fn benchmark(c: &mut Criterion) {
+        c.bench_function("process", |b| b.iter(|| process_input(black_box("test"))));
+    }
+}
+</example>
+
+<example type="invalid">
+// Bad: Not using project's testing tools
+#[test]
+fn simple_test() {
+    assert!(process_input("test").is_ok());
+}
+</example>
+
+<example>
+// Good: Using metrics integration
+use metrics::{counter, gauge};
+
+fn process_request() {
+    counter!("requests_total").increment(1);
+    gauge!("request_duration").set(duration.as_secs_f64());
+}
+</example>
+
+<example type="invalid">
+// Bad: Manual metrics tracking
+static mut REQUEST_COUNT: u64 = 0;
+
+fn process_request() {
+    unsafe {
+        REQUEST_COUNT += 1;
+    }
+}
+</example>
