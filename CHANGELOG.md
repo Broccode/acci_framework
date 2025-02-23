@@ -129,3 +129,12 @@ Create a git tag for the version (e.g., v0.2.0)
   - Automated documentation generation and deployment to GitHub Pages
   - Release management workflow with automated changelog generation
   - Automated crate publishing to crates.io
+- Core infrastructure setup
+  - Database connection handling with SQLx
+  - Error handling framework
+  - Configuration management
+  - Logging and metrics setup
+  - Initial database migrations
+    - Users table with UUID, email, and password hash
+    - Automatic timestamp handling
+    - Email indexing
