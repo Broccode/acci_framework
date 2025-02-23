@@ -1,4 +1,3 @@
-use tracing::Level;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::error::Result;

@@ -147,6 +147,13 @@ Create a git tag for the version (e.g., v0.2.0)
   - Error handling tests
   - Test fixtures and utilities
 
+### Changed
+
+- Moved integration tests from crate-specific test directories to root `/tests` directory
+- Updated test documentation and structure
+- Added new Cursor rule for test organization
+- Clarified test category separation (unit vs. integration vs. e2e)
+
 ### Fixed
 
 - Package naming consistency

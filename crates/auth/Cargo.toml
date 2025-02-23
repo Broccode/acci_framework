@@ -34,11 +34,11 @@ regex = "1.10"
 lazy_static = "1.4"
 
 # Database
-sqlx = { workspace = true }
+sqlx = { workspace = true, features = ["runtime-tokio-rustls", "postgres", "sqlite", "uuid", "time", "json", "offline"] }
 sea-query = { workspace = true }
 
 # Rate Limiting
-governor = "0.6"
+governor = "0.6.3"
 
 # Local Dependencies
 acci_core = { path = "../core" }
@@ -47,7 +47,6 @@ acci_core = { path = "../core" }
 tokio-test = { workspace = true }
 rstest = { workspace = true }
 mockall = { workspace = true }
-testcontainers = "0.15"
 
 [build-dependencies]
 proc-macro2 = "1.0"

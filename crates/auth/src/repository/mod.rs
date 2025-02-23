@@ -1,3 +1,3 @@
-mod postgres;
+pub mod postgres;
 
 pub use postgres::{PostgresUserRepository, RepositoryConfig};

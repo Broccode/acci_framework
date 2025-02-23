@@ -7,7 +7,7 @@ license.workspace = true
 
 [dependencies]
 # Database
-sqlx = { workspace = true }
+sqlx = { workspace = true, features = ["runtime-tokio-rustls", "postgres", "sqlite", "uuid", "time", "json", "offline"] }
 
 # Error Handling
 thiserror = { workspace = true }
@@ -28,5 +28,5 @@ tokio = { workspace = true }
 tokio-test = { workspace = true }
 rstest = { workspace = true }
 futures = { workspace = true }
-testcontainers = "0.15"
 uuid = { workspace = true }
+once_cell = { workspace = true }

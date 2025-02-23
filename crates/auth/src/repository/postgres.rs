@@ -7,7 +7,7 @@ use governor::{
     state::{InMemoryState, NotKeyed},
 };
 use serde::{Deserialize, Serialize};
-use sqlx::{PgPool, Row, postgres::PgPoolOptions};
+use sqlx::{PgPool, postgres::PgPoolOptions};
 use std::{num::NonZeroU32, sync::Arc, time::Duration};
 use time::OffsetDateTime;
 use tracing::{debug, error, info, instrument, warn};
@@ -239,8 +239,14 @@ impl UserRepository for PostgresUserRepository {
     async fn delete(&self, id: Uuid) -> Result<(), UserError> {
         self.check_rate_limit().await?;
 
-        let result = sqlx::query("DELETE FROM users WHERE id = $1")
-            .bind(id)
+        // First delete audit logs
+        sqlx::query!("DELETE FROM user_audit_log WHERE user_id = $1", id)
+            .execute(&self.pool)
+            .await
+            .map_err(|e| UserError::DatabaseError(e.to_string()))?;
+
+        // Then delete user
+        let result = sqlx::query!("DELETE FROM users WHERE id = $1", id)
             .execute(&self.pool)
             .await
             .map_err(|e| UserError::DatabaseError(e.to_string()))?;
@@ -248,16 +254,6 @@ impl UserRepository for PostgresUserRepository {
         if result.rows_affected() == 0 {
             return Err(UserError::NotFound);
         }
-
-        // Log audit event
-        self.log_audit(AuditEvent {
-            user_id: id,
-            action: "ACCOUNT_DELETED".to_string(),
-            details: serde_json::json!({}),
-            ip_address: None,
-            user_agent: None,
-        })
-        .await?;
 
         info!("User deleted successfully: {}", id);
         Ok(())

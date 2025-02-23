@@ -12,9 +12,18 @@ pub struct Database {
 impl Database {
     /// Creates a new database instance with the given connection string
     pub async fn new(database_url: &str) -> Result<Self> {
+        Self::with_options(database_url, 5, Duration::from_secs(3)).await
+    }
+
+    /// Creates a new database instance with custom pool options
+    pub async fn with_options(
+        database_url: &str,
+        max_connections: u32,
+        acquire_timeout: Duration,
+    ) -> Result<Self> {
         let pool = PgPoolOptions::new()
-            .max_connections(5)
-            .acquire_timeout(Duration::from_secs(3))
+            .max_connections(max_connections)
+            .acquire_timeout(acquire_timeout)
             .connect(database_url)
             .await?;
 
@@ -38,7 +47,9 @@ impl Database {
     pub fn pool(&self) -> &Pool<Postgres> {
         &self.pool
     }
-}
 
-#[cfg(test)]
-mod tests;
+    /// Runs all database migrations
+    pub async fn run_migrations(&self) -> Result<()> {
+        sqlx::migrate!().run(self.pool()).await.map_err(Into::into)
+    }
+}

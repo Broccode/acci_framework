@@ -1,0 +1,25 @@
+[package]
+name = "acci_tests"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+acci_core = { path = "../crates/core" }
+acci_auth = { path = "../crates/auth" }
+acci_api = { path = "../crates/api" }
+acci_web = { path = "../crates/web" }
+
+# Test dependencies
+tokio = { workspace = true, features = ["full"] }
+sqlx = { workspace = true }
+testcontainers = { workspace = true }
+testcontainers-modules = { workspace = true, features = ["postgres"] }
+rstest = { workspace = true }
+once_cell = { workspace = true }
+uuid = { workspace = true }
+futures = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+time = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
