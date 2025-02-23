@@ -52,7 +52,7 @@ This document provides a comprehensive overview of our testing strategy and link
 
 ### Directory Structure
 
-```
+```plaintext
 /tests
 ├── src/
 │   ├── helpers/    # Common test utilities
@@ -108,9 +108,3 @@ fake = { workspace = true }
    ```bash
    cargo llvm-cov --out Xml
    ```
-
-## Further Reading
-
-- [Test Configuration Guide](test-configuration.md)
-- [Contributing Guidelines](../CONTRIBUTING.md)
-- [Architecture Documentation](../ARCHITECTURE.md)

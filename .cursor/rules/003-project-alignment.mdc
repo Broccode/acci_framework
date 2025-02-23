@@ -1,0 +1,86 @@
+---
+description: ENFORCE project documentation alignment when EXECUTING user requests to ENSURE consistency with project goals and timeline
+globs:
+  - "*.md"
+  - "docs/**/*.md"
+  - "docs/milestones/*.md"
+tags:
+  - documentation
+  - alignment
+  - project-management
+  - quality-assurance
+priority: 1
+version: 1.0.0
+---
+
+# Project Alignment Rule
+
+## Context
+- Applies to all user requests that could affect project scope, timeline, or architecture
+- Ensures alignment with core project documentation
+- Prevents unintended deviations from project goals
+
+## Requirements
+
+### Documentation Files
+- docs/GOALS.md
+- docs/ARCHITECTURE.md
+- docs/MILESTONES.md
+- docs/TESTS.md
+- docs/DEVELOPMENT.md
+- docs/milestones/*.md
+- docs/tests/*.md
+
+### Validation Steps
+1. Review GOALS.md for project objectives alignment
+2. Check ARCHITECTURE.md for architectural compliance
+3. Verify MILESTONES.md for timeline and feature alignment
+4. Review relevant milestone documents
+
+### Actions
+1. Compare user request against documentation
+2. Identify potential conflicts or deviations
+3. Request explicit user confirmation for deviations
+4. Document all changes and approvals
+
+### Conflict Resolution
+When conflicts are detected:
+1. Specify the exact conflict
+2. Reference relevant documentation
+3. Present alignment options:
+   - Modify request to align with documentation
+   - Update documentation to reflect new requirements
+   - Proceed with explicit deviation approval
+
+## Examples
+
+<example>
+User: "Add blockchain integration"
+
+AI: "This request deviates from current project scope in GOALS.md.
+Options:
+1. Modify request to fit current scope
+2. Update project documentation to include blockchain
+3. Proceed with explicit deviation approval"
+</example>
+
+<example>
+User: "Implement multi-tenancy now"
+
+AI: "According to MILESTONES.md, multi-tenancy is scheduled for Q1 2025.
+Options:
+1. Maintain current timeline
+2. Update project timeline
+3. Proceed with early implementation"
+</example>
+
+<example type="invalid">
+User: "Add new feature"
+AI: "Proceeding with implementation" // No documentation check performed
+</example>
+
+## Validation
+- All changes must be documented
+- Deviations must be justified
+- User approvals must be recorded
+- Documentation must be updated when changed
