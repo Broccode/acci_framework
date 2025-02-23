@@ -3,7 +3,7 @@ use argon2::{
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
 };
 use thiserror::Error;
-use zxcvbn::ZxcvbnError;
+use zxcvbn;
 
 const MIN_PASSWORD_SCORE: u8 = 2;
 
@@ -13,8 +13,8 @@ pub enum PasswordError {
     HashingError(String),
     #[error("Failed to verify password: {0}")]
     VerificationError(String),
-    #[error("Password strength check failed: {0}")]
-    StrengthCheckError(#[from] ZxcvbnError),
+    #[error("Password strength check failed")]
+    StrengthCheckError,
     #[error("Password too weak (score {0} < {1})")]
     TooWeak(u8, u8),
 }
@@ -39,10 +39,11 @@ pub fn verify_password(password: &str, hash: &str) -> Result<bool, PasswordError
 }
 
 pub fn check_password_strength(password: &str, user_inputs: &[&str]) -> Result<(), PasswordError> {
-    let estimate = zxcvbn::zxcvbn(password, user_inputs)?;
+    let estimate = zxcvbn::zxcvbn(password, user_inputs);
+    let score = estimate.score() as u8;
 
-    if estimate.score() < MIN_PASSWORD_SCORE {
-        return Err(PasswordError::TooWeak(estimate.score(), MIN_PASSWORD_SCORE));
+    if score < MIN_PASSWORD_SCORE {
+        return Err(PasswordError::TooWeak(score, MIN_PASSWORD_SCORE));
     }
 
     Ok(())

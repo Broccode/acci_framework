@@ -6,30 +6,30 @@ This document is based on the arc42 template and describes the architecture of o
 
 ## 1. Introduction and Goals
 
-**Objective:**  
+**Objective:**
 Our framework aims to provide a flexible, secure, and scalable foundation for various business applications. It supports rapid development, smooth operation, and continuous expansion of software solutions.
 
-**Key Drivers:**  
+**Key Drivers:**
 
-- Flexibility and reusability  
-- Enterprise-grade security and compliance (e.g., GDPR)  
-- Scalability, high availability, and disaster recovery  
-- Seamless integration with existing systems (e.g., HR, SMTP, monitoring)  
+- Flexibility and reusability
+- Enterprise-grade security and compliance (e.g., GDPR)
+- Scalability, high availability, and disaster recovery
+- Seamless integration with existing systems (e.g., HR, SMTP, monitoring)
 - Extensibility via a modular, plugin-based architecture
 
 ---
 
 ## 2. Constraints and Requirements
 
-- **Technological Constraints:**  
+- **Technological Constraints:**
   - Adoption of modern technologies (e.g., Rust, Docker, PostgreSQL, Redis)
   - Integration with existing IT environments (APIs, SSO, SMTP, monitoring)
 
-- **Regulatory Requirements:**  
-  - Compliance with data protection regulations (GDPR)  
+- **Regulatory Requirements:**
+  - Compliance with data protection regulations (GDPR)
   - Adherence to security standards (OWASP Top 10, ISO 27001)
 
-- **Operational Requirements:**  
+- **Operational Requirements:**
   - High availability and disaster recovery strategies
   - Continuous maintenance and update processes
 

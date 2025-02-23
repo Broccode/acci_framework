@@ -34,8 +34,8 @@ regex = "1.10"
 lazy_static = "1.4"
 
 # Database
-sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "time", "json", "ipnetwork"] }
-sea-query = "0.30"
+sqlx = { workspace = true }
+sea-query = { workspace = true }
 
 # Rate Limiting
 governor = "0.6"
@@ -45,3 +45,8 @@ tokio-test = { workspace = true }
 rstest = { workspace = true }
 mockall = { workspace = true }
 testcontainers = "0.15"
+
+[build-dependencies]
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "2.0", features = ["full"] }
