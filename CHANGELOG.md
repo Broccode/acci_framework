@@ -127,6 +127,10 @@ Create a git tag for the version (e.g., v0.2.0)
   - Fixed coverage report generation with multiple output formats
   - Added separate Coveralls reporting for unit and integration tests
   - Enhanced coverage threshold checks for both test types
+- Fixed integration test execution in CI pipeline
+  - Added cargo-nextest installation step
+  - Created test-logs directory before test execution
+  - Ensured proper test output capture
 - Temporarily disabled E2E tests in CI pipeline
   - Removed E2E test execution step
   - Removed Playwright installation

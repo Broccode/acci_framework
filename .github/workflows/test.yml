@@ -201,9 +201,16 @@ jobs:
             ~/.cargo/git
             target/
 
+      - name: Install required tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq bc
+          cargo install cargo-nextest
+
       - name: Run integration tests with nextest
         id: integration_tests
         run: |
+          mkdir -p test-logs
           NEXTEST_JUNIT_REPORT=integration-output.xml \
           cargo nextest run -p acci_tests --lib --all-features \
             2>&1 | tee test-logs/integration-test-output.log
