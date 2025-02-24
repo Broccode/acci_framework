@@ -155,9 +155,13 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Changed
 
+- Updated test documentation in TESTS.md to align with Makefile targets
+  - Replaced direct cargo commands with make targets
+  - Added comprehensive test execution instructions
+  - Included database setup requirements
+  - Enhanced coverage generation documentation
+  - Added pre-commit check documentation
 - Moved integration tests from crate-specific test directories to root `/tests` directory
-- Updated test documentation and structure
-- Added new Cursor rule for test organization
 - Clarified test category separation (unit vs. integration vs. e2e)
 - Enhanced error handling in auth module
   - Replaced unsafe unwrap() calls with proper error handling

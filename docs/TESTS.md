@@ -91,20 +91,44 @@ fake = { workspace = true }
 
 ## Getting Started
 
-1. Run the complete test suite:
+1. Run the complete test suite (unit and integration tests):
 
    ```bash
-   cargo test --all-features
+   make test
    ```
 
-2. Run integration tests:
+2. Run only unit tests:
 
    ```bash
-   cargo test --test '*'
+   make test-unit
    ```
 
-3. Generate test coverage:
+3. Run only integration tests:
 
    ```bash
-   cargo llvm-cov --out Xml
+   make test-integration
    ```
+
+4. Generate test coverage report (LCOV format):
+
+   ```bash
+   make coverage
+   ```
+
+5. Generate HTML coverage report:
+
+   ```bash
+   make coverage-html
+   ```
+
+6. Before committing changes, run all checks including tests:
+
+   ```bash
+   make prepare-commit
+   ```
+
+For more available commands, run:
+
+```bash
+make help
+```
