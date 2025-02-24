@@ -122,6 +122,11 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Changed
 
+- Improved CI pipeline coverage reporting
+  - Separated unit and integration test coverage reports
+  - Fixed coverage report generation with multiple output formats
+  - Added separate Coveralls reporting for unit and integration tests
+  - Enhanced coverage threshold checks for both test types
 - Temporarily disabled E2E tests in CI pipeline
   - Removed E2E test execution step
   - Removed Playwright installation

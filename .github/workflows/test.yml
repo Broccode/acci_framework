@@ -80,26 +80,63 @@ jobs:
       - name: Generate coverage reports
         if: success()
         run: |
+          # Create output directory
           mkdir -p target/coverage-report
-          cargo llvm-cov --lib --bins --all-features --workspace \
-            --lcov --output-path target/coverage-report/lcov.info \
-            --html --output-dir target/coverage-report/html \
-            --json --output-path target/coverage-report/coverage.json \
-            --summary-only > target/coverage-report/coverage-summary.txt
+
+          # Generate LCOV report for unit tests
+          cargo llvm-cov --lib --bins --all-features --workspace --exclude acci_tests \
+            --lcov --output-path target/coverage-report/unit-lcov.info
+
+          # Generate HTML report for unit tests
+          cargo llvm-cov --lib --bins --all-features --workspace --exclude acci_tests \
+            --html --output-dir target/coverage-report/unit-html
+
+          # Generate JSON report for unit tests
+          cargo llvm-cov --lib --bins --all-features --workspace --exclude acci_tests \
+            --json --output-path target/coverage-report/unit-coverage.json
+
+          # Generate summary for unit tests
+          cargo llvm-cov --lib --bins --all-features --workspace --exclude acci_tests \
+            --summary-only > target/coverage-report/unit-coverage-summary.txt
+
+          # Generate LCOV report for integration tests
+          cargo llvm-cov -p acci_tests --lib --all-features \
+            --lcov --output-path target/coverage-report/integration-lcov.info
+
+          # Generate HTML report for integration tests
+          cargo llvm-cov -p acci_tests --lib --all-features \
+            --html --output-dir target/coverage-report/integration-html
+
+          # Generate JSON report for integration tests
+          cargo llvm-cov -p acci_tests --lib --all-features \
+            --json --output-path target/coverage-report/integration-coverage.json
+
+          # Generate summary for integration tests
+          cargo llvm-cov -p acci_tests --lib --all-features \
+            --summary-only > target/coverage-report/integration-coverage-summary.txt
 
       - name: Check coverage thresholds
         if: success()
         run: |
-          line_coverage=$(jq -r '.totals.lines.percent' target/coverage-report/coverage.json)
-          branch_coverage=$(jq -r '.totals.branches.percent' target/coverage-report/coverage.json)
+          # Check unit test coverage
+          unit_line_coverage=$(jq -r '.totals.lines.percent' target/coverage-report/unit-coverage.json)
+          unit_branch_coverage=$(jq -r '.totals.branches.percent' target/coverage-report/unit-coverage.json)
 
-          if (( $(echo "$line_coverage < $UNIT_TEST_LINE_COVERAGE" | bc -l) )); then
-            echo "::error::Line coverage ${line_coverage}% below threshold ${UNIT_TEST_LINE_COVERAGE}%"
+          if (( $(echo "$unit_line_coverage < $UNIT_TEST_LINE_COVERAGE" | bc -l) )); then
+            echo "::error::Unit test line coverage ${unit_line_coverage}% below threshold ${UNIT_TEST_LINE_COVERAGE}%"
             exit 1
           fi
 
-          if (( $(echo "$branch_coverage < $UNIT_TEST_BRANCH_COVERAGE" | bc -l) )); then
-            echo "::error::Branch coverage ${branch_coverage}% below threshold ${UNIT_TEST_BRANCH_COVERAGE}%"
+          if (( $(echo "$unit_branch_coverage < $UNIT_TEST_BRANCH_COVERAGE" | bc -l) )); then
+            echo "::error::Unit test branch coverage ${unit_branch_coverage}% below threshold ${UNIT_TEST_BRANCH_COVERAGE}%"
+            exit 1
+          fi
+
+          # Check integration test coverage
+          integration_coverage=$(jq -r '.totals.lines.percent' target/coverage-report/integration-coverage.json)
+
+          if (( $(echo "$integration_coverage < $INTEGRATION_TEST_COVERAGE" | bc -l) )); then
+            echo "::error::Integration test coverage ${integration_coverage}% below threshold ${INTEGRATION_TEST_COVERAGE}%"
             exit 1
           fi
 
@@ -110,7 +147,6 @@ jobs:
           name: test-results
           path: |
             output.xml
-            # property-test-output.xml
             test-output.log
             target/coverage-report/
 
@@ -118,7 +154,17 @@ jobs:
         if: success()
         uses: coverallsapp/github-action@v2
         with:
-          file: target/coverage-report/lcov.info
+          file: target/coverage-report/unit-lcov.info
+          parallel: true
+          flag-name: unit-tests
+
+      - name: Upload integration coverage to Coveralls
+        if: success()
+        uses: coverallsapp/github-action@v2
+        with:
+          file: target/coverage-report/integration-lcov.info
+          parallel: true
+          flag-name: integration-tests
 
   integration-tests:
     name: Integration Tests
