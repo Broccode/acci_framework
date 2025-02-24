@@ -155,6 +155,14 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Changed
 
+- Enhanced CI/CD pipeline configuration
+  - Aligned coverage thresholds with documentation
+  - Added property-based testing to CI pipeline
+  - Added performance testing with criterion and k6
+  - Enhanced security testing with cargo-fuzz
+  - Added E2E testing with Playwright
+  - Enabled automatic documentation deployment
+  - Improved test reporting and metrics
 - Enhanced test documentation based on AI review
   - Added coverage targets for different test types
   - Added detailed examples for property-based testing
