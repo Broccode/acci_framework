@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "acci_api"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "acci_auth",
  "acci_core",
@@ -29,7 +29,7 @@ dependencies = [
 
 [[package]]
 name = "acci_auth"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "acci_core",
  "anyhow",
@@ -60,7 +60,7 @@ dependencies = [
 
 [[package]]
 name = "acci_core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "anyhow",
  "dotenvy",
@@ -81,7 +81,7 @@ dependencies = [
 
 [[package]]
 name = "acci_framework"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "config 0.15.8",
  "dotenvy",
@@ -115,7 +115,7 @@ dependencies = [
 
 [[package]]
 name = "acci_web"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "acci_auth",
  "acci_core",
