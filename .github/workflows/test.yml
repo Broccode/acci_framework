@@ -58,7 +58,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y jq bc
-          cargo install cargo-llvm-cov cargo-mutants cargo-fuzz criterion-runner cargo-nextest
+          cargo install cargo-llvm-cov cargo-mutants cargo-fuzz cargo-nextest
 
       - name: Run unit tests with nextest
         id: unit_tests
