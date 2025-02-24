@@ -48,22 +48,29 @@ jobs:
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          cache-directories: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/
 
       - name: Install required tools
         run: |
           sudo apt-get update
           sudo apt-get install -y jq bc
-          cargo install cargo-llvm-cov cargo-mutants cargo-fuzz criterion-runner
+          cargo install cargo-llvm-cov cargo-mutants cargo-fuzz criterion-runner cargo-nextest
 
-      - name: Run unit tests
+      - name: Run unit tests with nextest
         id: unit_tests
         run: |
-          make test-unit 2>&1 | tee test-output.log
+          cargo nextest run --workspace --all-features --lib --bins --exclude acci_tests \
+            --junit output.xml 2>&1 | tee test-output.log
           echo "status=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Run property-based tests
         run: |
-          cargo test --workspace --all-features property_tests
+          cargo nextest run --workspace --all-features property_tests \
+            --junit property-test-output.xml
 
       - name: Run mutation tests
         run: |
@@ -94,6 +101,17 @@ jobs:
             echo "::error::Branch coverage ${branch_coverage}% below threshold ${UNIT_TEST_BRANCH_COVERAGE}%"
             exit 1
           fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            output.xml
+            property-test-output.xml
+            test-output.log
+            target/coverage-report/
 
       - name: Upload coverage to Coveralls
         if: always()
@@ -136,16 +154,33 @@ jobs:
 
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          cache-directories: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/
 
-      - name: Run integration tests
+      - name: Run integration tests with nextest
         id: integration_tests
         run: |
-          make test-integration 2>&1 | tee test-logs/integration-test-output.log
+          cargo nextest run -p acci_tests --lib --all-features \
+            --junit integration-output.xml 2>&1 | tee test-logs/integration-test-output.log
           echo "status=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
       - name: Run E2E tests
         run: |
-          cargo test --test '*' --features e2e
+          cargo nextest run --test '*' --features e2e \
+            --junit e2e-output.xml
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-results
+          path: |
+            integration-output.xml
+            e2e-output.xml
+            test-logs/
 
   performance:
     name: Performance Tests
@@ -153,13 +188,23 @@ jobs:
     needs: [unit-tests, integration-tests]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for benchmark comparison
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-directories: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/
+
       - name: Run criterion benchmarks
         run: |
-          cargo criterion --workspace
+          cargo criterion --workspace --message-format=json > benchmark-results.json
 
       - name: Run k6 load tests
         run: |
@@ -168,7 +213,15 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
           sudo apt-get update
           sudo apt-get install k6
-          k6 run tests/performance/load-test.js
+          k6 run tests/performance/load-test.js --out json=k6-results.json
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: |
+            benchmark-results.json
+            k6-results.json
 
   security:
     name: Security Tests
@@ -180,9 +233,37 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-directories: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/
+
+      - name: Install security tools
+        run: |
+          cargo install cargo-fuzz cargo-audit cargo-deny cargo-cyclonedx
+
       - name: Run security tests
         run: |
-          cargo install cargo-fuzz
+          # Run fuzzing tests
           cargo fuzz run api-fuzzer -- -max_total_time=300
-          cargo audit
-          cargo deny check advisories
+
+          # Run dependency audit
+          cargo audit --json > audit-results.json
+
+          # Run dependency policy check
+          cargo deny check --format=json > deny-results.json
+
+          # Generate SBOM
+          cargo cyclonedx --output sbom.json --format json
+
+      - name: Upload security results
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-results
+          path: |
+            audit-results.json
+            deny-results.json
+            sbom.json
