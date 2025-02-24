@@ -213,6 +213,16 @@ fake = { workspace = true }
 
 ## Getting Started
 
+### Installation
+
+First, install cargo-nextest:
+
+```bash
+cargo install cargo-nextest
+```
+
+### Running Tests
+
 1. Run the complete test suite (unit and integration tests):
 
    ```bash
@@ -231,29 +241,78 @@ fake = { workspace = true }
    make test-integration
    ```
 
-4. Generate test coverage report (LCOV format):
+4. Run E2E tests:
+
+   ```bash
+   make test-e2e
+   ```
+
+5. Generate test coverage report (LCOV format):
 
    ```bash
    make coverage
    ```
 
-5. Generate HTML coverage report:
+6. Generate HTML coverage report:
 
    ```bash
    make coverage-html
    ```
 
-6. Before committing changes, run all checks including tests:
+7. Before committing changes, run all checks including tests:
 
    ```bash
    make prepare-commit
    ```
 
-For more available commands, run:
+For a complete list of available commands, run:
 
 ```bash
 make help
 ```
+
+### Nextest Configuration
+
+The project uses cargo-nextest with custom configuration in `.config/nextest.toml`:
+
+```toml
+[profile.default]
+# Configure the default test profile for local development
+retries = 0
+test-threads = "num-cpus"
+status-level = "pass"
+final-status-level = "fail"
+failure-output = "immediate"
+success-output = "never"
+slow-timeout = { period = "60s", terminate-after = 3 }
+
+[profile.ci]
+# CI-specific configuration
+retries = 2
+test-threads = "num-cpus"
+status-level = "all"
+final-status-level = "all"
+failure-output = "immediate-final"
+success-output = "final"
+slow-timeout = { period = "60s", terminate-after = 3 }
+
+[profile.coverage]
+# Profile for running tests with coverage
+retries = 0
+test-threads = 1  # Single threaded for accurate coverage
+status-level = "all"
+final-status-level = "all"
+failure-output = "immediate"
+success-output = "never"
+```
+
+The configuration defines three profiles:
+
+- `default`: Optimized for local development with immediate failure output
+- `ci`: Configured for CI environment with retries and comprehensive output
+- `coverage`: Single-threaded execution for accurate coverage measurement
+
+For more nextest configuration options, see the [official documentation](https://nexte.st/book/configuration.html).
 
 ## Test Implementation Standards
 

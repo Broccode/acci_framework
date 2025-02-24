@@ -9,6 +9,7 @@ help:
 	@echo "  make test         - Run all tests"
 	@echo "  make test-unit    - Run unit tests only"
 	@echo "  make test-integration - Run integration tests only"
+	@echo "  make test-e2e     - Run end-to-end tests only"
 	@echo "  make sqlx-prepare - Prepare SQLx offline mode"
 	@echo "  make db-up        - Start database container"
 	@echo "  make db-down      - Stop database container"
@@ -43,20 +44,23 @@ sqlx-prepare:
 test: test-unit test-integration
 
 test-unit:
-	SQLX_OFFLINE=true cargo test --lib --bins --all-features --workspace --exclude acci_tests
+	SQLX_OFFLINE=true cargo nextest run --workspace --all-features --lib --bins --exclude acci_tests
 
 test-integration:
-	SQLX_OFFLINE=true cargo test -p acci_tests --lib --all-features
+	SQLX_OFFLINE=true cargo nextest run -p acci_tests --lib --all-features
+
+test-e2e:
+	SQLX_OFFLINE=true cargo nextest run --test '*' --features e2e
 
 clippy:
 	SQLX_OFFLINE=true cargo clippy --workspace --lib --bins --fix --allow-dirty --allow-staged --all-features --exclude acci_tests -- -D warnings
 
 coverage:
-	SQLX_OFFLINE=true cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+	SQLX_OFFLINE=true cargo llvm-cov --workspace --all-features --profile coverage nextest --lcov --output-path lcov.info
 	@echo "Coverage info written to lcov.info"
 
 coverage-html:
-	SQLX_OFFLINE=true cargo llvm-cov --all-features --workspace --html
+	SQLX_OFFLINE=true cargo llvm-cov --workspace --all-features --profile coverage nextest --html
 	@echo "HTML coverage report generated in target/llvm-cov/html/index.html"
 
 fmt:

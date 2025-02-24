@@ -1,0 +1,37 @@
+[profile.default]
+# Configure the default test profile for local development
+retries = 0
+test-threads = "num-cpus"
+status-level = "pass"
+final-status-level = "fail"
+failure-output = "immediate"
+success-output = "never"
+slow-timeout = { period = "60s", terminate-after = 3 }
+
+# Show progress bar
+progress = { terse = false }
+
+[profile.ci]
+# CI-specific configuration
+retries = 2
+test-threads = "num-cpus"
+status-level = "all"
+final-status-level = "all"
+failure-output = "immediate-final"
+success-output = "final"
+slow-timeout = { period = "60s", terminate-after = 3 }
+
+# Configure test partitioning for CI
+partition = { type = "count", count = 4 }
+
+# JUnit report configuration for CI
+junit = { path = "junit.xml" }
+
+[profile.coverage]
+# Profile for running tests with coverage
+retries = 0
+test-threads = 1  # Single threaded for accurate coverage
+status-level = "all"
+final-status-level = "all"
+failure-output = "immediate"
+success-output = "never"
