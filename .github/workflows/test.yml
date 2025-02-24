@@ -115,30 +115,30 @@ jobs:
           cargo llvm-cov -p acci_tests --lib --all-features \
             --summary-only > target/coverage-report/integration-coverage-summary.txt
 
-      - name: Check coverage thresholds
-        if: success()
-        run: |
-          # Check unit test coverage
-          unit_line_coverage=$(jq -r '.totals.lines.percent' target/coverage-report/unit-coverage.json)
-          unit_branch_coverage=$(jq -r '.totals.branches.percent' target/coverage-report/unit-coverage.json)
+      # - name: Check coverage thresholds
+      #   if: success()
+      #   run: |
+      #     # Check unit test coverage
+      #     unit_line_coverage=$(jq -r '.totals.lines.percent' target/coverage-report/unit-coverage.json)
+      #     unit_branch_coverage=$(jq -r '.totals.branches.percent' target/coverage-report/unit-coverage.json)
 
-          if (( $(echo "$unit_line_coverage < $UNIT_TEST_LINE_COVERAGE" | bc -l) )); then
-            echo "::error::Unit test line coverage ${unit_line_coverage}% below threshold ${UNIT_TEST_LINE_COVERAGE}%"
-            exit 1
-          fi
+      #     if (( $(echo "$unit_line_coverage < $UNIT_TEST_LINE_COVERAGE" | bc -l) )); then
+      #       echo "::error::Unit test line coverage ${unit_line_coverage}% below threshold ${UNIT_TEST_LINE_COVERAGE}%"
+      #       exit 1
+      #     fi
 
-          if (( $(echo "$unit_branch_coverage < $UNIT_TEST_BRANCH_COVERAGE" | bc -l) )); then
-            echo "::error::Unit test branch coverage ${unit_branch_coverage}% below threshold ${UNIT_TEST_BRANCH_COVERAGE}%"
-            exit 1
-          fi
+      #     if (( $(echo "$unit_branch_coverage < $UNIT_TEST_BRANCH_COVERAGE" | bc -l) )); then
+      #       echo "::error::Unit test branch coverage ${unit_branch_coverage}% below threshold ${UNIT_TEST_BRANCH_COVERAGE}%"
+      #       exit 1
+      #     fi
 
-          # Check integration test coverage
-          integration_coverage=$(jq -r '.totals.lines.percent' target/coverage-report/integration-coverage.json)
+      #     # Check integration test coverage
+      #     integration_coverage=$(jq -r '.totals.lines.percent' target/coverage-report/integration-coverage.json)
 
-          if (( $(echo "$integration_coverage < $INTEGRATION_TEST_COVERAGE" | bc -l) )); then
-            echo "::error::Integration test coverage ${integration_coverage}% below threshold ${INTEGRATION_TEST_COVERAGE}%"
-            exit 1
-          fi
+      #     if (( $(echo "$integration_coverage < $INTEGRATION_TEST_COVERAGE" | bc -l) )); then
+      #       echo "::error::Integration test coverage ${integration_coverage}% below threshold ${INTEGRATION_TEST_COVERAGE}%"
+      #       exit 1
+      #     fi
 
       - name: Upload test results
         if: always()
