@@ -9,10 +9,18 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   docs:
     name: Generate Documentation
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
       - uses: actions/checkout@v4
@@ -21,12 +29,25 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Generate documentation
-        run: cargo doc --no-deps --all-features
+        run: |
+          # Build rustdoc documentation
+          cargo doc --no-deps --all-features
+
+          # Create index.html
+          echo '<meta http-equiv="refresh" content="0; url=acci/index.html">' > target/doc/index.html
+
+          # Copy additional documentation
+          cp -r docs target/doc/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: target/doc
 
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./target/doc
-          force_orphan: true
+        id: deployment
+        uses: actions/deploy-pages@v4
