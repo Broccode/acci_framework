@@ -127,6 +127,12 @@ Create a git tag for the version (e.g., v0.2.0)
   - Removed Playwright installation
   - Removed E2E test artifacts from upload
   - Will be re-enabled once E2E tests are implemented
+- Temporarily disabled additional test types in CI pipeline
+  - Property-based tests disabled until test suite is complete
+  - Mutation tests disabled pending implementation
+  - Performance tests (criterion and k6) disabled until benchmarks are defined
+  - Security tests (fuzzing, audit, deny) disabled until security baseline is established
+  - All test artifacts and reports adjusted accordingly
 
 ## [0.1.1] - 2025-02-24
 
