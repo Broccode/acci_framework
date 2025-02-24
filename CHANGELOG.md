@@ -155,6 +155,20 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Changed
 
+- Enhanced test documentation based on AI review
+  - Added coverage targets for different test types
+  - Added detailed examples for property-based testing
+  - Enhanced performance testing documentation with RED metrics
+  - Added comprehensive E2E testing section with Playwright
+  - Added detailed fixture and mock best practices
+  - Added links to external tool documentation
+  - Enhanced security testing guidelines
+  - Added mutation testing workflow
+- Consolidated test documentation
+  - Merged docs/tests/TESTS.md into docs/TESTS.md
+  - Added detailed implementation examples
+  - Enhanced directory structure documentation
+  - Added critical rules and migration guide
 - Updated test documentation in TESTS.md to align with Makefile targets
   - Replaced direct cargo commands with make targets
   - Added comprehensive test execution instructions
