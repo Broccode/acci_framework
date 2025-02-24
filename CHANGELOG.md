@@ -152,6 +152,11 @@ Create a git tag for the version (e.g., v0.2.0)
     - Password hash handling verification
     - Timestamp management testing
     - User state transitions testing
+- Enhanced test infrastructure with cargo-nextest
+  - Custom test profiles for development, CI, and coverage
+  - Optimized test execution with parallel testing
+  - Slow test detection and reporting
+  - Immediate failure reporting for better developer experience
 
 ### Changed
 
@@ -167,44 +172,24 @@ Create a git tag for the version (e.g., v0.2.0)
   - Added EditorConfig and Markdown validation
   - Improved artifact management and retention
   - Added automatic CHANGELOG.md validation
-- Enhanced CI/CD pipeline configuration
-  - Aligned coverage thresholds with documentation
-  - Added property-based testing to CI pipeline
-  - Added performance testing with criterion and k6
-  - Enhanced security testing with cargo-fuzz
-  - Added E2E testing with Playwright
-  - Enabled automatic documentation deployment
-  - Improved test reporting and metrics
-- Enhanced test documentation based on AI review
-  - Added coverage targets for different test types
-  - Added detailed examples for property-based testing
-  - Enhanced performance testing documentation with RED metrics
-  - Added comprehensive E2E testing section with Playwright
-  - Added detailed fixture and mock best practices
-  - Added links to external tool documentation
-  - Enhanced security testing guidelines
-  - Added mutation testing workflow
-- Consolidated test documentation
-  - Merged docs/tests/TESTS.md into docs/TESTS.md
-  - Added detailed implementation examples
-  - Enhanced directory structure documentation
-  - Added critical rules and migration guide
-- Updated test documentation in TESTS.md to align with Makefile targets
-  - Replaced direct cargo commands with make targets
-  - Added comprehensive test execution instructions
-  - Included database setup requirements
-  - Enhanced coverage generation documentation
-  - Added pre-commit check documentation
-- Moved integration tests from crate-specific test directories to root `/tests` directory
-- Clarified test category separation (unit vs. integration vs. e2e)
-- Enhanced error handling in auth module
-  - Replaced unsafe unwrap() calls with proper error handling
-  - Added ConfigError variant to UserError enum
-  - Improved JSON handling in audit events
-  - Enhanced pattern matching in email verification
-- Activated repository test module in auth tests
-  - Integrated PostgresUserRepository tests into the test suite
-  - Enabled CRUD operation testing for user management
+- Updated test execution infrastructure
+  - Migrated from direct cargo test to cargo-nextest
+  - Added make targets for different test categories
+  - Enhanced test output configuration
+  - Improved CI test execution with retries
+- Updated test documentation
+  - Added nextest configuration documentation
+  - Updated test execution instructions
+  - Clarified test profile configurations
+  - Added make target documentation
+
+### Technical
+
+- Updated test dependencies and configuration
+  - Configured nextest profiles in `.config/nextest.toml`
+  - Removed unsupported nextest configuration options
+  - Optimized coverage profile for accurate results
+  - Enhanced CI profile with comprehensive output
 
 ### Fixed
 
@@ -217,3 +202,7 @@ Create a git tag for the version (e.g., v0.2.0)
   - Fixed redundant pattern matching in user email checks
   - Improved error handling in configuration initialization
   - Enhanced JSON serialization safety in audit events
+- CI/CD Pipeline improvements
+  - Fixed nextest JUnit report generation by using NEXTEST_JUNIT_REPORT environment variable
+  - Updated all test steps to use the correct configuration method
+  - Ensured consistent report generation across unit, property, integration and E2E tests
