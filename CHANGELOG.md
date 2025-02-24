@@ -146,6 +146,12 @@ Create a git tag for the version (e.g., v0.2.0)
   - Transaction handling tests
   - Error handling tests
   - Test fixtures and utilities
+  - Comprehensive user repository testing
+    - Full CRUD operation coverage
+    - Email uniqueness validation
+    - Password hash handling verification
+    - Timestamp management testing
+    - User state transitions testing
 
 ### Changed
 
@@ -158,6 +164,9 @@ Create a git tag for the version (e.g., v0.2.0)
   - Added ConfigError variant to UserError enum
   - Improved JSON handling in audit events
   - Enhanced pattern matching in email verification
+- Activated repository test module in auth tests
+  - Integrated PostgresUserRepository tests into the test suite
+  - Enabled CRUD operation testing for user management
 
 ### Fixed
 

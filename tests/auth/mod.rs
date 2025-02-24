@@ -5,3 +5,5 @@
 // Example:
 // pub mod login_tests;
 // pub mod registration_tests;
+
+pub mod repository_test;
