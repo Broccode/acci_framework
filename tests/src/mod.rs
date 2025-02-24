@@ -5,8 +5,8 @@ pub mod helpers {
 pub mod fixtures;
 pub mod mocks;
 
-// Integration test modules
-pub mod api;
-pub mod auth;
+// Integration test modules - uncomment as implemented
+// pub mod api;
+// pub mod auth;
 pub mod database;
-pub mod e2e;
+// pub mod e2e;

@@ -30,15 +30,15 @@ anyhow = { workspace = true }
 tracing = { workspace = true }
 
 # Validation
-regex = "1.10"
-lazy_static = "1.4"
+regex = { workspace = true }
+lazy_static = { workspace = true }
 
 # Database
-sqlx = { workspace = true, features = ["runtime-tokio-rustls", "postgres", "sqlite", "uuid", "time", "json", "offline"] }
+sqlx = { workspace = true }
 sea-query = { workspace = true }
 
 # Rate Limiting
-governor = "0.6.3"
+governor = { workspace = true }
 
 # Local Dependencies
 acci_core = { path = "../core" }
@@ -49,6 +49,6 @@ rstest = { workspace = true }
 mockall = { workspace = true }
 
 [build-dependencies]
-proc-macro2 = "1.0"
-quote = "1.0"
-syn = { version = "2.0", features = ["full"] }
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }

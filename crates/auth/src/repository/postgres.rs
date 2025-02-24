@@ -59,9 +59,11 @@ impl PostgresUserRepository {
             .map_err(|e| UserError::DatabaseError(e.to_string()))?;
 
         // Initialize rate limiter
+        let burst = NonZeroU32::new(config.rate_limit_burst)
+            .ok_or_else(|| UserError::ConfigError("Invalid rate limit burst value".into()))?;
         let quota = Quota::with_period(Duration::from_millis(config.rate_limit_replenish_ms))
-            .map(|period| period.allow_burst(NonZeroU32::new(config.rate_limit_burst).unwrap()))
-            .unwrap();
+            .ok_or_else(|| UserError::ConfigError("Invalid rate limit period".into()))?
+            .allow_burst(burst);
 
         let rate_limiter = Arc::new(RateLimiter::direct(quota));
 
@@ -110,7 +112,7 @@ impl UserRepository for PostgresUserRepository {
         self.check_rate_limit().await?;
 
         // Check if email already exists
-        if let Some(_) = self.find_by_email(&user.email).await? {
+        if (self.find_by_email(&user.email).await?).is_some() {
             return Err(UserError::AlreadyExists);
         }
 
@@ -140,10 +142,18 @@ impl UserRepository for PostgresUserRepository {
         self.log_audit(AuditEvent {
             user_id: user.id,
             action: "REGISTRATION".to_string(),
-            details: serde_json::json!({
-                "email": user.email,
-                "is_verified": user.is_verified,
-            }),
+            details: {
+                let mut map = serde_json::Map::new();
+                map.insert(
+                    "email".to_string(),
+                    serde_json::Value::String(user.email.clone()),
+                );
+                map.insert(
+                    "is_verified".to_string(),
+                    serde_json::Value::Bool(user.is_verified),
+                );
+                serde_json::Value::Object(map)
+            },
             ip_address: None,
             user_agent: None,
         })
@@ -289,9 +299,14 @@ impl UserRepository for PostgresUserRepository {
         self.log_audit(AuditEvent {
             user_id: id,
             action: "EMAIL_VERIFICATION_SUCCESS".to_string(),
-            details: serde_json::json!({
-                "verified_at": now,
-            }),
+            details: {
+                let mut map = serde_json::Map::new();
+                map.insert(
+                    "verified_at".to_string(),
+                    serde_json::Value::String(now.to_string()),
+                );
+                serde_json::Value::Object(map)
+            },
             ip_address: None,
             user_agent: None,
         })
@@ -328,10 +343,15 @@ impl UserRepository for PostgresUserRepository {
         // Log audit event
         self.log_audit(AuditEvent {
             user_id: id,
-            action: "ACCOUNT_DEACTIVATED".to_string(),
-            details: serde_json::json!({
-                "deactivated_at": now,
-            }),
+            action: "USER_DEACTIVATED".to_string(),
+            details: {
+                let mut map = serde_json::Map::new();
+                map.insert(
+                    "deactivated_at".to_string(),
+                    serde_json::Value::String(now.to_string()),
+                );
+                serde_json::Value::Object(map)
+            },
             ip_address: None,
             user_agent: None,
         })
@@ -368,10 +388,15 @@ impl UserRepository for PostgresUserRepository {
         // Log audit event
         self.log_audit(AuditEvent {
             user_id: id,
-            action: "ACCOUNT_ACTIVATED".to_string(),
-            details: serde_json::json!({
-                "activated_at": now,
-            }),
+            action: "USER_ACTIVATED".to_string(),
+            details: {
+                let mut map = serde_json::Map::new();
+                map.insert(
+                    "activated_at".to_string(),
+                    serde_json::Value::String(now.to_string()),
+                );
+                serde_json::Value::Object(map)
+            },
             ip_address: None,
             user_agent: None,
         })

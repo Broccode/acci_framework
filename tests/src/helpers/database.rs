@@ -2,7 +2,7 @@ use anyhow::Result;
 use sqlx::PgPool;
 use testcontainers_modules::{
     postgres,
-    testcontainers::{runners::AsyncRunner, ImageExt},
+    testcontainers::{ImageExt, runners::AsyncRunner},
 };
 
 pub async fn setup_test_db() -> Result<(Box<dyn std::any::Any>, PgPool)> {

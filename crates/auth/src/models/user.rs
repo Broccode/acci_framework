@@ -47,6 +47,8 @@ pub enum UserError {
     DatabaseError(String),
     #[error("Rate limit exceeded")]
     RateLimitExceeded,
+    #[error("Configuration error: {0}")]
+    ConfigError(String),
 }
 
 impl User {

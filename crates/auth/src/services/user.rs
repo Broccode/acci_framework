@@ -12,7 +12,7 @@ use uuid::Uuid;
 lazy_static::lazy_static! {
     static ref EMAIL_REGEX: Regex = Regex::new(
         r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
-    ).unwrap();
+    ).expect("Failed to compile email regex pattern - this is a bug");
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -45,7 +45,7 @@ impl UserService {
         }
 
         // Check if user already exists
-        if let Some(_) = self.repository.find_by_email(&create_user.email).await? {
+        if (self.repository.find_by_email(&create_user.email).await?).is_some() {
             return Err(UserError::AlreadyExists.into());
         }
 
