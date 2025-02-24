@@ -120,6 +120,14 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ## [Unreleased]
 
+### Changed
+
+- Temporarily disabled E2E tests in CI pipeline
+  - Removed E2E test execution step
+  - Removed Playwright installation
+  - Removed E2E test artifacts from upload
+  - Will be re-enabled once E2E tests are implemented
+
 ## [0.1.1] - 2025-02-24
 
 ### Fixed

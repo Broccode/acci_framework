@@ -147,12 +147,6 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
-      - name: Install Playwright
-        run: |
-          npm init -y
-          npm install playwright
-          npx playwright install chromium
-
       - name: Cache dependencies
         uses: Swatinem/rust-cache@v2
         with:
@@ -169,11 +163,6 @@ jobs:
             2>&1 | tee test-logs/integration-test-output.log
           echo "status=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
 
-      - name: Run E2E tests
-        run: |
-          NEXTEST_JUNIT_REPORT=e2e-output.xml \
-          cargo nextest run --test '*' --features e2e
-
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -181,7 +170,6 @@ jobs:
           name: integration-test-results
           path: |
             integration-output.xml
-            e2e-output.xml
             test-logs/
 
   performance:
