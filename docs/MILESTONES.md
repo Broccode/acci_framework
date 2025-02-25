@@ -47,6 +47,10 @@ Establish the core framework foundation and implement basic authentication.
 
 7 weeks (as outlined in MVP_FirstSteps.md)
 
+### Progress (25.02.2025)
+
+- Fixed email validation regex to properly require a domain with a TLD, preventing invalid email formats
+
 ### Testing Focus
 
 - Authentication flow

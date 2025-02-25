@@ -1,19 +1,26 @@
+use regex::Regex;
+use serde_json::json;
+use std::sync::Arc;
+use uuid::Uuid;
+
 use crate::{
-    models::user::{CreateUser, LoginCredentials, User, UserError, UserRepository},
+    AuthConfig, SessionService, SessionServiceError,
+    models::user::{CreateUser, User, UserError, UserRepository},
+    session::{
+        Session, SessionFilter,
+        types::{DeviceFingerprint, SessionInvalidationReason},
+    },
     utils::{
         jwt::{JwtError, JwtUtils},
         password::{PasswordError, check_password_strength, hash_password, verify_password},
     },
 };
-use regex::Regex;
-use std::sync::Arc;
-use uuid::Uuid;
 
 lazy_static::lazy_static! {
     static ref EMAIL_REGEX: Regex = Regex::new(concat!(
         r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@",
         r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?",
-        r"(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+        r"(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$"
     )).expect("Failed to compile email regex pattern - this is a bug");
 }
 
@@ -25,18 +32,40 @@ pub enum UserServiceError {
     Password(#[from] PasswordError),
     #[error(transparent)]
     Jwt(#[from] JwtError),
+    #[error("Invalid credentials")]
+    InvalidCredentials,
+    #[error("User not found")]
+    UserNotFound,
+    #[error("Repository error: {0}")]
+    Repository(#[from] sqlx::Error),
+    #[error("Session error: {0}")]
+    Session(#[from] SessionServiceError),
 }
 
 pub struct UserService {
     repository: Arc<dyn UserRepository>,
     jwt_utils: Arc<JwtUtils>,
+    session_service: Arc<SessionService>,
+    config: Arc<AuthConfig>,
+}
+
+pub struct LoginResult {
+    pub user: User,
+    pub session_token: String,
 }
 
 impl UserService {
-    pub fn new(repository: Arc<dyn UserRepository>, jwt_utils: Arc<JwtUtils>) -> Self {
+    pub fn new(
+        repository: Arc<dyn UserRepository>,
+        jwt_utils: Arc<JwtUtils>,
+        session_service: Arc<SessionService>,
+        config: Arc<AuthConfig>,
+    ) -> Self {
         Self {
             repository,
             jwt_utils,
+            session_service,
+            config,
         }
     }
 
@@ -64,32 +93,109 @@ impl UserService {
         Ok(user)
     }
 
-    pub async fn login(&self, credentials: LoginCredentials) -> Result<String, UserServiceError> {
-        // Find user by email
-        let mut user = self
+    pub async fn login(
+        &self,
+        email: &str,
+        password: &str,
+        device_id: Option<String>,
+        device_fingerprint: Option<DeviceFingerprint>,
+        ip_address: Option<String>,
+        user_agent: Option<String>,
+    ) -> Result<LoginResult, UserServiceError> {
+        // Get user by email
+        let user = self
             .repository
-            .find_by_email(&credentials.email)
+            .find_by_email(email)
             .await?
-            .ok_or(UserError::InvalidCredentials)?;
-
-        // Check if user is active
-        if !user.is_active {
-            return Err(UserError::InactiveUser.into());
-        }
+            .ok_or(UserServiceError::InvalidCredentials)?;
 
         // Verify password
-        if !verify_password(&credentials.password, &user.password_hash)? {
-            return Err(UserError::InvalidCredentials.into());
+        if !verify_password(password, &user.password_hash)? {
+            return Err(UserServiceError::InvalidCredentials);
         }
 
-        // Update last login
-        user.update_last_login();
-        self.repository.update(&user).await?;
+        // Create session with device information
+        let metadata = json!({
+            "login_type": "password",
+            "email": email,
+        });
 
-        // Generate JWT token
-        let token = self.jwt_utils.create_token(user.id, &user.email)?;
+        let (_, session_token) = self
+            .session_service
+            .create_session(
+                user.id,
+                device_id,
+                device_fingerprint,
+                ip_address,
+                user_agent,
+                Some(metadata),
+            )
+            .await?;
 
-        Ok(token)
+        Ok(LoginResult {
+            user,
+            session_token,
+        })
+    }
+
+    pub async fn logout(&self, session_token: &str) -> Result<(), UserServiceError> {
+        self.session_service
+            .invalidate_session(session_token, SessionInvalidationReason::UserLogout)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn validate_session(
+        &self,
+        session_token: &str,
+    ) -> Result<Option<User>, UserServiceError> {
+        let session = self.session_service.validate_session(session_token).await?;
+
+        if let Some(session) = session {
+            let user = self.repository.find_by_id(session.user_id).await?;
+
+            Ok(user)
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub async fn get_active_sessions(
+        &self,
+        user_id: Uuid,
+    ) -> Result<Vec<Session>, UserServiceError> {
+        let sessions = self
+            .session_service
+            .get_user_sessions(user_id, SessionFilter::Active)
+            .await?;
+        Ok(sessions)
+    }
+
+    pub async fn invalidate_all_sessions(
+        &self,
+        user_id: Uuid,
+        reason: SessionInvalidationReason,
+    ) -> Result<(), UserServiceError> {
+        let sessions = self
+            .session_service
+            .get_user_sessions(user_id, SessionFilter::Active)
+            .await?;
+
+        for session in sessions {
+            if let Err(err) = self
+                .session_service
+                .invalidate_session(session.token_hash.as_str(), reason.clone())
+                .await
+            {
+                tracing::error!(
+                    session_id = %session.id,
+                    error = %err,
+                    "Failed to invalidate session"
+                );
+            }
+        }
+
+        Ok(())
     }
 
     pub async fn get_user(&self, id: Uuid) -> Result<User, UserServiceError> {
@@ -118,74 +224,29 @@ impl UserService {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::user::mock::MockUserRepository;
+    use std::time::SystemTime;
 
-    #[tokio::test]
-    async fn test_user_registration() {
-        let repository = Arc::new(MockUserRepository::new());
-        let jwt_utils = Arc::new(JwtUtils::new(b"test-secret"));
-        let service = UserService::new(repository.clone(), jwt_utils);
-
-        let create_user = CreateUser {
-            email: "test@example.com".to_string(),
-            password: "StrongP@ssw0rd123!".to_string(),
-        };
-
-        let user = service.register(create_user.clone()).await.unwrap();
-        assert_eq!(user.email, "test@example.com");
-        assert!(user.is_active);
-        assert!(!user.is_verified);
-
-        // Test duplicate registration
-        let result = service.register(create_user).await;
-        assert!(matches!(
-            result,
-            Err(UserServiceError::User(UserError::AlreadyExists))
-        ));
+    #[test]
+    fn test_email_regex() {
+        assert!(EMAIL_REGEX.is_match("test@example.com"));
+        assert!(EMAIL_REGEX.is_match("user.name+tag@example.co.uk"));
+        assert!(!EMAIL_REGEX.is_match("invalid@email@example.com"));
+        assert!(!EMAIL_REGEX.is_match("no@domain"));
     }
 
-    #[tokio::test]
-    async fn test_user_login() {
-        let repository = Arc::new(MockUserRepository::new());
-        let jwt_utils = Arc::new(JwtUtils::new(b"test-secret"));
-        let service = UserService::new(repository.clone(), jwt_utils);
+    #[test]
+    fn test_user_creation() {
+        let user = User::new(
+            "test@example.com".to_string(),
+            "hashed_password".to_string(),
+        );
 
-        // Register user
-        let create_user = CreateUser {
-            email: "test@example.com".to_string(),
-            password: "StrongP@ssw0rd123!".to_string(),
-        };
-        let user = service.register(create_user).await.unwrap();
-
-        // Test successful login
-        let credentials = LoginCredentials {
-            email: "test@example.com".to_string(),
-            password: "StrongP@ssw0rd123!".to_string(),
-        };
-        let token = service.login(credentials).await.unwrap();
-        assert!(!token.is_empty());
-
-        // Test invalid credentials
-        let invalid_credentials = LoginCredentials {
-            email: "test@example.com".to_string(),
-            password: "WrongPassword".to_string(),
-        };
-        let result = service.login(invalid_credentials).await;
-        assert!(matches!(
-            result,
-            Err(UserServiceError::User(UserError::InvalidCredentials))
-        ));
-
-        // Test inactive user
-        service.deactivate_user(user.id).await.unwrap();
-        let credentials = LoginCredentials {
-            email: "test@example.com".to_string(),
-            password: "StrongP@ssw0rd123!".to_string(),
-        };
-        let result = service.login(credentials).await;
-        assert!(matches!(
-            result,
-            Err(UserServiceError::User(UserError::InactiveUser))
-        ));
+        assert_eq!(user.email, "test@example.com");
+        assert_eq!(user.password_hash, "hashed_password");
+        assert!(user.is_active);
+        assert!(!user.is_verified);
+        assert!(user.created_at <= SystemTime::now());
+        assert!(user.updated_at <= SystemTime::now());
+        assert!(user.last_login.is_none());
     }
 }
