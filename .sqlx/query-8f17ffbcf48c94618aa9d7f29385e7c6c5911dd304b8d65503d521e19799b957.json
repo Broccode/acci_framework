@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE sessions\n                SET last_activity_at = CURRENT_TIMESTAMP\n                WHERE id = $1 AND is_valid = true\n                RETURNING id\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "8f17ffbcf48c94618aa9d7f29385e7c6c5911dd304b8d65503d521e19799b957"
+}

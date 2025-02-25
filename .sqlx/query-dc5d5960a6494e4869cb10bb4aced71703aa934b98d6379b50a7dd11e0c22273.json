@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                DELETE FROM session_audit_log\n                WHERE created_at < CURRENT_TIMESTAMP - make_interval(secs => $1)\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Float8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "dc5d5960a6494e4869cb10bb4aced71703aa934b98d6379b50a7dd11e0c22273"
+}

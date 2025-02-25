@@ -32,7 +32,7 @@ rand = "0.9.0"
 zxcvbn = "3.1.0"
 
 # Database & Storage
-sqlx = { version = "0.8.3", features = ["runtime-tokio-rustls", "postgres", "sqlite", "uuid", "time", "json"] }
+sqlx = { version = "0.8.3", features = ["runtime-tokio-rustls", "postgres", "sqlite", "uuid", "time", "json", "ipnetwork"] }
 sea-query = "0.32.2"
 uuid = { version = "1.14.0", features = ["v4", "serde"] }
 

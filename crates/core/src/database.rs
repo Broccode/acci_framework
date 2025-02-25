@@ -1,4 +1,5 @@
 use sqlx::{Pool, Postgres, postgres::PgPoolOptions};
+use std::path::Path;
 use std::time::Duration;
 
 use crate::error::Result;
@@ -50,6 +51,17 @@ impl Database {
 
     /// Runs all database migrations
     pub async fn run_migrations(&self) -> Result<()> {
-        sqlx::migrate!().run(self.pool()).await.map_err(Into::into)
+        let migrations_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("migrations");
+
+        sqlx::migrate::Migrator::new(migrations_path)
+            .await?
+            .run(self.pool())
+            .await
+            .map_err(Into::into)
     }
 }

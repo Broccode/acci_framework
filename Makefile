@@ -2,6 +2,7 @@
 
 # Development Environment Variables
 export DATABASE_URL=postgres://acci:acci@localhost:15432/acci_test
+export SQLX_OFFLINE=true
 
 help:
 	@echo "Available commands:"
@@ -26,7 +27,7 @@ dev: db-up sqlx-prepare
 db-up:
 	docker run --name acci-test-db -e POSTGRES_USER=acci -e POSTGRES_PASSWORD=acci -e POSTGRES_DB=acci_test -p 15432:5432 -d postgres:16-alpine
 	sleep 3
-	cd crates/core && sqlx migrate run --database-url ${DATABASE_URL}
+	sqlx migrate run --source migrations --database-url ${DATABASE_URL}
 
 db-down:
 	docker stop acci-test-db || true
@@ -34,7 +35,7 @@ db-down:
 
 db-reset: db-down db-up
 
-sqlx-prepare:
+sqlx-prepare: db-reset
 	@for pkg in auth; do \
 		echo "Preparing SQLx queries for package $$pkg"; \
 		SQLX_OFFLINE=false cargo sqlx prepare --workspace --database-url ${DATABASE_URL} -- --manifest-path crates/$$pkg/Cargo.toml --all-targets --tests || exit $$?; \

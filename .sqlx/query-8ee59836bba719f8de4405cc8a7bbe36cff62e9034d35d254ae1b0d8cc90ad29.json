@@ -1,0 +1,112 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                SELECT\n                    id, user_id, token_hash, previous_token_hash, token_rotation_at,\n                    expires_at, created_at, last_activity_at, last_activity_update_at,\n                    ip_address, user_agent, device_id, device_fingerprint,\n                    is_valid, invalidated_reason::text as \"invalidated_reason?\", metadata\n                FROM sessions\n                WHERE id = $1\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "token_hash",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "previous_token_hash",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "token_rotation_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "expires_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "last_activity_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "last_activity_update_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "ip_address",
+        "type_info": "Inet"
+      },
+      {
+        "ordinal": 10,
+        "name": "user_agent",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "device_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 12,
+        "name": "device_fingerprint",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 13,
+        "name": "is_valid",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 14,
+        "name": "invalidated_reason?",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 15,
+        "name": "metadata",
+        "type_info": "Jsonb"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      null,
+      true
+    ]
+  },
+  "hash": "8ee59836bba719f8de4405cc8a7bbe36cff62e9034d35d254ae1b0d8cc90ad29"
+}

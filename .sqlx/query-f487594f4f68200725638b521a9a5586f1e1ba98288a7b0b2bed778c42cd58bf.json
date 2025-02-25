@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE sessions\n                SET\n                    token_hash = $2,\n                    previous_token_hash = token_hash,\n                    token_rotation_at = CURRENT_TIMESTAMP\n                WHERE id = $1 AND is_valid = true\n                RETURNING id\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "f487594f4f68200725638b521a9a5586f1e1ba98288a7b0b2bed778c42cd58bf"
+}

@@ -120,6 +120,18 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ## [Unreleased]
 
+### Added
+
+- Session Management Infrastructure
+  - Added comprehensive session management tables
+  - Implemented secure token handling with rotation support
+  - Added device fingerprinting capabilities
+  - Created session audit logging with retention policies
+  - Implemented automated session cleanup
+  - Added optimized activity tracking
+  - Enhanced security with typed session invalidation reasons
+  - Added support for multiple device management
+
 ### Changed
 
 - Improved CI pipeline coverage reporting
@@ -142,6 +154,19 @@ Create a git tag for the version (e.g., v0.2.0)
   - Performance tests (criterion and k6) disabled until benchmarks are defined
   - Security tests (fuzzing, audit, deny) disabled until security baseline is established
   - All test artifacts and reports adjusted accordingly
+
+### Technical
+
+- Restructured database migrations
+  - Consolidated module-specific migrations into central `/migrations` directory
+  - Implemented standardized migration structure
+  - Updated database.rs to load migrations from central location
+  - Modified test helpers to use new migration path
+- Added new dependencies
+  - Added `hex` for secure token handling
+  - Added `ipnetwork` feature to sqlx for IP address management
+  - Implemented conditional metrics support with feature flags
+  - Added mock metrics implementations when feature is disabled
 
 ## [0.1.1] - 2025-02-24
 

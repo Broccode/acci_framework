@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE sessions\n                SET\n                    is_valid = false,\n                    invalidated_reason = 'TOKEN_EXPIRED'::session_invalidation_reason\n                WHERE\n                    is_valid = true\n                    AND expires_at < CURRENT_TIMESTAMP\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "147d8cc73c61802f4236de964491920b07f15b8ad6be64727a07cc0ac2e391e0"
+}

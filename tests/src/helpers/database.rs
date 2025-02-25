@@ -1,5 +1,6 @@
 use anyhow::Result;
 use sqlx::PgPool;
+use std::path::Path;
 use testcontainers_modules::{
     postgres,
     testcontainers::{ImageExt, runners::AsyncRunner},
@@ -22,7 +23,13 @@ pub async fn setup_test_db() -> Result<(Box<dyn std::any::Any>, PgPool)> {
     let pool = PgPool::connect(&connection_string).await?;
 
     // Run migrations
-    sqlx::migrate!("../crates/core/migrations")
+    let migrations_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("migrations");
+
+    sqlx::migrate::Migrator::new(migrations_path)
+        .await?
         .run(&pool)
         .await?;
 

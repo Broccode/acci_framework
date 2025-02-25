@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                WITH deleted_sessions AS (\n                    DELETE FROM sessions\n                    WHERE\n                        is_valid = false\n                        AND last_activity_at < CURRENT_TIMESTAMP - make_interval(secs => $1)\n                    RETURNING id\n                )\n                SELECT COUNT(*) as \"count!\"\n                FROM deleted_sessions\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Float8"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "900ae4807f15f4b184d560755e6748d8697e9092ea99f19cc787b22102b11474"
+}

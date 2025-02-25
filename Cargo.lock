@@ -12,7 +12,7 @@ dependencies = [
  "async-trait",
  "axum",
  "futures",
- "metrics",
+ "metrics 0.24.1",
  "metrics-exporter-prometheus",
  "mockall",
  "rstest",
@@ -36,8 +36,10 @@ dependencies = [
  "argon2",
  "async-trait",
  "governor",
+ "hex",
  "jsonwebtoken",
  "lazy_static",
+ "metrics 0.21.1",
  "mockall",
  "proc-macro2",
  "quote",
@@ -65,7 +67,7 @@ dependencies = [
  "anyhow",
  "dotenvy",
  "futures",
- "metrics",
+ "metrics 0.24.1",
  "metrics-exporter-prometheus",
  "once_cell",
  "rstest",
@@ -1914,6 +1916,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "469fb0b9cefa57e3ef31275ee7cacb78f2fdca44e4765491884a2b119d4eb130"
 
 [[package]]
+name = "ipnetwork"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bf466541e9d546596ee94f9f69590f89473455f88372423e0008fc1a7daf100e"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "itertools"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2307,6 +2318,17 @@ checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 
 [[package]]
 name = "metrics"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fde3af1a009ed76a778cb84fdef9e7dbbdf5775ae3e4cc1f434a6a307f6f76c5"
+dependencies = [
+ "ahash",
+ "metrics-macros",
+ "portable-atomic",
+]
+
+[[package]]
+name = "metrics"
 version = "0.24.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7a7deb012b3b2767169ff203fadb4c6b0b82b947512e5eb9e0b78c2e186ad9e3"
@@ -2328,12 +2350,23 @@ dependencies = [
  "hyper-util",
  "indexmap 2.7.1",
  "ipnet",
- "metrics",
+ "metrics 0.24.1",
  "metrics-util",
  "quanta",
  "thiserror 1.0.69",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "metrics-macros"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38b4faf00617defe497754acde3024865bc143d44a86799b24e191ecff91354f"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -2345,7 +2378,7 @@ dependencies = [
  "crossbeam-epoch",
  "crossbeam-utils",
  "hashbrown 0.15.2",
- "metrics",
+ "metrics 0.24.1",
  "quanta",
  "rand 0.8.5",
  "rand_xoshiro",
@@ -3787,6 +3820,7 @@ dependencies = [
  "hashbrown 0.15.2",
  "hashlink 0.10.0",
  "indexmap 2.7.1",
+ "ipnetwork",
  "log",
  "memchr",
  "once_cell",
@@ -3910,6 +3944,7 @@ dependencies = [
  "hkdf",
  "hmac",
  "home",
+ "ipnetwork",
  "itoa",
  "log",
  "md-5",

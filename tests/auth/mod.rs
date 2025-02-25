@@ -7,3 +7,7 @@
 // pub mod registration_tests;
 
 pub mod repository_test;
+mod session_test;
+
+pub use repository_test::*;
+pub use session_test::*;
