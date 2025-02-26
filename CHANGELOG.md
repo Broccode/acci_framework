@@ -140,6 +140,13 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Changed
 
+- Implemented multilingual README.md with three languages
+  - Added English version as primary language
+  - Included German (Deutsch) version for local team members
+  - Added Albanian (Shqip) version for international collaboration
+  - Created language selection navigation at the top of the document
+  - Added country flag emoji identifiers for each language section
+  - Ensured consistent formatting and structure across all translations
 - Enhanced README.md with improved readability and visual elements
   - Added emoji icons for all sections and components
   - Restructured content with clear section separators
