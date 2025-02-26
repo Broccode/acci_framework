@@ -140,6 +140,14 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Changed
 
+- Enhanced README.md with improved readability and visual elements
+  - Added emoji icons for all sections and components
+  - Restructured content with clear section separators
+  - Implemented collapsible installation instructions
+  - Added badges for Rust, license, and version information  
+  - Converted lists to tables for better information organization
+  - Improved typographic hierarchy and visual structure
+  - Added table of contents with anchor links
 - Improved CI pipeline coverage reporting
   - Separated unit and integration test coverage reports
   - Fixed coverage report generation with multiple output formats
