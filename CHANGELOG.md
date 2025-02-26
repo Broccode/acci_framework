@@ -122,6 +122,12 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Added
 
+- Added comprehensive README.md in root directory
+  - Documented project goals and core objectives
+  - Listed complete technical stack with Rust, Axum, Leptos, and WebAssembly
+  - Detailed architecture patterns including Multi-Tenancy and DDD
+  - Included development setup instructions and required tools
+  - Added documentation references and project timeline
 - Session Management Infrastructure
   - Added comprehensive session management tables
   - Implemented secure token handling with rotation support
