@@ -5,15 +5,15 @@
 pub mod services;
 
 pub mod components;
-pub mod pages;
 pub mod handlers;
+pub mod pages;
+pub mod prelude;
 pub mod routes;
 pub mod utils;
-pub mod prelude;
 
 // Re-exports für häufig verwendete Typen und Funktionen
 pub use components::*;
 pub use pages::*;
+pub use prelude::*;
 pub use routes::*;
 pub use services::*;
-pub use prelude::*;

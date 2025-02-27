@@ -6,14 +6,7 @@ pub use leptos::html::ElementChild;
 
 // Importiere unsere eigenen Leptos-Implementierungen
 pub use crate::services::leptos::{
-    Scope,
-    LeptosOptions,
-    ssr,
-    HtmlElement,
-    TextNode,
-    Node,
-    IntoView,
-    Fragment,
+    Fragment, HtmlElement, IntoView, LeptosOptions, Node, Scope, TextNode, ssr,
 };
 
 // Für die Verwendung in Komponenten, müssen die Makros direkt importiert werden:

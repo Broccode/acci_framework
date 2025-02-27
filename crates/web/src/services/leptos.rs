@@ -11,6 +11,12 @@ pub struct LeptosOptions {
     pub ssr_enabled: bool,
 }
 
+impl Default for LeptosOptions {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl LeptosOptions {
     /// Erstellt eine neue Standard-Instanz der LeptosOptions
     pub fn new() -> Self {
@@ -32,7 +38,7 @@ impl Scope {
     pub fn create_node(&self, _tag: &str) -> HtmlElement {
         HtmlElement {}
     }
-    
+
     pub fn create_text_node(&self, _text: &str) -> TextNode {
         TextNode {}
     }
@@ -46,11 +52,11 @@ impl HtmlElement {
     pub fn attr(&self, _name: &str, _value: impl AsRef<str>) -> &Self {
         self
     }
-    
+
     pub fn child(&self, _node: impl Into<Node>) -> &Self {
         self
     }
-    
+
     pub fn into_view(self) -> Node {
         Node::Element(self)
     }
@@ -84,7 +90,7 @@ impl IntoView for String {
     fn into_view(self) -> Node {
         Node::Text(TextNode {})
     }
-    
+
     fn to_string(&self) -> String {
         self.clone()
     }
@@ -94,7 +100,7 @@ impl IntoView for &'static str {
     fn into_view(self) -> Node {
         Node::Text(TextNode {})
     }
-    
+
     fn to_string(&self) -> String {
         (*self).to_string()
     }
@@ -104,7 +110,7 @@ impl IntoView for Node {
     fn into_view(self) -> Node {
         self
     }
-    
+
     fn to_string(&self) -> String {
         match self {
             Node::Element(_) => "<element>...</element>".to_string(),
@@ -117,16 +123,22 @@ impl IntoView for Node {
 /// Fragment-Typ für unsere einfache Leptos-Implementierung
 pub struct Fragment(Vec<Node>);
 
+impl Default for Fragment {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Fragment {
     pub fn new() -> Self {
         Self(Vec::new())
     }
-    
+
     pub fn child(mut self, node: impl IntoView) -> Self {
         self.0.push(node.into_view());
         self
     }
-    
+
     pub fn into_view(self) -> Node {
         Node::Fragment(self.0)
     }
@@ -135,12 +147,9 @@ impl Fragment {
 /// Diese Module implementieren die Funktionen für das serverseitige Rendering (SSR)
 pub mod ssr {
     use super::*;
-    
+
     /// Rendert eine View-Funktion zu einem HTML-String mit dem gegebenen Kontext
-    pub fn render_to_string_with_context<F, V>(
-        _options: &LeptosOptions,
-        view_fn: F,
-    ) -> String
+    pub fn render_to_string_with_context<F, V>(_options: &LeptosOptions, view_fn: F) -> String
     where
         F: FnOnce(Scope) -> V,
         V: IntoView,
@@ -149,7 +158,7 @@ pub mod ssr {
         // Für unsere Demonstrationszwecke geben wir einfach den String zurück
         let scope = Scope;
         let view = view_fn(scope);
-        
+
         // In einer realen Implementierung würden hier noch zusätzliche Header und Metadaten hinzugefügt werden
         view.to_string()
     }
@@ -161,11 +170,11 @@ pub mod ssr {
 macro_rules! view {
     ($cx:expr, $($rest:tt)*) => {{
         let scope: $crate::services::leptos::Scope = $cx;
-        
+
         // Dies ist nur eine vereinfachte Implementierung
         // In einer realen Implementierung würde hier DOM-Elemente erzeugt werden
         let fragment = $crate::services::leptos::Fragment::new();
-        
+
         // Dummy-Implementierung, die nur einen String zurückgibt
         fragment.into_view()
     }};
@@ -179,4 +188,4 @@ macro_rules! component {
         $(#[$attr])*
         $vis fn $name($($args)*) -> impl $crate::services::leptos::IntoView $body
     };
-} 
+}

@@ -1,13 +1,13 @@
-use axum::{
-    extract::{State, Query, Form},
-    response::{IntoResponse, Redirect},
-    http::{StatusCode, header},
-};
-use crate::services::auth::{AuthService, LoginCredentials, CreateUser, AuthError};
-use crate::services::leptos::LeptosOptions;
+use crate::components::auth::{LoginForm, RegistrationForm};
 use crate::pages::login::LoginQuery;
 use crate::pages::login::render_login_page;
-use crate::components::auth::{LoginForm, RegistrationForm};
+use crate::services::auth::{AuthError, AuthService, CreateUser, LoginCredentials};
+use crate::services::leptos::LeptosOptions;
+use axum::{
+    extract::{Form, Query, State},
+    http::{StatusCode, header},
+    response::{IntoResponse, Redirect},
+};
 
 /// AppState Struktur, die die gemeinsam genutzten Anwendungszustände enthält
 #[derive(Clone)]
@@ -21,12 +21,8 @@ pub async fn login_page_handler(
     State(state): State<AppState>,
     Query(query): Query<LoginQuery>,
 ) -> impl IntoResponse {
-    let html = render_login_page(
-        &state.leptos_options,
-        query.error, 
-        query.redirect
-    );
-    
+    let html = render_login_page(&state.leptos_options, query.error, query.redirect);
+
     (StatusCode::OK, [(header::CONTENT_TYPE, "text/html")], html)
 }
 
@@ -39,7 +35,7 @@ pub async fn handle_login(
         email: form.email,
         password: form.password,
     };
-    
+
     match state.auth_service.login(&credentials).await {
         Ok(session) => {
             // Erfolgreicher Login, Cookie setzen und zur Startseite weiterleiten
@@ -47,14 +43,14 @@ pub async fn handle_login(
                 "auth_token={}; HttpOnly; Path=/; Max-Age=86400",
                 session.token
             );
-            
+
             let mut response = Redirect::to("/").into_response();
             response.headers_mut().insert(
                 header::SET_COOKIE,
-                header::HeaderValue::from_str(&cookie).unwrap()
+                header::HeaderValue::from_str(&cookie).unwrap(),
             );
             response
-        }
+        },
         Err(e) => {
             // Fehler bei der Anmeldung, zurück zur Login-Seite mit Fehlermeldung
             let error_message = match e {
@@ -62,10 +58,9 @@ pub async fn handle_login(
                 AuthError::AccountLocked => "Konto gesperrt".to_string(),
                 _ => "Ein Fehler ist aufgetreten".to_string(),
             };
-            
-            Redirect::to(&format!("/login?error={}", error_message))
-                .into_response()
-        }
+
+            Redirect::to(&format!("/login?error={}", error_message)).into_response()
+        },
     }
 }
 
@@ -90,7 +85,7 @@ pub async fn handle_registration(
         Ok(_) => {
             // Erfolgreiche Registrierung, leite zur Login-Seite weiter
             Redirect::to("/login?message=Registrierung+erfolgreich").into_response()
-        }
+        },
         Err(e) => {
             // Fehler bei der Registrierung, zurück zur Registrierungsseite mit Fehlermeldung
             let error_message = match e {
@@ -98,10 +93,9 @@ pub async fn handle_registration(
                 AuthError::ValidationError(_) => "Ungültige Eingaben".to_string(),
                 _ => "Ein Fehler ist aufgetreten".to_string(),
             };
-            
-            Redirect::to(&format!("/register?error={}", error_message))
-                .into_response()
-        }
+
+            Redirect::to(&format!("/register?error={}", error_message)).into_response()
+        },
     }
 }
 
@@ -109,11 +103,11 @@ pub async fn handle_registration(
 pub async fn handle_logout() -> impl IntoResponse {
     // Lösche das Session-Cookie und leite zur Login-Seite weiter
     let cookie = "auth_token=; HttpOnly; Path=/; Max-Age=0";
-    
+
     let mut response = Redirect::to("/login").into_response();
     response.headers_mut().insert(
         header::SET_COOKIE,
-        header::HeaderValue::from_str(cookie).unwrap()
+        header::HeaderValue::from_str(cookie).unwrap(),
     );
     response
-} 
+}

@@ -47,4 +47,4 @@ impl<T> ApiResult<T> {
             error: Some(message.into()),
         }
     }
-} 
+}

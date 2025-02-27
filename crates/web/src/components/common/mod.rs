@@ -6,4 +6,4 @@ pub mod loading_indicator;
 
 // Re-exports für häufig verwendete Komponenten
 pub use error_display::*;
-pub use loading_indicator::*; 
+pub use loading_indicator::*;

@@ -1,6 +1,6 @@
+use serde::{Deserialize, Serialize};
 use std::error::Error as StdError;
 use std::fmt;
-use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 /// Fehler, die während der Authentifizierung auftreten können
@@ -8,16 +8,16 @@ use thiserror::Error;
 pub enum AuthError {
     #[error("Ungültige Anmeldedaten")]
     InvalidCredentials,
-    
+
     #[error("Benutzer existiert bereits")]
     UserAlreadyExists,
-    
+
     #[error("Konto gesperrt")]
     AccountLocked,
-    
+
     #[error("Validierungsfehler: {0}")]
     ValidationError(String),
-    
+
     #[error("Interner Serverfehler: {0}")]
     InternalError(Box<dyn StdError + Send + Sync>),
 }
@@ -51,17 +51,23 @@ pub struct AuthService {
     // andere benötigte Konfigurationen injiziert werden
 }
 
+impl Default for AuthService {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AuthService {
     /// Erstellt eine neue Instanz des Auth-Service
     pub fn new() -> Self {
         Self {}
     }
-    
+
     /// Führt einen Login-Vorgang durch
     pub async fn login(&self, credentials: &LoginCredentials) -> Result<Session, AuthError> {
         // In einer echten Implementierung würde hier die Datenbank abgefragt werden
         // und ein echter Login-Prozess durchgeführt werden
-        
+
         // Für Demonstrationszwecke simulieren wir eine erfolgreiche Anmeldung
         // wenn die E-Mail "demo@example.com" und das Passwort "password" ist
         if credentials.email == "demo@example.com" && credentials.password == "password" {
@@ -74,26 +80,28 @@ impl AuthService {
             Err(AuthError::InvalidCredentials)
         }
     }
-    
+
     /// Registriert einen neuen Benutzer
     pub async fn register(&self, user: &CreateUser) -> Result<(), AuthError> {
         // In einer echten Implementierung würde hier ein neuer Benutzer erstellt werden
-        
+
         // Für Demonstrationszwecke simulieren wir, dass die Registrierung erfolgreich ist,
         // wenn die E-Mail nicht "demo@example.com" ist (da dieser "bereits existiert")
         if user.email == "demo@example.com" {
             Err(AuthError::UserAlreadyExists)
         } else if user.password.len() < 8 {
-            Err(AuthError::ValidationError("Passwort muss mindestens 8 Zeichen lang sein".to_string()))
+            Err(AuthError::ValidationError(
+                "Passwort muss mindestens 8 Zeichen lang sein".to_string(),
+            ))
         } else {
             Ok(())
         }
     }
-    
+
     /// Überprüft die Gültigkeit eines Tokens
     pub async fn validate_token(&self, token: &str) -> Result<Session, AuthError> {
         // In einer echten Implementierung würde hier der Token validiert werden
-        
+
         // Für Demonstrationszwecke simulieren wir, dass der Token gültig ist,
         // wenn er "demo-token-123" ist
         if token == "demo-token-123" {
@@ -145,4 +153,4 @@ impl From<AuthError> for Error {
             AuthError::InternalError(_) => Error::InternalError,
         }
     }
-} 
+}

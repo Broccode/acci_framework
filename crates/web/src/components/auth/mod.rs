@@ -6,4 +6,4 @@ pub mod registration_form;
 
 // Re-exports für häufig verwendete Komponenten
 pub use login_form::*;
-pub use registration_form::*; 
+pub use registration_form::*;

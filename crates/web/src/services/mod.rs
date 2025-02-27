@@ -6,4 +6,4 @@ pub mod leptos;
 
 // Re-exports für häufig verwendete Services
 pub use auth::*;
-pub use leptos::*; 
+pub use leptos::*;

@@ -34,4 +34,4 @@ pub fn build_url_with_query(base_url: &str, params: &[(&str, &str)]) -> String {
     }
 
     url
-} 
+}

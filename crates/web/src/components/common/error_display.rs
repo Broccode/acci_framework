@@ -2,7 +2,7 @@ use crate::prelude::*;
 use crate::view;
 
 /// Komponente zur Anzeige von Fehlermeldungen
-/// 
+///
 /// # Parameter
 /// * `cx` - Der Leptos-Scope
 /// * `message` - Die anzuzeigende Fehlermeldung
@@ -22,4 +22,4 @@ pub fn error_display_ssr(cx: Scope, message: String, error_type: Option<String>)
 #[deprecated(note = "Verwende error_display_ssr stattdessen")]
 pub fn ErrorDisplaySSR(cx: Scope, message: String, error_type: Option<String>) -> impl IntoView {
     error_display_ssr(cx, message, error_type)
-} 
+}
