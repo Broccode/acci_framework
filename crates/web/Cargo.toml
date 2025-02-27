@@ -11,6 +11,11 @@ leptos = { workspace = true }
 leptos_router = { workspace = true }
 leptos_meta = { workspace = true }
 
+# Web Framework
+axum = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+
 # Serialization
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -19,8 +24,15 @@ serde_json = { workspace = true }
 thiserror = { workspace = true }
 anyhow = { workspace = true }
 
+# Async Runtime
+tokio = { workspace = true }
+futures = { workspace = true }
+
 # Logging
 tracing = { workspace = true }
+
+# Time and Date
+chrono = { workspace = true }
 
 # Local Dependencies
 acci_core = { path = "../core" }
