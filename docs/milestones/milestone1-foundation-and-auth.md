@@ -94,29 +94,29 @@ This document provides a detailed breakdown of Milestone 1, which focuses on est
 
 #### Day 1-3: Leptos Components
 
-- [ ] Create basic UI components
-  - Implement login form component
-  - Create navigation component
-  - Add error display components
-  - Implement loading states
+- [x] Create basic UI components
+  - [x] Implement login form component
+  - [x] Create navigation component
+  - [x] Add error display components
+  - [x] Implement loading states
 
 #### Day 4-5: State Management
 
-- [ ] Implement frontend state management
-  - Set up Leptos state management
-  - Add client-side validation
-  - Implement error handling
-  - Create loading indicators
+- [x] Implement frontend state management
+  - [x] Set up Leptos state management
+  - [x] Add client-side validation
+  - [x] Implement error handling
+  - [x] Create loading indicators
 
 ### Week 5: API Implementation
 
 #### Day 1-2: Authentication API
 
-- [ ] Implement authentication endpoints
-  - Create login endpoint
-  - Add logout endpoint
-  - Implement session validation
-  - Add rate limiting
+- [x] Implement authentication endpoints
+  - [x] Create login endpoint
+  - [x] Add logout endpoint
+  - [x] Implement session validation
+  - [x] Add rate limiting
 
 #### Day 3-4: API Infrastructure
 
