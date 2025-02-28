@@ -1,6 +1,7 @@
 ---
 description: Ensures that code changes are accompanied by relevant documentation references
-globs: **/*.{rs,js,json,html,css,scss}
+globs: 
+alwaysApply: true
 ---
 # Documentation Reference Rule
 

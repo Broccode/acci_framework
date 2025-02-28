@@ -1,9 +1,7 @@
 ---
 description: ENFORCE development tool standards when IMPLEMENTING or MODIFYING code to ENSURE consistent development environment
-globs: **/*.rs, **/*.toml, **/*.sql, **/*.md
-tags: [development, tools, quality, testing, security]
-priority: 2
-version: 1.0.0
+globs: **/*.rs, **/*.toml, **/*.sql, **/*.md, **/*.json*
+alwaysApply: false
 ---
 
 # Development Tools Standards

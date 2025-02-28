@@ -1,6 +1,7 @@
 ---
 description: ENFORCE changelog standards when MODIFYING code or RELEASING versions to ENSURE consistent version tracking and release management
-globs: [CHANGELOG.md, **/Cargo.toml]
+globs: CHANGELOG.md
+alwaysApply: false
 ---
 
 # Changelog Management Standards
@@ -32,6 +33,10 @@ globs: [CHANGELOG.md, **/Cargo.toml]
 - Group related changes by category
 - Newest changes at the top
 - Write clear, descriptive notes
+
+### Date fetching
+- Never rely on your own date
+- Execute a shell command to get the current date
 
 ### Release Process
 1. Review [Unreleased] changes
