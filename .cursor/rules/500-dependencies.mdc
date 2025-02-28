@@ -1,6 +1,6 @@
 ---
 description: ENFORCE dependency management standards when ADDING or MODIFYING dependencies to ENSURE consistent and maintainable workspace dependencies
-globs: [**/Cargo.toml]
+globs: **/Cargo.toml
 ---
 
 # Dependency Management Standards

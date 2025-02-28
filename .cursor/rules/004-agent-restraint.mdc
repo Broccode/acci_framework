@@ -1,0 +1,72 @@
+---
+description: ENFORCE development pacing and scope control when IMPLEMENTING features to ENSURE controlled, testable development
+globs:
+alwaysApply: true
+---
+
+# Agent Restraint & Development Pacing
+
+## Context
+- Applies to all feature implementations
+- Prevents scope creep and overzealous development
+- Ensures systematic, testable progress
+- Maintains clear communication about changes
+
+## Requirements
+
+### Pacing & Scope Control
+
+1. **Explicit Checkpoints**
+   - Pause after each work unit and wait for approval to continue
+   - Implement a single task per session, requiring confirmation
+
+2. **Minimalist Implementation**
+   - Implement the absolute minimum to meet task needs
+   - When in doubt about scope, choose the narrower interpretation
+
+3. **Staged Development**
+   - Follow a strict 'propose → approve → implement → review' cycle for every change
+   - After implementing a component, stop, summarize changes made & remaining work
+
+4. **Scope Boundary Enforcement**
+   - When a task requires changes outside specified files/components, pause and request permission
+   - Never make 'while I'm at it' improvements without explicit approval
+
+### Communications
+
+1. **Mandatory Checkpoints**
+   - After every change, pause and summarize what's been done & what's next
+   - Mark implemented features as [COMPLETE], ask for confirmation to continue to next item
+
+2. **Complexity Warning System**
+   - When implementation requires >3 files, flag as [COMPLEX CHANGE] and wait for confirmation
+   - Proactively identify potential ripple effects before implementing any change
+
+3. **Change Magnitude Indicators**
+   - Classify proposed changes as [MINOR] (1-5 lines), [MODERATE] (5-20 lines), [MAJOR] (20+ lines)
+   - For [MAJOR] changes, provide a detailed implementation plan and wait for approval
+
+4. **Testability Focus**
+   - Pause at the earliest testable point during every implementation
+   - Never proceed past a testable checkpoint without confirming current implementation works
+
+## Examples
+
+<example>
+// GOOD: Explicit checkpoint and scope management
+I've implemented the user authentication function in `auth.rs`:
+[COMPLETE] Added form validation for login credentials
+[COMPLETE] Added password hashing with bcrypt
+[COMPLETE] Added JWT token generation
+
+The changes are [MODERATE] (15 lines modified).
+
+Would you like me to proceed with implementing the session management next?
+</example>
+
+<example type="invalid">
+// BAD: Overzealous implementation without checkpoints
+I went ahead and implemented the entire authentication system including login,
+registration, password reset, session management, and while I was at it, I also
+refactored the database schema to be more efficient. I changed 25 files in total.
+</example>

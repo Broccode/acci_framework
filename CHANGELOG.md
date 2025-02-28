@@ -187,6 +187,12 @@ Create a git tag for the version (e.g., v0.2.0)
   - Security tests (fuzzing, audit, deny) disabled until security baseline is established
   - All test artifacts and reports adjusted accordingly
 
+### Removed
+
+- Removed deprecated API test directories
+  - Removed `crates/api/tests/` directory with outdated test implementation
+  - Removed `tests/api/` directory with incompatible test code
+
 ### Fixed
 
 - Refactored web component implementation to improve maintainability

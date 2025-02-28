@@ -1,6 +1,6 @@
 ---
 description: ENFORCE async programming standards when IMPLEMENTING async functionality to ENSURE reliable and performant concurrent code
-globs: [src/**/*.rs, crates/**/*.rs]
+globs: src/**/*.rs, crates/**/*.rs
 tags: [rust, async, tokio, concurrency]
 priority: 1
 version: 1.0.0

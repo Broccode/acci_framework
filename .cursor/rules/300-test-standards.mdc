@@ -1,6 +1,6 @@
 ---
 description: ENFORCE test standards from TESTS.md when WRITING or MODIFYING tests to ENSURE consistent test quality
-globs: ["**/*.rs", "**/tests/**/*"]
+globs: **/*.rs, **/tests/**/*
 ---
 
 # Test Standards Rule

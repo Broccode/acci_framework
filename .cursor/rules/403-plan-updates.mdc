@@ -1,6 +1,6 @@
 ---
 description: Guidelines for making surgical, focused updates to plan files
-globs: *.md
+globs: **/*.md
 ---
 # Plan Updates Rule
 # Guidelines for making surgical, focused updates to plan files

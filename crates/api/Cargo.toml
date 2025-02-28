@@ -1,32 +1,39 @@
 [package]
 name = "acci_api"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
+version = "0.1.0"
+edition = "2021"
+description = "API infrastructure for the ACCI Framework"
+authors = ["Implementation Team"]
+repository = "https://github.com/your-org/acci-framework"
+license = "Apache-2.0"
 
 [dependencies]
 # Backend Framework
 axum = { workspace = true }
-tower = { workspace = true }
-tower-http = { workspace = true }
+tower = { version = "0.4" }
+tower-http = { workspace = true, features = ["trace", "cors"] }
+hyper = { version = "1.1", features = ["server"] }
+http = { version = "1.0" }
+http-body = "1.0"
+http-body-util = "0.1.0"
 
 # Async & Utils
-tokio = { workspace = true }
+tokio = { version = "1.36", features = ["full"] }
 futures = { workspace = true }
-async-trait = { workspace = true }
+async-trait = "0.1"
 
 # Serialization
-serde = { workspace = true }
-serde_json = { workspace = true }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 time = { workspace = true }
 
 # Error Handling
-thiserror = { workspace = true }
+thiserror = "1.0"
 anyhow = { workspace = true }
 
 # Logging & Metrics
-tracing = { workspace = true }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 metrics = { workspace = true }
 metrics-exporter-prometheus = { workspace = true }
 
@@ -34,7 +41,18 @@ metrics-exporter-prometheus = { workspace = true }
 acci_core = { path = "../core" }
 acci_auth = { path = "../auth" }
 
+# Additional dependencies
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.6", features = ["v4", "serde"] }
+secrecy = "0.8"
+
 [dev-dependencies]
-tokio-test = { workspace = true }
-rstest = { workspace = true }
+# Test utilities are now in a separate crate at tests/
+tokio-test = "0.4"
+tracing-test = "0.2"
+pretty_assertions = "1.4"
 mockall = { workspace = true }
+
+[lib]
+name = "acci_api"
+path = "src/lib.rs"

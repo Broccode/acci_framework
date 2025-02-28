@@ -1,6 +1,6 @@
 ---
 description: ENFORCE Rust core development standards when WRITING or MODIFYING Rust code to ENSURE high-quality, safe, and maintainable code
-globs: [src/**/*.rs, crates/**/*.rs]
+globs: src/**/*.rs, crates/**/*.rs
 tags: [rust, core, safety, standards]
 priority: 1
 version: 1.0.0

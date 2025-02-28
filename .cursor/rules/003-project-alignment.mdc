@@ -1,16 +1,7 @@
 ---
 description: ENFORCE project documentation alignment when EXECUTING user requests to ENSURE consistency with project goals and timeline
-globs:
-  - "*.md"
-  - "docs/**/*.md"
-  - "docs/milestones/*.md"
-tags:
-  - documentation
-  - alignment
-  - project-management
-  - quality-assurance
-priority: 1
-version: 1.0.0
+globs: 
+alwaysApply: true
 ---
 
 # Project Alignment Rule

@@ -1,6 +1,7 @@
 ---
 description: Git commit standards and guidelines to ensure consistent and error-free commits
-globs: ["**/.git/**/*"]
+globs:
+alwaysApply: true
 ---
 
 # Git Commit Guidelines

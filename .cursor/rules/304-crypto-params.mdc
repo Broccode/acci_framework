@@ -1,6 +1,6 @@
 ---
 description: ENSURE consistent cryptographic parameters across all environments to PREVENT authentication failures
-globs: ["**/*.rs", "**/*.sql", "**/migrations/*.sql"]
+globs: **/*.rs, **/*.sql, **/migrations/*.sql
 tags: [crypto, testing, migrations, security]
 priority: 1
 version: 1.0.0

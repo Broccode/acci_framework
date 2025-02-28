@@ -1,6 +1,6 @@
 ---
 description: ENFORCE documentation standards when WRITING or MODIFYING documentation to ENSURE clear and maintainable documentation
-globs: [src/**/*.rs, docs/**/*.md, crates/**/*.rs]
+globs: src/**/*.rs, docs/**/*.md, crates/**/*.rs
 ---
 
 # Documentation Standards

@@ -10,5 +10,4 @@ pub mod helpers;
 pub mod mocks;
 
 // Integration test modules
-// pub mod api;  // TODO: Implement API tests
 // pub mod e2e;  // TODO: Implement E2E tests
