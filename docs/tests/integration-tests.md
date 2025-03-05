@@ -99,29 +99,137 @@ async fn test_auth_with_database() {
 
 ### 2. API Integration
 
+#### Auth Flow Integration Test
+
+We've implemented comprehensive tests for the API layer, focusing on the authentication flow:
+
 ```rust
 #[tokio::test]
-async fn test_api_workflow() {
-    let app = test_app().await?;
+async fn test_e2e_auth_flow() {
+    // Setup mock services for a complete auth flow:
+    // 1. Register a new user
+    // 2. Login with that user
+    // 3. Validate the token
     
-    // Create resource
-    let create_response = app
-        .client
-        .post("/api/resources")
-        .json(&new_resource)
-        .send()
-        .await?;
+    let mut mock_user_service = MockUserService::new();
+    let user_id = Uuid::new_v4();
+    let email = "new_user@example.com".to_string();
+    let session_token = "generated_token_123".to_string();
     
-    assert_eq!(create_response.status(), 201);
+    // Setup registration mock
+    mock_user_service
+        .expect_register()
+        .withf(move |create_user| {
+            create_user.email == "new_user@example.com" && create_user.password == "secure_pass"
+        })
+        .returning(move |_| {
+            Ok(User {
+                id: user_id,
+                email: email.clone(),
+                // Other fields...
+            })
+        });
     
-    // Verify resource
-    let get_response = app
-        .client
-        .get("/api/resources")
-        .send()
-        .await?;
+    // Setup login mock
+    mock_user_service
+        .expect_login()
+        .returning(move |_, _, _, _, _, _| {
+            Ok(LoginResult {
+                user: login_user,
+                session_token: session_token.clone(),
+            })
+        });
     
-    assert_eq!(get_response.status(), 200);
+    // Setup token validation mock
+    mock_user_service
+        .expect_validate_session()
+        .returning(move |_| {
+            Ok(Some(User { /* ... */ }))
+        });
+    
+    let app = create_test_router(Arc::new(mock_user_service));
+    
+    // 1. Register a new user
+    let register_response = app.clone()
+        .oneshot(register_request)
+        .await
+        .unwrap();
+    assert_eq!(register_response.status(), StatusCode::CREATED);
+    
+    // 2. Login with that user
+    let login_response = app.clone()
+        .oneshot(login_request)
+        .await
+        .unwrap();
+    assert_eq!(login_response.status(), StatusCode::OK);
+    
+    // 3. Validate the token
+    let validate_response = app
+        .oneshot(validate_request)
+        .await
+        .unwrap();
+    assert_eq!(validate_response.status(), StatusCode::OK);
+}
+```
+
+#### Middleware Integration Test
+
+We've also implemented tests for the middleware components:
+
+```rust
+#[tokio::test]
+async fn test_middleware_transforms_client_error() {
+    let app = create_test_app_with_error_handling();
+    
+    let request = Request::builder()
+        .uri("/error/400")
+        .body(Body::empty())
+        .unwrap();
+        
+    let response = app
+        .oneshot(request)
+        .await
+        .unwrap();
+    
+    assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    
+    let json = extract_json_body(response).await;
+    
+    // Verify standardized error format
+    assert_eq!(json["status"], "error");
+    assert_eq!(json["code"], "BAD_REQUEST");
+    assert!(json["message"].is_string());
+    assert!(json["request_id"].is_string());
+}
+```
+
+#### Router Integration Test
+
+And tests for the API router configuration:
+
+```rust
+#[tokio::test]
+async fn test_router_auth_endpoints_exist() {
+    let (app_state, config) = create_test_dependencies();
+    let router = ApiRouter::new(config.clone());
+    let app = router.create_router_with_state(app_state);
+    
+    // Test login endpoint - expect method not allowed for GET
+    let login_response = app
+        .oneshot(
+            Request::builder()
+                .uri("/api/v1/auth/login")
+                .method(Method::GET) // Should be POST
+                .body(Body::empty())
+                .unwrap()
+        )
+        .await
+        .unwrap();
+    
+    // Assert method not allowed (since we used GET)
+    assert_eq!(login_response.status(), StatusCode::METHOD_NOT_ALLOWED);
+    
+    // Similar tests for register and validate-token endpoints...
 }
 ```
 

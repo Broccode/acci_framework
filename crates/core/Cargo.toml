@@ -30,3 +30,4 @@ rstest = { workspace = true }
 futures = { workspace = true }
 uuid = { workspace = true }
 once_cell = { workspace = true }
+mockall = "0.12"

@@ -9,7 +9,7 @@ use uuid::Uuid;
 
 use crate::session::types::{DeviceFingerprint, SessionInvalidationReason};
 
-const METRIC_PREFIX: &str = "auth.session";
+const _METRIC_PREFIX: &str = "auth.session";
 const METRIC_CREATE: &str = "create";
 const METRIC_GET: &str = "get";
 const METRIC_GET_BY_TOKEN: &str = "get_by_token";
@@ -46,8 +46,6 @@ mod metrics_mock {
 }
 
 // Explicitly import macros when metrics is not enabled
-#[cfg(not(feature = "metrics"))]
-use crate::{counter, histogram};
 
 // Hilfsfunktion zur Konvertierung von SystemTime zu OffsetDateTime
 fn system_time_to_offset_date_time(time: SystemTime) -> OffsetDateTime {
@@ -196,13 +194,14 @@ impl PostgresSessionRepository {
 }
 
 impl SessionError {
+    #[allow(dead_code)]
     fn metric_name(&self) -> &'static str {
         match self {
-            SessionError::Database(_) => "database",
-            SessionError::NotFound => "not_found",
-            SessionError::Expired => "expired",
-            SessionError::Invalid => "invalid",
-            SessionError::TokenMismatch => "token_mismatch",
+            Self::Database(_) => "database_error",
+            Self::NotFound => "not_found",
+            Self::Expired => "expired",
+            Self::Invalid => "invalid",
+            Self::TokenMismatch => "token_mismatch",
         }
     }
 }
@@ -885,7 +884,7 @@ mod tests {
     fn test_session_error_metric_name() {
         assert_eq!(
             SessionError::Database(sqlx::Error::RowNotFound).metric_name(),
-            "database"
+            "database_error"
         );
         assert_eq!(SessionError::NotFound.metric_name(), "not_found");
         assert_eq!(SessionError::Expired.metric_name(), "expired");

@@ -2,6 +2,7 @@
 //!
 //! This module contains mock implementations of services and dependencies.
 
-// Example:
-// pub mod auth_service;
-// pub mod email_service;
+// Platzhalter für zukünftige Mock-Implementierungen
+// Wir werden diese später implementieren, wenn wir die Tests schreiben
+
+pub struct MockPlaceholder;

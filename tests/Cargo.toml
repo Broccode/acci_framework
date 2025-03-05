@@ -9,6 +9,14 @@ acci_auth = { path = "../crates/auth" }
 acci_api = { path = "../crates/api" }
 acci_web = { path = "../crates/web" }
 
+# Web framework dependencies
+axum = { workspace = true }
+axum-core = { workspace = true }
+hyper = { workspace = true }
+tower = { workspace = true }
+http-body-util = { workspace = true }
+bytes = { workspace = true }
+
 # Test dependencies
 tokio = { workspace = true, features = ["full"] }
 sqlx = { workspace = true }
@@ -23,3 +31,6 @@ tracing-subscriber = { workspace = true }
 time = { workspace = true }
 serde_json = { workspace = true }
 anyhow = { workspace = true }
+mockall = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+async-trait.workspace = true

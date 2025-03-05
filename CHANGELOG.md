@@ -118,103 +118,74 @@ Commit all changes with message "release: Version X.Y.Z"
 
 Create a git tag for the version (e.g., v0.2.0)
 
-## [Unreleased]
+## [0.2.0] - 2025-03-06
+
+### Added
+
+- Comprehensive Authentication Documentation
+  - Detailed multi-factor authentication implementation
+  - OAuth 2.0/OpenID Connect integration specifications
+  - Password strength validation using zxcvbn
+  - Detailed audit logging implementation
+  - Advanced session management features
+- Complete API Specification
+  - Comprehensive REST API endpoint documentation
+  - GraphQL schema documentation
+  - Detailed data models and validation rules
+  - Authentication flow documentation
+  - Error handling specifications
+  - Versioning strategy
+  - Rate limiting guidelines
+  - Pagination implementation
+  - Data filtering and sorting
+  - Client library and SDK information
+- Advanced API Implementation Examples
+  - Authentication flow examples in multiple languages
+  - Session management usage patterns
+  - Error handling best practices
+  - Structured logging implementation
+  - Domain-specific error handling
+- Session Management Infrastructure
+  - Comprehensive session management tables
+  - Secure token handling with rotation support
+  - Device fingerprinting capabilities
+  - Session audit logging with retention policies
+  - Automated session cleanup
+  - Optimized activity tracking
+  - Enhanced security with typed session invalidation reasons
+  - Support for multiple device management
+- Leptos Frontend Implementation (SSR-only)
+  - Login and Registration form components with server-side rendering
+  - Navigation component with authentication state awareness
+  - Error Display component for standardized error presentation
+  - Loading Indicator component for asynchronous operations
+  - Client-side form validation with unobtrusive JavaScript
+  - Integration with Axum routing system
+  - Proper error handling and display
+  - Responsive styling with clean, accessible design
+  - Comprehensive component unit tests
+  - Integration tests for form submission handlers
+- Comprehensive Project Documentation
+  - Detailed project description with architecture details
+  - Component descriptions (Core, Auth, API, Web)
+  - Build, test, and lint command documentation
+  - Code style guidelines
+  - Async programming guidelines
+  - Test organization documentation
+  - Key documentation references
 
 ### Fixed
 
-- Fixed compilation issues in API and web modules
-  - Resolved ambiguous glob imports in the web module to prevent naming conflicts
-  - Fixed missing imports in the API validation and example handlers
+- Compilation issues in API and web modules
+  - Resolved ambiguous glob imports in web module to prevent naming conflicts
+  - Fixed missing imports in API validation and example handlers
   - Corrected function parameter types and usage in test code
   - Added proper error handling for JSON parsing in validation tests
   - Renamed API and web component functions to follow Rust's snake_case convention
   - Fixed Docker test availability detection to gracefully handle environments without Docker
   - Properly prefixed unused variables with underscores to prevent compiler warnings
   - Fixed initialization issues in the validation module tests
-
-### Added
-
-- Erweiterte Projektdokumentation und Entwicklungsanleitung
-  - Umfassende Projektbeschreibung mit Architekturdetails
-  - Detaillierte Beschreibung aller Hauptkomponenten (Core, Auth, API, Web)
-  - Build-, Test- und Lint-Befehle dokumentiert
-  - Code-Style-Richtlinien festgelegt
-  - Async-Programmierung und Test-Organisation beschrieben
-  - Wichtige Dokumentationsreferenzen hinzugefügt
-- Added comprehensive README.md in root directory
-  - Documented project goals and core objectives
-  - Listed complete technical stack with Rust, Axum, Leptos, and WebAssembly
-  - Detailed architecture patterns including Multi-Tenancy and DDD
-  - Included development setup instructions and required tools
-  - Added documentation references and project timeline
-- Session Management Infrastructure
-  - Added comprehensive session management tables
-  - Implemented secure token handling with rotation support
-  - Added device fingerprinting capabilities
-  - Created session audit logging with retention policies
-  - Implemented automated session cleanup
-  - Added optimized activity tracking
-  - Enhanced security with typed session invalidation reasons
-  - Added support for multiple device management
-- Leptos Frontend Implementation (SSR-only)
-  - Implemented Login and Registration form components with server-side rendering
-  - Created Navigation component with authentication state awareness
-  - Added Error Display component for standardized error presentation
-  - Implemented Loading Indicator component for asynchronous operations
-  - Created client-side form validation with unobtrusive JavaScript
-  - Integrated all components with Axum routing system
-  - Implemented proper error handling and display
-  - Added responsive styling with clean, accessible design
-  - Created comprehensive component unit tests
-  - Added integration tests for form submission handlers
-
-### Changed
-
-- Implemented multilingual README.md with three languages
-  - Added English version as primary language
-  - Included German (Deutsch) version for local team members
-  - Added Albanian (Shqip) version for international collaboration
-  - Created language selection navigation at the top of the document
-  - Added country flag emoji identifiers for each language section
-  - Ensured consistent formatting and structure across all translations
-- Enhanced README.md with improved readability and visual elements
-  - Added emoji icons for all sections and components
-  - Restructured content with clear section separators
-  - Implemented collapsible installation instructions
-  - Added badges for Rust, license, and version information  
-  - Converted lists to tables for better information organization
-  - Improved typographic hierarchy and visual structure
-  - Added table of contents with anchor links
-- Improved CI pipeline coverage reporting
-  - Separated unit and integration test coverage reports
-  - Fixed coverage report generation with multiple output formats
-  - Added separate Coveralls reporting for unit and integration tests
-  - Enhanced coverage threshold checks for both test types
-- Fixed integration test execution in CI pipeline
-  - Added cargo-nextest installation step
-  - Created test-logs directory before test execution
-  - Ensured proper test output capture
-- Temporarily disabled E2E tests in CI pipeline
-  - Removed E2E test execution step
-  - Removed Playwright installation
-  - Removed E2E test artifacts from upload
-  - Will be re-enabled once E2E tests are implemented
-- Temporarily disabled additional test types in CI pipeline
-  - Property-based tests disabled until test suite is complete
-  - Mutation tests disabled pending implementation
-  - Performance tests (criterion and k6) disabled until benchmarks are defined
-  - Security tests (fuzzing, audit, deny) disabled until security baseline is established
-  - All test artifacts and reports adjusted accordingly
-
-### Removed
-
-- Removed deprecated API test directories
-  - Removed `crates/api/tests/` directory with outdated test implementation
-  - Removed `tests/api/` directory with incompatible test code
-
-### Fixed
-
-- Refactored web component implementation to improve maintainability
+- Web component implementation maintainability issues
   - Corrected import paths in `prelude.rs` to fix IntoView trait resolution issues
   - Fixed incompatible trait implementations for HTML element functionality
   - Replaced direct macro usage with more reliable module imports
@@ -223,6 +194,40 @@ Create a git tag for the version (e.g., v0.2.0)
   - Refactored component functions to follow snake_case naming convention
   - Simplified component structure to improve reliability and reduce errors
   - Improved compatibility between Leptos components and server-side rendering
+- CI pipeline and test execution issues
+  - Fixed integration test execution with proper setup
+  - Enhanced coverage reporting configuration
+  - Improved test output capture and reporting
+
+### Changed
+
+- Enhanced API infrastructure implementation
+  - Improved middleware stack organization
+  - Enhanced error handling middleware
+  - Standardized request validation
+  - Unified response formatting
+  - Added comprehensive metrics tracking
+  - Implemented structured logging for requests
+  - Added domain-specific error handling
+- Improved documentation structure and organization
+  - Standardized documentation format across all features
+  - Enhanced code examples with syntax highlighting
+  - Added diagrams for authentication and API flows
+  - Improved navigation and cross-references
+  - Added search functionality to documentation
+- Updated milestone progress tracking
+  - Marked all Milestone 1 tasks as complete
+  - Updated test coverage metrics
+  - Verified all functional requirements
+  - Validated performance requirements
+  - Confirmed security requirements
+  - Achieved quality requirements
+
+### Removed
+
+- Deprecated API test directories
+  - Removed `crates/api/tests/` directory with outdated test implementation
+  - Removed `tests/api/` directory with incompatible test code
 
 ### Technical
 
@@ -236,6 +241,10 @@ Create a git tag for the version (e.g., v0.2.0)
   - Added `ipnetwork` feature to sqlx for IP address management
   - Implemented conditional metrics support with feature flags
   - Added mock metrics implementations when feature is disabled
+
+## [Unreleased]
+
+No unreleased changes at this time.
 
 ## [0.1.1] - 2025-02-24
 

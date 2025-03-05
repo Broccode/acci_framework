@@ -1,15 +1,20 @@
+use crate::monitoring;
 use crate::response::{ApiError, ApiResponse};
+use crate::validation::{generate_request_id, validate_json_payload};
 use axum::{
     extract::{Json, State},
     http::StatusCode,
-    response::IntoResponse,
+    response::{IntoResponse, Response},
 };
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use tracing::{debug, info, warn};
+use validator::Validate;
 
 // Import auth services and models
 use acci_auth::{
     CreateUser,
+    models::user::UserError,
     services::{
         session::SessionService,
         user::{UserService, UserServiceError},
@@ -26,9 +31,12 @@ pub struct ApiAppState {
 }
 
 /// Login Request DTO
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct LoginRequest {
+    #[validate(email(message = "Invalid email format"))]
     pub email: String,
+
+    #[validate(length(min = 1, message = "Password is required"))]
     pub password: String,
 }
 
@@ -45,13 +53,31 @@ pub struct LoginResponse {
 pub async fn api_login(
     State(state): State<ApiAppState>,
     Json(request): Json<LoginRequest>,
-) -> impl IntoResponse {
+) -> Response {
+    debug!("Processing login request");
+    let start = std::time::Instant::now();
+
+    // Generate a unique request ID
+    let request_id = generate_request_id();
+
+    // Validate the request using our new validation function
+    let validated = match validate_json_payload(Json(request)).await {
+        Ok(data) => data,
+        Err(validation_error) => {
+            // Convert validation error to response
+            return validation_error.into_response();
+        },
+    };
+
+    // Record login attempt in metrics
+    monitoring::record_auth_operation("login", "attempt");
+
     // Perform login process
     match state
         .user_service
         .login(
-            &request.email,
-            &request.password,
+            &validated.email,
+            &validated.password,
             None, // device_id
             None, // device_fingerprint
             None, // ip_address
@@ -60,6 +86,13 @@ pub async fn api_login(
         .await
     {
         Ok(login_result) => {
+            // Record successful login in metrics
+            monitoring::record_auth_operation("login", "success");
+
+            // Record login duration
+            let duration = start.elapsed();
+            monitoring::record_request_duration(duration.as_secs_f64(), "POST", "/auth/login");
+
             // Successful login
             let response = LoginResponse {
                 token: login_result.session_token,
@@ -67,35 +100,63 @@ pub async fn api_login(
                 expires_at: 0, // We need to get this from somewhere else or compute it
             };
 
-            let api_response =
-                ApiResponse::success(response, format!("login-{}", login_result.user.id));
+            info!(
+                request_id = %request_id,
+                user_id = %login_result.user.id,
+                "Login successful"
+            );
 
+            let api_response = ApiResponse::success(response, request_id);
             (StatusCode::OK, Json(api_response)).into_response()
         },
         Err(err) => {
+            // Record failed login in metrics
+            monitoring::record_auth_operation("login", "failure");
+
             // Login error
-            let status_code = match err {
-                UserServiceError::InvalidCredentials => StatusCode::UNAUTHORIZED,
-                _ => StatusCode::INTERNAL_SERVER_ERROR,
+            let (status, message, code) = match err {
+                UserServiceError::InvalidCredentials => (
+                    StatusCode::UNAUTHORIZED,
+                    "Invalid email or password",
+                    "INVALID_CREDENTIALS",
+                ),
+                UserServiceError::User(UserError::InactiveUser) => {
+                    (StatusCode::FORBIDDEN, "Account is locked", "ACCOUNT_LOCKED")
+                },
+                UserServiceError::User(UserError::UnverifiedUser) => (
+                    StatusCode::FORBIDDEN,
+                    "Account is not verified",
+                    "ACCOUNT_UNVERIFIED",
+                ),
+                _ => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "An error occurred during login",
+                    "LOGIN_ERROR",
+                ),
             };
 
-            let error = ApiError::new(
-                status_code,
-                err.to_string(),
-                status_code.as_u16().to_string(),
-                "login-error".to_string(),
+            warn!(
+                request_id = %request_id,
+                error = %err,
+                email = %validated.email,
+                "Login failed"
             );
 
-            error.into_response()
+            ApiError::new(status, message, code, request_id).into_response()
         },
     }
 }
 
 /// Registration Request DTO
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct RegistrationRequest {
+    #[validate(email(message = "Invalid email format"))]
     pub email: String,
+
+    #[validate(length(min = 8, message = "Password must be at least 8 characters long"))]
     pub password: String,
+
+    #[validate(must_match(other = "password", message = "Passwords do not match"))]
     pub password_confirmation: String,
 }
 
@@ -111,57 +172,80 @@ pub struct RegistrationResponse {
 pub async fn api_register(
     State(state): State<ApiAppState>,
     Json(request): Json<RegistrationRequest>,
-) -> impl IntoResponse {
-    // Validate passwords
-    if request.password != request.password_confirmation {
-        let error = ApiError::new(
-            StatusCode::BAD_REQUEST,
-            "Passwords do not match",
-            "VALIDATION_ERROR".to_string(),
-            "register-validation-error".to_string(),
-        );
+) -> Response {
+    debug!("Processing registration request");
+    let start = std::time::Instant::now();
 
-        return error.into_response();
-    }
+    // Generate a unique request ID
+    let request_id = generate_request_id();
 
-    // Create registration data
-    let create_user = CreateUser {
-        email: request.email,
-        password: request.password,
+    // Validate the request using our new validation function
+    let validated = match validate_json_payload(Json(request)).await {
+        Ok(data) => data,
+        Err(validation_error) => {
+            // Convert validation error to response
+            return validation_error.into_response();
+        },
     };
 
-    // Perform registration
+    // Record registration attempt
+    monitoring::record_auth_operation("register", "attempt");
+
+    // Create new user
+    let create_user = CreateUser {
+        email: validated.email.clone(),
+        password: validated.password.clone(),
+    };
+
     match state.user_service.register(create_user).await {
         Ok(user) => {
-            // Successful registration
+            // Record successful registration
+            monitoring::record_auth_operation("register", "success");
+
+            // Record registration duration
+            let duration = start.elapsed();
+            monitoring::record_request_duration(duration.as_secs_f64(), "POST", "/auth/register");
+
             let response = RegistrationResponse {
                 user_id: user.id.to_string(),
                 email: user.email,
             };
 
-            let api_response = ApiResponse::success(response, format!("register-{}", user.id));
+            info!(
+                request_id = %request_id,
+                user_id = %user.id,
+                "User registration successful"
+            );
 
+            let api_response = ApiResponse::success(response, request_id);
             (StatusCode::CREATED, Json(api_response)).into_response()
         },
         Err(err) => {
+            // Record failed registration
+            monitoring::record_auth_operation("register", "failure");
+
             // Registration error
-            let error_message = err.to_string();
-            let (status_code, error_code) = match &err {
-                UserServiceError::User(user_err) if error_message.contains("already exists") => {
-                    (StatusCode::CONFLICT, "USER_ALREADY_EXISTS")
-                },
-                UserServiceError::Password(_) => (StatusCode::BAD_REQUEST, "VALIDATION_ERROR"),
-                _ => (StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL_SERVER_ERROR"),
+            let (status, message, code) = match err {
+                UserServiceError::User(UserError::AlreadyExists) => (
+                    StatusCode::CONFLICT,
+                    "User with this email already exists",
+                    "USER_ALREADY_EXISTS",
+                ),
+                _ => (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "An error occurred during registration",
+                    "REGISTRATION_ERROR",
+                ),
             };
 
-            let error = ApiError::new(
-                status_code,
-                error_message,
-                error_code.to_string(),
-                "register-error".to_string(),
+            warn!(
+                request_id = %request_id,
+                error = %err,
+                email = %validated.email,
+                "Registration failed"
             );
 
-            error.into_response()
+            ApiError::new(status, message, code, request_id).into_response()
         },
     }
 }
@@ -171,22 +255,40 @@ pub async fn api_register(
 pub async fn validate_token(
     State(state): State<ApiAppState>,
     Json(token): Json<String>,
-) -> impl IntoResponse {
-    match state.user_service.validate_session(&token).await {
-        Ok(_) => {
-            let api_response = ApiResponse::success(true, "token-valid".to_string());
+) -> Response {
+    debug!("Processing token validation request");
 
-            (StatusCode::OK, Json(api_response)).into_response()
-        },
-        Err(_) => {
-            let error = ApiError::new(
-                StatusCode::UNAUTHORIZED,
-                "Invalid or expired token",
-                "INVALID_TOKEN".to_string(),
-                "token-invalid".to_string(),
+    // Generate a unique request ID
+    let request_id = generate_request_id();
+
+    // No validation needed for token as it's just a string
+    // Record validation attempt
+    monitoring::record_auth_operation("validate_token", "attempt");
+
+    match state.session_service.validate_session(&token).await {
+        Ok(Some(session)) => {
+            // Record successful validation
+            monitoring::record_auth_operation("validate_token", "success");
+
+            info!(
+                request_id = %request_id,
+                user_id = %session.user_id,
+                "Token validation successful"
             );
 
-            error.into_response()
+            let api_response = ApiResponse::success(true, request_id);
+            (StatusCode::OK, Json(api_response)).into_response()
+        },
+        _ => {
+            // Record failed validation
+            monitoring::record_auth_operation("validate_token", "failure");
+
+            warn!(
+                request_id = %request_id,
+                "Token validation failed"
+            );
+
+            ApiError::authentication_error(request_id).into_response()
         },
     }
 }

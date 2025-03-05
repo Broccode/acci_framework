@@ -1,4 +1,4 @@
-.PHONY: dev test test-unit test-integration sqlx-prepare db-up db-down db-reset clippy fmt coverage coverage-html fix prepare-commit help
+.PHONY: dev test test-unit test-integration sqlx-prepare db-up db-down db-reset clippy fmt coverage coverage-html fix prepare-commit benchmark help
 
 # Development Environment Variables
 export DATABASE_URL=postgres://acci:acci@localhost:15432/acci_test
@@ -11,6 +11,7 @@ help:
 	@echo "  make test-unit    - Run unit tests only"
 	@echo "  make test-integration - Run integration tests only"
 	@echo "  make test-e2e     - Run end-to-end tests only"
+	@echo "  make benchmark    - Run performance benchmarks"
 	@echo "  make sqlx-prepare - Prepare SQLx offline mode"
 	@echo "  make db-up        - Start database container"
 	@echo "  make db-down      - Stop database container"
@@ -74,6 +75,12 @@ fmt:
 fix:
 	SQLX_OFFLINE=true cargo fix --broken-code --allow-dirty --allow-staged --workspace --all-targets --all-features --exclude acci_tests
 	@echo "Code fixing complete."
+
+benchmark:
+	@echo "Running performance benchmarks..."
+	SQLX_OFFLINE=true cargo bench
+	@echo "Performance benchmarks complete."
+	@echo "Benchmark reports are available in target/criterion/"
 
 prepare-commit:
 	$(MAKE) fmt

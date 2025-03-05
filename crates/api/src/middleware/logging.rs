@@ -1,28 +1,44 @@
 use axum::{extract::Request, middleware::Next, response::Response};
+use metrics::{counter, histogram};
 use std::time::Instant;
 use tracing::{error, info, warn};
+use uuid::Uuid;
 
-/// Axum logging middleware function
+/// Enhanced logging middleware with error tracking
 pub async fn logging_middleware(req: Request, next: Next) -> Response {
-    // Generate a simple request ID based on current time
-    use std::time::{SystemTime, UNIX_EPOCH};
-    let request_id = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis()
-        .to_string();
+    // Generate a UUID-based request ID for better tracing
+    let request_id = Uuid::new_v4().to_string();
 
     // Extract information from the request
     let method = req.method().clone();
     let path = req.uri().path().to_string();
     let version = req.version();
+    let headers = req.headers().clone();
 
-    // Log the request
+    // Extract client information for security monitoring
+    let user_agent = headers
+        .get("user-agent")
+        .and_then(|v| v.to_str().ok())
+        .unwrap_or("unknown");
+
+    let client_ip = headers
+        .get("x-forwarded-for")
+        .and_then(|v| v.to_str().ok())
+        .or_else(|| headers.get("x-real-ip").and_then(|v| v.to_str().ok()))
+        .unwrap_or("unknown");
+
+    // Increment request counter with method and path labels
+    counter!("api.requests.total", "method" => method.to_string(), "path" => path.clone())
+        .increment(1);
+
+    // Log the request with structured fields
     info!(
         request_id = %request_id,
         method = %method,
         path = %path,
         version = ?version,
+        client_ip = %client_ip,
+        user_agent = %user_agent,
         "Request received"
     );
 
@@ -35,34 +51,61 @@ pub async fn logging_middleware(req: Request, next: Next) -> Response {
     // Calculate duration
     let duration = start.elapsed();
 
+    // Record request duration in histogram
+    histogram!("api.request.duration_ms", "path" => path.clone())
+        .record(duration.as_millis() as f64);
+
     // Extract status code
     let status = response.status();
+    let status_code = status.as_u16();
+
+    // Increment response counter with status code
+    counter!("api.responses.total", "status" => status_code.to_string(), "path" => path.clone())
+        .increment(1);
+
+    // Create structured fields for all log messages
+    let log_fields = || {
+        [
+            ("request_id", request_id.clone()),
+            ("method", method.to_string()),
+            ("path", path.clone()),
+            ("status", status_code.to_string()),
+            ("duration_ms", duration.as_millis().to_string()),
+            ("client_ip", client_ip.to_string()),
+        ]
+        .into_iter()
+        .collect::<Vec<_>>()
+    };
 
     // Log response based on status code
-    match status.as_u16() {
+    match status_code {
         code if code < 400 => {
             info!(
-                request_id = %request_id,
-                status = %status.as_u16(),
-                duration = ?duration,
+                fields = ?log_fields(),
                 "Request completed successfully"
             );
         },
         code if code < 500 => {
+            // Client errors (400-499) are warnings
             warn!(
-                request_id = %request_id,
-                status = %status.as_u16(),
-                duration = ?duration,
+                fields = ?log_fields(),
                 "Client error response"
             );
+
+            // Increment client error counter
+            counter!("api.errors.client", "status" => status_code.to_string(), "path" => path)
+                .increment(1);
         },
         _ => {
+            // Server errors (500+) are errors
             error!(
-                request_id = %request_id,
-                status = %status.as_u16(),
-                duration = ?duration,
+                fields = ?log_fields(),
                 "Server error response"
             );
+
+            // Increment server error counter
+            counter!("api.errors.server", "status" => status_code.to_string(), "path" => path)
+                .increment(1);
         },
     }
 

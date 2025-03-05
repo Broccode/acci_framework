@@ -65,3 +65,67 @@ impl Database {
             .map_err(Into::into)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::error::Error;
+
+    #[tokio::test]
+    async fn test_database_invalid_url() {
+        // Test with an invalid database URL
+        let invalid_url = "not-a-valid-postgres-url";
+        let result = Database::new(invalid_url).await;
+
+        // Should return an error
+        assert!(result.is_err());
+
+        // Verify it's a database error
+        match result {
+            Err(Error::Database(_)) => {}, // Expected error type
+            _ => panic!("Expected Database error"),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_database_with_options() {
+        // Test with custom options but invalid URL (to avoid actual connection)
+        let invalid_url = "postgres://invalid:invalid@localhost:5432/nonexistent";
+        let max_connections = 10;
+        let timeout = Duration::from_secs(5);
+
+        let result = Database::with_options(invalid_url, max_connections, timeout).await;
+
+        // Should return an error since we can't connect
+        assert!(result.is_err());
+    }
+
+    // For database pool, we simply test it exists
+    #[test]
+    fn test_pool_accessor_exists() {
+        // Simple test to ensure the pool method exists
+        // This test is mainly to verify the method doesn't change signature
+
+        // Static type checking - the pool() method must exist and return &Pool<Postgres>
+        let db_pool_fn: fn(&Database) -> &Pool<Postgres> = Database::pool;
+
+        // No runtime assertions needed - this is a compile-time test
+        assert!(std::mem::size_of::<fn(&Database) -> &Pool<Postgres>>() > 0);
+        assert!(db_pool_fn as usize > 0); // Ensure function pointer is valid
+    }
+
+    #[test]
+    fn test_migrations_path_construction() {
+        // Test that the migrations path is constructed correctly
+        // This is a unit test for the path construction logic
+        let manifest_dir = env!("CARGO_MANIFEST_DIR");
+        let expected_path = Path::new(manifest_dir)
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("migrations");
+
+        assert!(expected_path.exists(), "Migrations path should exist");
+    }
+}

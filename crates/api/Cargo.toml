@@ -7,10 +7,14 @@ authors = ["Implementation Team"]
 repository = "https://github.com/your-org/acci-framework"
 license = "Apache-2.0"
 
+[features]
+default = ["extended_errors"]
+extended_errors = []
+
 [dependencies]
 # Backend Framework
-axum = { workspace = true }
-tower = { version = "0.4" }
+axum = { workspace = true, features = ["tower-log"] }
+tower = { version = "0.4", features = ["util"] }
 tower-http = { workspace = true, features = ["trace", "cors"] }
 hyper = { version = "1.1", features = ["server"] }
 http = { version = "1.0" }
@@ -37,6 +41,9 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 metrics = { workspace = true }
 metrics-exporter-prometheus = { workspace = true }
 
+# Validator
+validator = { workspace = true, features = ["derive"] }
+
 # Local Dependencies
 acci_core = { path = "../core" }
 acci_auth = { path = "../auth" }
@@ -45,6 +52,7 @@ acci_auth = { path = "../auth" }
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.6", features = ["v4", "serde"] }
 secrecy = "0.8"
+bytes = "1.10.0"
 
 [dev-dependencies]
 # Test utilities are now in a separate crate at tests/

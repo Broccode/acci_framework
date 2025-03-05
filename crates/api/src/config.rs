@@ -15,6 +15,8 @@ pub struct ApiConfig {
     pub body_limit: usize,
     /// API documentation configuration
     pub documentation: DocumentationConfig,
+    /// Metrics server address in format "ip:port"
+    pub metrics_addr: String,
 }
 
 /// Default configuration for the API
@@ -27,6 +29,7 @@ impl Default for ApiConfig {
             timeout: TimeoutConfig::default(),
             body_limit: 5 * 1024 * 1024, // 5MB
             documentation: DocumentationConfig::default(),
+            metrics_addr: "127.0.0.1:9091".to_string(),
         }
     }
 }

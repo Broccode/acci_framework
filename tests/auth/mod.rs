@@ -8,6 +8,8 @@
 
 pub mod repository_test;
 mod session_test;
+mod user_service_test;
 
 pub use repository_test::*;
 pub use session_test::*;
+pub use user_service_test::*;

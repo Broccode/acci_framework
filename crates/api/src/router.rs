@@ -92,14 +92,14 @@ struct ExampleResponse {
     timestamp: String,
 }
 
-/// Generates a simple request ID based on the current time
-fn generate_request_id() -> String {
-    use std::time::{SystemTime, UNIX_EPOCH};
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis()
-        .to_string()
+/// Generates a unique request ID based on the current time
+/// This is used for tracking requests in logs and error responses
+pub fn generate_request_id() -> String {
+    let now = std::time::SystemTime::now();
+    let duration = now
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default();
+    format!("{}", duration.as_nanos())
 }
 
 /// Creates a timestamp in ISO 8601 format

@@ -1,5 +1,8 @@
 use crate::helpers::setup_test_db;
 
+mod migration_test;
+mod session_repository_test;
+
 #[tokio::test]
 async fn test_database_connection() {
     let (_container, pool) = setup_test_db().await.unwrap();

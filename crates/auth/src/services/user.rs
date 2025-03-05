@@ -40,13 +40,15 @@ pub enum UserServiceError {
     Repository(#[from] sqlx::Error),
     #[error("Session error: {0}")]
     Session(#[from] SessionServiceError),
+    #[error("Rate limit exceeded")]
+    RateLimitExceeded,
 }
 
 pub struct UserService {
     repository: Arc<dyn UserRepository>,
-    jwt_utils: Arc<JwtUtils>,
+    _jwt_utils: Arc<JwtUtils>,
     session_service: Arc<SessionService>,
-    config: Arc<AuthConfig>,
+    _config: Arc<AuthConfig>,
 }
 
 pub struct LoginResult {
@@ -63,9 +65,9 @@ impl UserService {
     ) -> Self {
         Self {
             repository,
-            jwt_utils,
+            _jwt_utils: jwt_utils,
             session_service,
-            config,
+            _config: config,
         }
     }
 
