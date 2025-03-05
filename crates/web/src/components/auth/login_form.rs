@@ -62,6 +62,61 @@ pub fn login_form_ssr(cx: Scope, action_path: String, error: Option<String>) -> 
 
 // Legacy-Funktion um Kompatibilität zu wahren
 #[deprecated(note = "Verwende login_form_ssr stattdessen")]
-pub fn LoginFormSSR(cx: Scope, action_path: String, error: Option<String>) -> impl IntoView {
+pub fn login_form_ssr_legacy(
+    cx: Scope,
+    action_path: String,
+    error: Option<String>,
+) -> impl IntoView {
     login_form_ssr(cx, action_path, error)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::services::leptos::ssr::test_utils;
+
+    #[test]
+    fn test_login_form_renders_with_correct_structure() {
+        // Given a login form with a specific action path
+        let action_path = "/api/auth/login".to_string();
+
+        // When rendering the form without an error
+        let html = test_utils::render_to_html(|cx| login_form_ssr(cx, action_path.clone(), None));
+
+        // Then it should contain the proper form elements
+        assert!(test_utils::assert_has_class(&html, "auth-form"));
+        assert!(test_utils::assert_has_class(&html, "login-form"));
+        assert!(test_utils::assert_contains_text(&html, "E-Mail"));
+        assert!(test_utils::assert_contains_text(&html, "Passwort"));
+        assert!(test_utils::assert_contains_text(&html, "Anmelden"));
+        assert!(test_utils::assert_contains_text(&html, "/register"));
+    }
+
+    #[test]
+    fn test_login_form_displays_error_when_provided() {
+        // Given a login form with an error message
+        let action_path = "/api/auth/login".to_string();
+        let error_message = "Ungültige Anmeldedaten".to_string();
+
+        // When rendering the form with the error
+        let html = test_utils::render_to_html(|cx| {
+            login_form_ssr(cx, action_path.clone(), Some(error_message.clone()))
+        });
+
+        // Then it should display the error message
+        assert!(test_utils::assert_has_class(&html, "error-message"));
+        assert!(test_utils::assert_contains_text(&html, &error_message));
+    }
+
+    #[test]
+    fn test_login_form_with_custom_action_path() {
+        // Given a login form with a custom action path
+        let custom_path = "/custom/login/path".to_string();
+
+        // When rendering the form
+        let html = test_utils::render_to_html(|cx| login_form_ssr(cx, custom_path.clone(), None));
+
+        // Then it should have the custom action path
+        assert!(test_utils::assert_contains_text(&html, &custom_path));
+    }
 }
