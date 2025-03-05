@@ -120,6 +120,18 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ## [Unreleased]
 
+### Fixed
+
+- Fixed compilation issues in API and web modules
+  - Resolved ambiguous glob imports in the web module to prevent naming conflicts
+  - Fixed missing imports in the API validation and example handlers
+  - Corrected function parameter types and usage in test code
+  - Added proper error handling for JSON parsing in validation tests
+  - Renamed API and web component functions to follow Rust's snake_case convention
+  - Fixed Docker test availability detection to gracefully handle environments without Docker
+  - Properly prefixed unused variables with underscores to prevent compiler warnings
+  - Fixed initialization issues in the validation module tests
+
 ### Added
 
 - Erweiterte Projektdokumentation und Entwicklungsanleitung
