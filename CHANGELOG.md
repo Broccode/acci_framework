@@ -122,6 +122,13 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Added
 
+- Erweiterte Projektdokumentation und Entwicklungsanleitung
+  - Umfassende Projektbeschreibung mit Architekturdetails
+  - Detaillierte Beschreibung aller Hauptkomponenten (Core, Auth, API, Web)
+  - Build-, Test- und Lint-Befehle dokumentiert
+  - Code-Style-Richtlinien festgelegt
+  - Async-Programmierung und Test-Organisation beschrieben
+  - Wichtige Dokumentationsreferenzen hinzugefügt
 - Added comprehensive README.md in root directory
   - Documented project goals and core objectives
   - Listed complete technical stack with Rust, Axum, Leptos, and WebAssembly
