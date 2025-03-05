@@ -14,7 +14,7 @@ extended_errors = []
 [dependencies]
 # Backend Framework
 axum = { workspace = true, features = ["tower-log"] }
-tower = { version = "0.4", features = ["util"] }
+tower = { version = "0.5", features = ["util"] }
 tower-http = { workspace = true, features = ["trace", "cors"] }
 hyper = { version = "1.1", features = ["server"] }
 http = { version = "1.0" }
