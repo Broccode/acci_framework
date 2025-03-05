@@ -29,10 +29,13 @@ alwaysApply: true
 - Keep documentation clear and concise
 
 ### Language Requirements
-- All code comments in English
+- All code comments in English - NO EXCEPTIONS
 - All rustdoc in English
 - All identifiers in English
 - All repository docs in English
+- All tests and test comments in English
+- All commit messages in English
+- Translation is restricted to user-facing content only
 
 ### Documentation Quality
 - Clear and concise writing
