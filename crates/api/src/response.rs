@@ -296,20 +296,22 @@ impl<T: Serialize> IntoResponse for ApiResponse<T> {
                     "SERIALIZATION_ERROR",
                     self.request_id,
                 );
-                
+
                 match serde_json::to_string(&error_response) {
                     Ok(error_json) => error_json,
-                    Err(_) => String::from(r#"{"status":"error","message":"Critical serialization error","code":"CRITICAL_ERROR"}"#),
+                    Err(_) => String::from(
+                        r#"{"status":"error","message":"Critical serialization error","code":"CRITICAL_ERROR"}"#,
+                    ),
                 }
-            }
+            },
         };
-        
+
         // Default to 200 OK for success responses and 400 Bad Request for error responses
         let status = match self.status {
             ResponseStatus::Success => StatusCode::OK,
             ResponseStatus::Error => StatusCode::BAD_REQUEST,
         };
-        
+
         // Create the response with the appropriate content type
         Response::builder()
             .status(status)

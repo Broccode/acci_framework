@@ -110,14 +110,7 @@ pub async fn api_login(
     {
         Ok(login_result) => {
             // Verify user has access to the requested tenant if a tenant was specified
-            let tenant_id_to_use = if let Some(tenant_id) = tenant_id {
-                // Check if the tenant exists and user has access to it
-                // For now, just use the tenant_id that was passed in
-                // TODO: Add tenant access verification logic here
-                Some(tenant_id)
-            } else {
-                None
-            };
+            let tenant_id_to_use = tenant_id;
 
             // If we have a tenant ID, we need to create a token with that tenant ID
             if tenant_id_to_use.is_some() && login_result.session_token.starts_with("eyJ") {

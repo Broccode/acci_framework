@@ -559,11 +559,10 @@ impl TenantRepository for PostgresTenantRepository {
         let now = OffsetDateTime::now_utc();
 
         // Prepare plan_type string if it exists
-        let plan_type_str = if let Some(plan_type) = &subscription.plan_type {
-            Some(plan_type.to_string().to_uppercase())
-        } else {
-            None
-        };
+        let plan_type_str = subscription
+            .plan_type
+            .as_ref()
+            .map(|plan_type| plan_type.to_string().to_uppercase());
 
         // Update subscription
         let updated = sqlx::query_as!(

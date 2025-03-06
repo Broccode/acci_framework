@@ -87,7 +87,6 @@ pub struct TenantWithAdminResponse {
 /// Service for managing tenants
 pub struct TenantService {
     tenant_repository: Arc<dyn TenantRepository>,
-    user_repository: Arc<dyn UserRepository>,
     user_service: Arc<UserService>,
 }
 
@@ -95,12 +94,11 @@ impl TenantService {
     /// Creates a new tenant service
     pub fn new(
         tenant_repository: Arc<dyn TenantRepository>,
-        user_repository: Arc<dyn UserRepository>,
+        _user_repository: Arc<dyn UserRepository>, // Kept for API compatibility but not used
         user_service: Arc<UserService>,
     ) -> Self {
         Self {
             tenant_repository,
-            user_repository,
             user_service,
         }
     }
@@ -434,7 +432,6 @@ impl TenantService {
     }
 
     /// Private utility functions
-
     // Validates a subdomain
     fn validate_subdomain(&self, subdomain: &str) -> Result<(), TenantServiceError> {
         // Only allow alphanumeric characters and hyphens

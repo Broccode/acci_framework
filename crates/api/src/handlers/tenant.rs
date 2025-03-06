@@ -21,8 +21,8 @@ use acci_auth::{
 
 /// Module with regex patterns
 pub mod regex {
-    use lazy_static::lazy_static;
     use ::regex::Regex;
+    use lazy_static::lazy_static;
 
     lazy_static! {
         pub static ref SUBDOMAIN_REGEX: Regex = Regex::new(r"^[a-zA-Z][a-zA-Z0-9\-]*$").unwrap();
@@ -117,14 +117,10 @@ pub async fn create_tenant(
             return validation_error.into_response();
         },
     };
-    
+
     // Validate the subdomain
     if let Err(message) = validated.validate_subdomain() {
-        return ApiResponse::<()>::error(
-            message,
-            "INVALID_SUBDOMAIN",
-            request_id,
-        ).into_response();
+        return ApiResponse::<()>::error(message, "INVALID_SUBDOMAIN", request_id).into_response();
     }
 
     // Convert to domain DTO
@@ -578,14 +574,10 @@ pub async fn update_tenant(
             return validation_error.into_response();
         },
     };
-    
+
     // Validate the subdomain if provided
     if let Err(message) = validated.validate_subdomain() {
-        return ApiResponse::<()>::error(
-            message,
-            "INVALID_SUBDOMAIN",
-            request_id,
-        ).into_response();
+        return ApiResponse::<()>::error(message, "INVALID_SUBDOMAIN", request_id).into_response();
     }
 
     // Get tenant ID from context
@@ -760,11 +752,8 @@ pub async fn is_tenant_admin(
     tenant_id: &Uuid,
     user_id: &Uuid,
 ) -> bool {
-    match tenant_service
+    (tenant_service
         .check_user_tenant_role(tenant_id, user_id, "ADMIN")
-        .await
-    {
-        Ok(is_admin) => is_admin,
-        Err(_) => false,
-    }
+        .await)
+        .unwrap_or(false)
 }

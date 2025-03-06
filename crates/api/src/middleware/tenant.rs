@@ -290,33 +290,6 @@ async fn resolve_tenant_id_from_all_sources(
     Ok(None)
 }
 
-/// Kept for backward compatibility
-#[deprecated(note = "Use resolve_tenant_id_from_all_sources instead")]
-async fn resolve_tenant_id(
-    state: &TenantState,
-    request: &Request<Body>,
-) -> Result<Option<Uuid>, TenantError> {
-    // Extract all necessary data from the request
-    let host = request
-        .headers()
-        .get("host")
-        .and_then(|h| h.to_str().ok())
-        .map(|s| s.to_owned());
-    let tenant_header = request
-        .headers()
-        .get(&state.config.header_name)
-        .and_then(|h| h.to_str().ok())
-        .map(|s| s.to_owned());
-    let auth_header = request
-        .headers()
-        .get("authorization")
-        .and_then(|h| h.to_str().ok())
-        .map(|s| s.to_owned());
-    let path = request.uri().path().to_owned();
-
-    // Use the new function
-    resolve_tenant_id_from_all_sources(state, host, tenant_header, auth_header, path).await
-}
 
 /// Resolves tenant ID from subdomain
 async fn resolve_from_subdomain(
