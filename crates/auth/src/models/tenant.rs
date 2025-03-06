@@ -77,8 +77,11 @@ impl<'r> sqlx::Decode<'r, sqlx::Postgres> for TenantPlanType {
 }
 
 // Implement Encode for TenantPlanType
-impl<'q> sqlx::Encode<'q, sqlx::Postgres> for TenantPlanType {
-    fn encode_by_ref(&self, buf: &mut sqlx::postgres::PgArgumentBuffer) -> Result<sqlx::encode::IsNull, Box<dyn std::error::Error + Send + Sync>> {
+impl sqlx::Encode<'_, sqlx::Postgres> for TenantPlanType {
+    fn encode_by_ref(
+        &self,
+        buf: &mut sqlx::postgres::PgArgumentBuffer,
+    ) -> Result<sqlx::encode::IsNull, Box<dyn std::error::Error + Send + Sync>> {
         let s = self.to_string();
         <&str as sqlx::Encode<sqlx::Postgres>>::encode_by_ref(&s.as_str(), buf)
     }

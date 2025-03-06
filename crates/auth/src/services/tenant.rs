@@ -445,11 +445,7 @@ impl TenantService {
         }
 
         // Must start with a letter
-        if !subdomain
-            .chars()
-            .next()
-            .map_or(false, |c| c.is_alphabetic())
-        {
+        if !subdomain.chars().next().is_some_and(|c| c.is_alphabetic()) {
             return Err(TenantServiceError::InvalidInput(
                 "Subdomain must start with a letter".into(),
             ));
