@@ -129,6 +129,7 @@ pub trait TenantAwareRepository {
     fn tenant_context(&self) -> &TenantAwareContext;
 
     /// Execute a query in the context of a specific tenant
+    #[allow(async_fn_in_trait)]
     async fn execute_for_tenant<F, R>(&self, tenant_id: &Uuid, f: F) -> Result<R, RepositoryError>
     where
         F: for<'a> FnOnce(&'a mut PgConnection) -> BoxFuture<'a, Result<R, RepositoryError>>,
@@ -137,6 +138,7 @@ pub trait TenantAwareRepository {
     }
 
     /// Execute a query without a tenant context (in public schema)
+    #[allow(async_fn_in_trait)]
     async fn execute_without_tenant<F, R>(&self, f: F) -> Result<R, RepositoryError>
     where
         F: FnOnce(PgPool) -> Pin<Box<dyn Future<Output = Result<R, RepositoryError>> + Send>>,
