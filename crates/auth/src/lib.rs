@@ -10,16 +10,18 @@ pub use models::tenant::{
     CreateTenantDto, Tenant, TenantError, TenantPlanType, TenantRepository, TenantSubscription,
     TenantUser, UpdateTenantDto,
 };
+pub use models::totp::{Algorithm, TotpConfig, TotpSecret, TotpSecretInfo};
 pub use models::user::{CreateUser, LoginCredentials, User, UserError, UserRepository};
 pub use repository::{
-    PostgresTenantRepository, PostgresUserRepository, RepositoryConfig, RepositoryError,
-    TenantAwareContext, TenantAwareRepository,
+    PostgresTenantRepository, PostgresTotpRepository, PostgresUserRepository, RepositoryConfig,
+    RepositoryError, TenantAwareContext, TenantAwareRepository, TotpSecretRepository,
 };
 pub use services::{
     session::{SessionService, SessionServiceError},
     tenant::{
         CreateTenantWithAdminDto, TenantService, TenantServiceError, TenantWithAdminResponse,
     },
+    totp::{TotpError, TotpService},
     user::{UserService, UserServiceError},
 };
 pub use session::{
