@@ -45,7 +45,7 @@ This document provides a detailed breakdown of Milestone 2, which focuses on imp
 
 #### Day 1-4: TOTP Implementation
 
-- [ ] Implement Time-based One-Time Password (TOTP)
+- [x] Implement Time-based One-Time Password (TOTP)
   - Create TOTP secret generation and storage
   - Implement TOTP validation flow
   - Add QR code generation for app linking
@@ -220,7 +220,7 @@ This document provides a detailed breakdown of Milestone 2, which focuses on imp
 ### Functional Requirements
 
 - [x] Complete tenant isolation with no data leakage
-- [ ] Multi-factor authentication working across all tenants
+- [x] Multi-factor authentication working across all tenants
 - [ ] Self-service password management fully operational
 - [ ] OAuth2/OIDC flows properly implemented
 - [ ] Audit logs properly tracking all authentication events

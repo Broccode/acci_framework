@@ -256,6 +256,18 @@ Create a git tag for the version (e.g., v0.2.0)
   - Created tenant isolation mechanics for data separation
   - Added token-based tenant identification
 
+- Multi-factor authentication with TOTP
+  - Added TOTP (Time-based One-Time Password) implementation
+  - Created database migration for TOTP secrets and recovery codes
+  - Implemented secure secret generation with cryptographically secure RNG
+  - Added QR code URI generation for easy setup with authenticator apps
+  - Implemented recovery code system with secure argon2 hashing
+  - Created TOTP verification with configurable time-window support
+  - Added support for multiple MFA methods per user
+  - Implemented comprehensive TOTP service with business logic
+  - Created secure repository pattern for TOTP secrets with Postgres
+  - Added SQLx offline mode support for prepared TOTP queries
+
 ### Fixed
 
 - Resolved async/sync issues in the tenant middleware implementation
@@ -278,6 +290,11 @@ Create a git tag for the version (e.g., v0.2.0)
   - Simplified tenant authorization checks
   - Improved response formatting in tenant handlers
   - Clarified tenant access patterns in login handlers
+- Enhanced authentication security with MFA
+  - Modified session handling to track MFA status
+  - Updated session validation to require MFA completion when enabled
+  - Enhanced user model with MFA status tracking
+  - Improved login flow to support additional verification steps
 
 ### Technical
 
@@ -285,6 +302,11 @@ Create a git tag for the version (e.g., v0.2.0)
   - Generated SQLx prepared query support files
   - Cached tenant lookup queries for improved performance
   - Added tenant user relationship query caching
+- Added new security dependencies
+  - Added totp-rs for TOTP generation and validation
+  - Added base32 for encoding TOTP secrets
+  - Added SHA-1, SHA-256, and SHA-512 for TOTP algorithm support
+  - Added URL encoding support for QR code generation
 
 ## [0.1.1] - 2025-02-24
 
