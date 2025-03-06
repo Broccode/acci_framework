@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE totp_secrets\n                SET secret = $1, algorithm = $2, digits = $3, period = $4, \n                    recovery_codes = $5, enabled = $6, last_used_at = $7\n                WHERE id = $8\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Int4",
+        "Int4",
+        "Jsonb",
+        "Bool",
+        "Timestamptz",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3194994a9139868f3e2a7326ea23ee7ef9d1461fbb3d6cc3fe56ca1316f4abc5"
+}

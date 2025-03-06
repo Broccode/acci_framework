@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE users \n            SET has_mfa_enabled = EXISTS(\n                    SELECT 1 FROM jsonb_object_keys(mfa_methods) k\n                    WHERE k <> 'totp' AND mfa_methods->k::text = 'true'\n                ), \n                mfa_methods = mfa_methods - 'totp'\n            WHERE id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fb31f3bfaf6cd64b4861a4269ce1ecf25cf605e920437499fc7a400cf304383d"
+}

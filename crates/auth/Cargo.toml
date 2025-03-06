@@ -16,6 +16,11 @@ argon2 = { workspace = true }
 rand = { workspace = true }
 zxcvbn = { workspace = true }
 uuid = { workspace = true }
+totp-rs = { workspace = true }
+base32 = { workspace = true }
+sha1 = { workspace = true }
+sha2 = { workspace = true }
+urlencoding = { workspace = true }
 
 # Async & Utils
 tokio = { workspace = true }

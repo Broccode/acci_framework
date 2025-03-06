@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                    UPDATE users \n                    SET has_mfa_enabled = true, \n                        mfa_methods = \n                            CASE \n                                WHEN NOT mfa_methods::jsonb ? 'totp' \n                                THEN jsonb_set(mfa_methods, '{totp}', 'true'::jsonb, true)\n                                ELSE mfa_methods\n                            END\n                    WHERE id = $1\n                    ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8bb0f347baa9284f0c32543f22846f8c3ddef717bad80dad24ccfd1693796231"
+}
