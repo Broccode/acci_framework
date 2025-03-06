@@ -5,6 +5,9 @@ use thiserror::Error;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
+/// Tenant identifier type
+pub type TenantId = Uuid;
+
 /// Represents a tenant organization in the system
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Tenant {

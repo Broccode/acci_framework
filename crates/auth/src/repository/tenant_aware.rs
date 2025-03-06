@@ -31,6 +31,12 @@ pub enum RepositoryError {
 
     #[error("Validation error: {0}")]
     ValidationError(String),
+
+    #[error("Serialization error: {0}")]
+    SerializationError(String),
+
+    #[error("Deserialization error: {0}")]
+    DeserializationError(String),
 }
 
 impl TenantAwareContext {
