@@ -6,10 +6,20 @@ pub mod session;
 pub mod utils;
 
 pub use config::AuthConfig;
+pub use models::tenant::{
+    CreateTenantDto, Tenant, TenantError, TenantPlanType, TenantRepository, TenantSubscription,
+    TenantUser, UpdateTenantDto,
+};
 pub use models::user::{CreateUser, LoginCredentials, User, UserError, UserRepository};
-pub use repository::{PostgresUserRepository, RepositoryConfig};
+pub use repository::{
+    PostgresTenantRepository, PostgresUserRepository, RepositoryConfig, RepositoryError,
+    TenantAwareContext, TenantAwareRepository,
+};
 pub use services::{
     session::{SessionService, SessionServiceError},
+    tenant::{
+        CreateTenantWithAdminDto, TenantService, TenantServiceError, TenantWithAdminResponse,
+    },
     user::{UserService, UserServiceError},
 };
 pub use session::{

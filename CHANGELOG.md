@@ -244,7 +244,33 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ## [Unreleased]
 
-No unreleased changes at this time.
+### Added
+
+- Multi-tenancy implementation
+  - Added database schema for tenant management with proper constraints and indexing
+  - Implemented tenant repository for CRUD operations
+  - Created tenant service with business logic
+  - Added tenant identification and resolution middleware
+  - Implemented tenant-based request routing
+  - Added tenant context passing through middleware
+  - Created tenant isolation mechanics for data separation
+  - Added token-based tenant identification
+
+### Fixed
+
+- Resolved async/sync issues in the tenant middleware implementation
+  - Fixed future Send bounds for request references in middleware
+  - Improved data extraction pattern for better thread safety
+  - Resolved potential race conditions in tenant resolution process
+  - Ensured proper error propagation across async boundaries
+  - Fixed test failures related to missing tenant_id field
+
+### Technical
+
+- Added SQL query caching for tenant operations
+  - Generated SQLx prepared query support files
+  - Cached tenant lookup queries for improved performance
+  - Added tenant user relationship query caching
 
 ## [0.1.1] - 2025-02-24
 

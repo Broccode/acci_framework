@@ -50,14 +50,14 @@ fn jwt_token_benchmarks(c: &mut Criterion) {
         b.iter(|| {
             let user_id = black_box(Uuid::new_v4());
             let email = black_box("test@example.com");
-            let _ = jwt_utils.create_token(user_id, email).unwrap();
+            let _ = jwt_utils.create_token(user_id, email, None).unwrap();
         })
     });
 
     // Create a token to validate
     let user_id = Uuid::new_v4();
     let email = "test@example.com";
-    let token = jwt_utils.create_token(user_id, email).unwrap();
+    let token = jwt_utils.create_token(user_id, email, None).unwrap();
 
     // Benchmark token validation
     group.bench_function("token_validation", |b| {
@@ -153,7 +153,7 @@ fn login_simulation_benchmark(c: &mut Criterion) {
                 let jwt_utils =
                     JwtUtils::new("test_secret_that_is_at_least_32_bytes_long".as_bytes());
                 let user_id = Uuid::parse_str(&user.0).unwrap();
-                let token = jwt_utils.create_token(user_id, &user.1).unwrap();
+                let token = jwt_utils.create_token(user_id, &user.1, None).unwrap();
 
                 // Return simulated session
                 (user_id, token)

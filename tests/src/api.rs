@@ -273,6 +273,7 @@ pub mod auth_handler_test {
                     token: login_result.session_token,
                     user_id: login_result.user.id.to_string(),
                     expires_at: 0, // Default for tests
+                    tenant_id: None, // No tenant for tests
                 };
 
                 let api_response = ApiResponse::success(response, request_id);
@@ -410,6 +411,7 @@ pub mod auth_handler_test {
             let login_request = LoginRequest {
                 email: "test@example.com".to_string(),
                 password: "password123".to_string(),
+                tenant_id: None,
             };
 
             // Act
@@ -443,6 +445,7 @@ pub mod auth_handler_test {
             let login_request = LoginRequest {
                 email: "test@example.com".to_string(),
                 password: "password123".to_string(),
+                tenant_id: None,
             };
 
             // Act

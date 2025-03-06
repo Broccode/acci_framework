@@ -20,6 +20,7 @@ uuid = { workspace = true }
 # Async & Utils
 tokio = { workspace = true }
 async-trait = { workspace = true }
+futures = { workspace = true }
 
 # Serialization
 serde = { workspace = true }
@@ -46,10 +47,10 @@ governor = { workspace = true }
 
 # Local Dependencies
 acci_core = { path = "../core" }
-hex = "0.4.3"
+hex = { workspace = true }
 
 # Add these dependencies if they don't exist
-metrics = { version = "0.21", optional = true }
+metrics = { workspace = true, optional = true }
 
 [dev-dependencies]
 tokio-test = { workspace = true }

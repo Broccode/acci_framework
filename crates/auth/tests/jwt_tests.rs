@@ -11,7 +11,7 @@ async fn test_jwt_creation_and_validation() {
 
     // Test token creation
     let token = jwt_utils
-        .create_token(user_id, email)
+        .create_token(user_id, email, None)
         .expect("Failed to create token");
     assert!(!token.is_empty());
 
@@ -21,6 +21,7 @@ async fn test_jwt_creation_and_validation() {
         .expect("Failed to validate token");
     assert_eq!(claims.sub, user_id);
     assert_eq!(claims.email, email);
+    assert_eq!(claims.tenant_id, None);
 }
 
 #[tokio::test]
@@ -39,6 +40,7 @@ async fn test_expired_token() {
         exp: exp.unix_timestamp(),
         iat: now.unix_timestamp(),
         email: email.to_string(),
+        tenant_id: None,
     };
 
     let token = jsonwebtoken::encode(

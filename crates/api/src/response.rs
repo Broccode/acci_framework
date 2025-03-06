@@ -284,6 +284,47 @@ where
     }
 }
 
+// Add the IntoResponse implementation for ApiResponse
+impl<T: Serialize> IntoResponse for ApiResponse<T> {
+    fn into_response(self) -> Response {
+        let body = match serde_json::to_string(&self) {
+            Ok(json) => json,
+            Err(err) => {
+                // If serialization fails, return a 500 error
+                let error_response = ApiResponse::<()>::error(
+                    format!("Failed to serialize response: {}", err),
+                    "SERIALIZATION_ERROR",
+                    self.request_id,
+                );
+                
+                match serde_json::to_string(&error_response) {
+                    Ok(error_json) => error_json,
+                    Err(_) => String::from(r#"{"status":"error","message":"Critical serialization error","code":"CRITICAL_ERROR"}"#),
+                }
+            }
+        };
+        
+        // Default to 200 OK for success responses and 400 Bad Request for error responses
+        let status = match self.status {
+            ResponseStatus::Success => StatusCode::OK,
+            ResponseStatus::Error => StatusCode::BAD_REQUEST,
+        };
+        
+        // Create the response with the appropriate content type
+        Response::builder()
+            .status(status)
+            .header("Content-Type", "application/json")
+            .body(body.into())
+            .unwrap_or_else(|_| {
+                // If response creation fails, return a plain 500 error
+                Response::builder()
+                    .status(StatusCode::INTERNAL_SERVER_ERROR)
+                    .body("Internal Server Error".into())
+                    .unwrap()
+            })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

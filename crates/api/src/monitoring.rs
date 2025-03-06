@@ -84,10 +84,17 @@ pub async fn start_metrics_server(config: &ApiConfig) -> Result<(), String> {
     Ok(())
 }
 
-/// Zeichnet eine Authentifizierungsoperation auf.
+/// Records an authentication operation
 #[allow(unused_must_use)]
 pub fn record_auth_operation(operation: &str, result: &str) {
     let metric_name = format!("auth.operations.{}.{}", operation, result);
+    counter!(metric_name);
+}
+
+/// Records a tenant operation
+#[allow(unused_must_use)]
+pub fn record_tenant_operation(operation: &str, result: &str) {
+    let metric_name = format!("tenant.operations.{}.{}", operation, result);
     counter!(metric_name);
 }
 

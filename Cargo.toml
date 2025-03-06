@@ -26,6 +26,8 @@ axum-core = { version = "0.5.0" }
 tower = { version = "0.5.2", features = ["full"] }
 tower-http = { version = "0.6.2", features = ["fs", "trace", "cors"] }
 hyper = { version = "1.2.0" }
+http = { version = "1.0.0" }
+http-body = { version = "1.0.0" }
 http-body-util = { version = "0.1.0" }
 bytes = { version = "1.5.0" }
 
@@ -34,6 +36,8 @@ jsonwebtoken = "9.3.1"
 argon2 = "0.5.3"
 rand = "0.9.0"
 zxcvbn = "3.1.0"
+secrecy = "0.8.0"
+hex = "0.4.3"
 
 # Database & Storage
 sqlx = { version = "0.8.3", features = ["runtime-tokio-rustls", "postgres", "sqlite", "uuid", "time", "json", "ipnetwork"] }
@@ -69,6 +73,8 @@ dotenvy = "0.15.7"
 tokio-test = "0.4.4"
 rstest = "0.24.0"
 mockall = "0.13.1"
+tracing-test = "0.2.4"
+pretty_assertions = "1.4.0"
 
 # Security & SBOM
 cyclonedx-bom = "0.8.0"
@@ -108,6 +114,9 @@ acci_core = { path = "crates/core" }
 acci_auth = { path = "crates/auth" }
 acci_api = { path = "crates/api" }
 acci_web = { path = "crates/web" }
+lazy_static.workspace = true
+regex = { workspace = true, features = ["unicode-perl"] }
+jsonwebtoken.workspace = true
 
 [dev-dependencies]
 criterion = { version = "0.5.1", features = ["async_tokio"] }

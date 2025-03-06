@@ -6,12 +6,13 @@ use uuid::Uuid;
 
 const JWT_EXPIRATION_HOURS: i64 = 24;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
-    pub sub: Uuid,     // Subject (User ID)
-    pub exp: i64,      // Expiration Time
-    pub iat: i64,      // Issued At
-    pub email: String, // User's email
+    pub sub: Uuid,               // Subject (User ID)
+    pub exp: i64,                // Expiration Time
+    pub iat: i64,                // Issued At
+    pub email: String,           // User's email
+    pub tenant_id: Option<Uuid>, // Current tenant context (if any)
 }
 
 #[derive(Debug, Error)]
@@ -37,7 +38,12 @@ impl JwtUtils {
         }
     }
 
-    pub fn create_token(&self, user_id: Uuid, email: &str) -> Result<String, JwtError> {
+    pub fn create_token(
+        &self,
+        user_id: Uuid,
+        email: &str,
+        tenant_id: Option<Uuid>,
+    ) -> Result<String, JwtError> {
         let now = OffsetDateTime::now_utc();
         let exp = now + Duration::hours(JWT_EXPIRATION_HOURS);
 
@@ -46,10 +52,20 @@ impl JwtUtils {
             exp: exp.unix_timestamp(),
             iat: now.unix_timestamp(),
             email: email.to_string(),
+            tenant_id,
         };
 
         encode(&Header::default(), &claims, &self.encoding_key)
             .map_err(|e| JwtError::TokenCreation(e.to_string()))
+    }
+
+    // For backwards compatibility
+    pub fn create_token_without_tenant(
+        &self,
+        user_id: Uuid,
+        email: &str,
+    ) -> Result<String, JwtError> {
+        self.create_token(user_id, email, None)
     }
 
     pub fn validate_token(&self, token: &str) -> Result<Claims, JwtError> {

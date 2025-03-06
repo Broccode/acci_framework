@@ -38,6 +38,9 @@ pub struct LoginRequest {
 
     #[validate(length(min = 1, message = "Password is required"))]
     pub password: String,
+
+    /// Optional tenant ID for multi-tenant context
+    pub tenant_id: Option<String>,
 }
 
 /// Login Response DTO
@@ -46,6 +49,7 @@ pub struct LoginResponse {
     pub token: String,
     pub user_id: String,
     pub expires_at: i64,
+    pub tenant_id: Option<String>,
 }
 
 /// Handler for API login request
@@ -72,6 +76,25 @@ pub async fn api_login(
     // Record login attempt in metrics
     monitoring::record_auth_operation("login", "attempt");
 
+    // Parse tenant ID if provided
+    let tenant_id = if let Some(tenant_id_str) = &validated.tenant_id {
+        match uuid::Uuid::parse_str(tenant_id_str) {
+            Ok(id) => Some(id),
+            Err(_) => {
+                // Invalid UUID format for tenant ID
+                return ApiError::new(
+                    StatusCode::BAD_REQUEST,
+                    "Invalid tenant ID format",
+                    "INVALID_TENANT_ID",
+                    request_id,
+                )
+                .into_response();
+            },
+        }
+    } else {
+        None
+    };
+
     // Perform login process
     match state
         .user_service
@@ -86,6 +109,22 @@ pub async fn api_login(
         .await
     {
         Ok(login_result) => {
+            // Verify user has access to the requested tenant if a tenant was specified
+            let tenant_id_to_use = if let Some(tenant_id) = tenant_id {
+                // Check if the tenant exists and user has access to it
+                // For now, just use the tenant_id that was passed in
+                // TODO: Add tenant access verification logic here
+                Some(tenant_id)
+            } else {
+                None
+            };
+
+            // If we have a tenant ID, we need to create a token with that tenant ID
+            if tenant_id_to_use.is_some() && login_result.session_token.starts_with("eyJ") {
+                // This is a JWT token, we should create a new one with tenant context
+                // TODO: Replace token with tenant-aware token
+            }
+
             // Record successful login in metrics
             monitoring::record_auth_operation("login", "success");
 
@@ -98,11 +137,13 @@ pub async fn api_login(
                 token: login_result.session_token,
                 user_id: login_result.user.id.to_string(),
                 expires_at: 0, // We need to get this from somewhere else or compute it
+                tenant_id: tenant_id_to_use.map(|id| id.to_string()),
             };
 
             info!(
                 request_id = %request_id,
                 user_id = %login_result.user.id,
+                tenant_id = ?tenant_id_to_use,
                 "Login successful"
             );
 

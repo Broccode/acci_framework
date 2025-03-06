@@ -1,11 +1,11 @@
 [package]
 name = "acci_api"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
 description = "API infrastructure for the ACCI Framework"
-authors = ["Implementation Team"]
 repository = "https://github.com/your-org/acci-framework"
-license = "Apache-2.0"
 
 [features]
 default = ["extended_errors"]
@@ -14,51 +14,58 @@ extended_errors = []
 [dependencies]
 # Backend Framework
 axum = { workspace = true, features = ["tower-log"] }
-tower = { version = "0.4", features = ["util"] }
+tower = { workspace = true, features = ["util"] }
 tower-http = { workspace = true, features = ["trace", "cors"] }
-hyper = { version = "1.1", features = ["server"] }
-http = { version = "1.0" }
-http-body = "1.0"
-http-body-util = "0.1.0"
+hyper = { workspace = true, features = ["server"] }
+http = { workspace = true }
+http-body = { workspace = true }
+http-body-util = { workspace = true }
 
 # Async & Utils
-tokio = { version = "1.36", features = ["full"] }
+tokio = { workspace = true }
 futures = { workspace = true }
-async-trait = "0.1"
+async-trait = { workspace = true }
 
 # Serialization
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde = { workspace = true }
+serde_json = { workspace = true }
 time = { workspace = true }
 
 # Error Handling
-thiserror = "1.0"
+thiserror = { workspace = true }
 anyhow = { workspace = true }
 
 # Logging & Metrics
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 metrics = { workspace = true }
 metrics-exporter-prometheus = { workspace = true }
 
 # Validator
 validator = { workspace = true, features = ["derive"] }
 
+# Authentication & Security
+jsonwebtoken = { workspace = true }
+
+# Utils
+lazy_static = { workspace = true }
+regex = { workspace = true, features = ["unicode-perl"] }
+
 # Local Dependencies
 acci_core = { path = "../core" }
 acci_auth = { path = "../auth" }
 
 # Additional dependencies
-chrono = { version = "0.4", features = ["serde"] }
-uuid = { version = "1.6", features = ["v4", "serde"] }
-secrecy = "0.8"
-bytes = "1.10.0"
+chrono = { workspace = true }
+uuid = { workspace = true }
+secrecy = { workspace = true }
+bytes = { workspace = true }
 
 [dev-dependencies]
 # Test utilities are now in a separate crate at tests/
-tokio-test = "0.4"
-tracing-test = "0.2"
-pretty_assertions = "1.4"
+tokio-test = { workspace = true }
+tracing-test = { workspace = true }
+pretty_assertions = { workspace = true }
 mockall = { workspace = true }
 
 [lib]

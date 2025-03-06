@@ -1,7 +1,9 @@
 [package]
 name = "acci_tests"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
 
 [dependencies]
 acci_core = { path = "../crates/core" }
@@ -33,4 +35,4 @@ serde_json = { workspace = true }
 anyhow = { workspace = true }
 mockall = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
-async-trait.workspace = true
+async-trait = { workspace = true }

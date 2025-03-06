@@ -1,0 +1,95 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT \n                id, tenant_id, plan_type as \"plan_type: _\", starts_at, expires_at, is_active, \n                payment_status, max_users, features, created_at, updated_at\n            FROM tenant_subscriptions\n            WHERE tenant_id = $1 AND is_active = true\n            AND (expires_at IS NULL OR expires_at > NOW())\n            ORDER BY created_at DESC\n            LIMIT 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "tenant_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "plan_type: _",
+        "type_info": {
+          "Custom": {
+            "name": "tenant_plan_type",
+            "kind": {
+              "Enum": [
+                "FREE",
+                "BASIC",
+                "PROFESSIONAL",
+                "ENTERPRISE",
+                "CUSTOM"
+              ]
+            }
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "starts_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 4,
+        "name": "expires_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "is_active",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 6,
+        "name": "payment_status",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "max_users",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "features",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "fe492c6a569a565a200884977b50ca3b95e9b06a26703cb8bb7a84f062feec9a"
+}

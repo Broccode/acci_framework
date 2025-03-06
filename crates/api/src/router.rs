@@ -1,11 +1,15 @@
 use crate::config::ApiConfig;
 use crate::handlers::auth::{ApiAppState, api_login, api_register, validate_token};
+use crate::handlers::tenant::{
+    TenantAppState, create_tenant, create_tenant_with_admin, delete_tenant, get_tenant,
+    get_tenant_by_id, update_tenant,
+};
 use crate::response::ApiResponse;
 use axum::{
     Json, Router,
     http::StatusCode,
     middleware,
-    routing::{get, post},
+    routing::{delete, get, post, put},
 };
 
 /// API Router structure
@@ -19,13 +23,32 @@ impl ApiRouter {
         Self { config }
     }
 
-    /// Creates the Axum router for the API with the provided app state
-    pub fn create_router_with_state(&self, state: ApiAppState) -> Router {
+    /// Creates the Axum router for the API with the provided app states
+    pub fn create_router_with_state(
+        &self,
+        auth_state: ApiAppState,
+        tenant_state: Option<TenantAppState>,
+    ) -> Router {
         // Create auth routes
         let auth_routes = Router::new()
             .route("/login", post(api_login))
             .route("/register", post(api_register))
-            .route("/validate-token", post(validate_token));
+            .route("/validate-token", post(validate_token))
+            .with_state(auth_state.clone());
+
+        // Create tenant routes if tenant state is provided
+        let tenant_routes = if let Some(tenant_state) = tenant_state {
+            Router::new()
+                .route("/", get(get_tenant))
+                .route("/", post(create_tenant))
+                .route("/", put(update_tenant))
+                .route("/with-admin", post(create_tenant_with_admin))
+                .route("/:id", get(get_tenant_by_id))
+                .route("/:id", delete(delete_tenant))
+                .with_state(tenant_state)
+        } else {
+            Router::new()
+        };
 
         // Create base router
         let router = Router::new()
@@ -35,10 +58,12 @@ impl ApiRouter {
             .route("/example", get(example_handler))
             // Nest auth routes
             .nest("/auth", auth_routes)
+            // Nest tenant routes if applicable
+            .nest("/tenants", tenant_routes)
 
             // Apply middleware chain (in reverse order of execution)
             .layer(middleware::from_fn(crate::middleware::logging::logging_middleware))
-            .with_state(state);
+            .with_state(auth_state);
 
         // Apply base URL path
         if self.config.base_path.is_empty() {
