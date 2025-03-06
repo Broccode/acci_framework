@@ -272,7 +272,7 @@ pub mod auth_handler_test {
                 let response = LoginResponse {
                     token: login_result.session_token,
                     user_id: login_result.user.id.to_string(),
-                    expires_at: 0, // Default for tests
+                    expires_at: 0,   // Default for tests
                     tenant_id: None, // No tenant for tests
                 };
 
