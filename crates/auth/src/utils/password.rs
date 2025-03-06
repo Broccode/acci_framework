@@ -48,3 +48,8 @@ pub fn check_password_strength(password: &str, user_inputs: &[&str]) -> Result<(
 
     Ok(())
 }
+
+/// Generate a salt string for password hashing
+pub fn generate_salt() -> SaltString {
+    SaltString::generate(&mut OsRng)
+}
