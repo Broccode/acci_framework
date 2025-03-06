@@ -290,7 +290,6 @@ async fn resolve_tenant_id_from_all_sources(
     Ok(None)
 }
 
-
 /// Resolves tenant ID from subdomain
 async fn resolve_from_subdomain(
     state: &TenantState,

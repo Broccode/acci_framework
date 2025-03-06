@@ -264,6 +264,20 @@ Create a git tag for the version (e.g., v0.2.0)
   - Resolved potential race conditions in tenant resolution process
   - Ensured proper error propagation across async boundaries
   - Fixed test failures related to missing tenant_id field
+- Fixed compiler warnings in multi-tenancy code
+  - Added proper Send/Sync bounds to async traits in tenant repository
+  - Removed unused code and fields in tenant service implementation
+  - Fixed documentation comments formatting in tenant service
+  - Removed deprecated functions in tenant middleware
+  - Improved error handling in tenant-related endpoints
+
+### Changed
+
+- Improved code style and maintainability in multi-tenancy implementation
+  - Enhanced Option handling in tenant repository
+  - Simplified tenant authorization checks
+  - Improved response formatting in tenant handlers
+  - Clarified tenant access patterns in login handlers
 
 ### Technical
 
