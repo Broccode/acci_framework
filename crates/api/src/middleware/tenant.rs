@@ -6,7 +6,7 @@ use axum::{
     middleware::Next,
     response::{IntoResponse, Response},
 };
-use jsonwebtoken::{decode, DecodingKey, Validation};
+use jsonwebtoken::{DecodingKey, Validation, decode};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tracing::{debug, error, info};
@@ -111,47 +111,58 @@ pub async fn tenant_resolution_middleware(
     debug!(request_id = %request_id, "Resolving tenant for request");
 
     // Extract all necessary data from the request first
-    let host = request.headers().get("host").and_then(|h| h.to_str().ok()).map(|s| s.to_owned());
-    let tenant_header = request.headers().get(&state.config.header_name)
+    let host = request
+        .headers()
+        .get("host")
         .and_then(|h| h.to_str().ok())
         .map(|s| s.to_owned());
-    let auth_header = request.headers().get("authorization")
+    let tenant_header = request
+        .headers()
+        .get(&state.config.header_name)
+        .and_then(|h| h.to_str().ok())
+        .map(|s| s.to_owned());
+    let auth_header = request
+        .headers()
+        .get("authorization")
         .and_then(|h| h.to_str().ok())
         .map(|s| s.to_owned());
     let path = request.uri().path().to_owned();
 
     // Try to resolve tenant ID from various sources
-    let tenant_id = match resolve_tenant_id_from_all_sources(&state, host, tenant_header, auth_header, path).await {
-        Ok(Some(id)) => Some(id),
-        Ok(None) => None,
-        Err(err) => {
-            // Failed to resolve tenant
-            error!(request_id = %request_id, error = %err, "Failed to resolve tenant");
-            monitoring::record_auth_operation("tenant_resolution", "failure");
+    let tenant_id =
+        match resolve_tenant_id_from_all_sources(&state, host, tenant_header, auth_header, path)
+            .await
+        {
+            Ok(Some(id)) => Some(id),
+            Ok(None) => None,
+            Err(err) => {
+                // Failed to resolve tenant
+                error!(request_id = %request_id, error = %err, "Failed to resolve tenant");
+                monitoring::record_auth_operation("tenant_resolution", "failure");
 
-            let status_code = match err {
-                TenantError::NotFound => StatusCode::NOT_FOUND,
-                TenantError::InactiveTenant => StatusCode::FORBIDDEN,
-                _ => StatusCode::INTERNAL_SERVER_ERROR,
-            };
+                let status_code = match err {
+                    TenantError::NotFound => StatusCode::NOT_FOUND,
+                    TenantError::InactiveTenant => StatusCode::FORBIDDEN,
+                    _ => StatusCode::INTERNAL_SERVER_ERROR,
+                };
 
-            let error_code = match err {
-                TenantError::NotFound => "TENANT_NOT_FOUND",
-                TenantError::InactiveTenant => "TENANT_INACTIVE",
-                _ => "TENANT_RESOLUTION_ERROR",
-            };
+                let error_code = match err {
+                    TenantError::NotFound => "TENANT_NOT_FOUND",
+                    TenantError::InactiveTenant => "TENANT_INACTIVE",
+                    _ => "TENANT_RESOLUTION_ERROR",
+                };
 
-            let error_message = match err {
-                TenantError::NotFound => "Tenant not found",
-                TenantError::InactiveTenant => "Tenant account is inactive",
-                _ => "Internal server error",
-            };
+                let error_message = match err {
+                    TenantError::NotFound => "Tenant not found",
+                    TenantError::InactiveTenant => "Tenant account is inactive",
+                    _ => "Internal server error",
+                };
 
-            let error = ApiError::new(status_code, error_message, error_code, request_id);
-            return Ok(error.into_response());
-        }
-    };
-    
+                let error = ApiError::new(status_code, error_message, error_code, request_id);
+                return Ok(error.into_response());
+            },
+        };
+
     match tenant_id {
         Some(tenant_id) => {
             // Tenant ID found, load tenant information
@@ -165,7 +176,7 @@ pub async fn tenant_resolution_middleware(
                             "Tenant is inactive"
                         );
                         monitoring::record_auth_operation("tenant_resolution", "failure");
-                        
+
                         let error = ApiError::new(
                             StatusCode::FORBIDDEN,
                             "Tenant account is inactive",
@@ -174,11 +185,11 @@ pub async fn tenant_resolution_middleware(
                         );
                         return Ok(error.into_response());
                     }
-                    
+
                     // Create tenant context and add it to request extensions
                     let tenant_context = TenantContext::from_tenant(tenant);
                     request.extensions_mut().insert(tenant_context);
-                    
+
                     // Record successful tenant resolution
                     info!(
                         request_id = %request_id,
@@ -186,7 +197,7 @@ pub async fn tenant_resolution_middleware(
                         "Tenant successfully resolved"
                     );
                     monitoring::record_auth_operation("tenant_resolution", "success");
-                    
+
                     // Continue with the request
                     Ok(next.run(request).await)
                 },
@@ -198,7 +209,7 @@ pub async fn tenant_resolution_middleware(
                         "Tenant not found"
                     );
                     monitoring::record_auth_operation("tenant_resolution", "failure");
-                    
+
                     let error = ApiError::new(
                         StatusCode::NOT_FOUND,
                         "Tenant not found",
@@ -216,7 +227,7 @@ pub async fn tenant_resolution_middleware(
                         "Error looking up tenant"
                     );
                     monitoring::record_auth_operation("tenant_resolution", "failure");
-                    
+
                     let error = ApiError::new(
                         StatusCode::INTERNAL_SERVER_ERROR,
                         "Internal server error",
@@ -231,7 +242,7 @@ pub async fn tenant_resolution_middleware(
             // No tenant found but not required (public route)
             debug!(request_id = %request_id, "No tenant identified, continuing as public route");
             Ok(next.run(request).await)
-        }
+        },
     }
 }
 
@@ -279,18 +290,26 @@ async fn resolve_tenant_id_from_all_sources(
     Ok(None)
 }
 
-/// Kept for backward compatibility 
+/// Kept for backward compatibility
 #[deprecated(note = "Use resolve_tenant_id_from_all_sources instead")]
 async fn resolve_tenant_id(
     state: &TenantState,
     request: &Request<Body>,
 ) -> Result<Option<Uuid>, TenantError> {
     // Extract all necessary data from the request
-    let host = request.headers().get("host").and_then(|h| h.to_str().ok()).map(|s| s.to_owned());
-    let tenant_header = request.headers().get(&state.config.header_name)
+    let host = request
+        .headers()
+        .get("host")
         .and_then(|h| h.to_str().ok())
         .map(|s| s.to_owned());
-    let auth_header = request.headers().get("authorization")
+    let tenant_header = request
+        .headers()
+        .get(&state.config.header_name)
+        .and_then(|h| h.to_str().ok())
+        .map(|s| s.to_owned());
+    let auth_header = request
+        .headers()
+        .get("authorization")
         .and_then(|h| h.to_str().ok())
         .map(|s| s.to_owned());
     let path = request.uri().path().to_owned();
@@ -353,9 +372,7 @@ async fn resolve_from_header(
 }
 
 /// Resolves tenant ID from JWT claims
-fn resolve_from_jwt(
-    auth_header: &str,
-) -> Result<Option<Uuid>, TenantError> {
+fn resolve_from_jwt(auth_header: &str) -> Result<Option<Uuid>, TenantError> {
     // Handle "Bearer" prefix
     let token = if auth_header.starts_with("Bearer ") {
         &auth_header[7..] // Skip "Bearer " prefix
@@ -368,7 +385,7 @@ fn resolve_from_jwt(
     // will happen in the authentication middleware
     let mut validation = Validation::default();
     validation.insecure_disable_signature_validation();
-    
+
     let token_data = match decode::<TenantClaims>(
         token,
         &DecodingKey::from_secret(&[]), // Dummy key
@@ -383,10 +400,7 @@ fn resolve_from_jwt(
 }
 
 /// Resolves tenant ID from URL path
-async fn resolve_from_path(
-    state: &TenantState,
-    path: &str,
-) -> Result<Option<Uuid>, TenantError> {
+async fn resolve_from_path(state: &TenantState, path: &str) -> Result<Option<Uuid>, TenantError> {
     // Check if path starts with the configured prefix
     if !path.starts_with(&state.config.path_prefix) {
         return Ok(None);
