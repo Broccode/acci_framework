@@ -47,15 +47,21 @@ impl From<VerificationError> for Error {
     fn from(err: VerificationError) -> Self {
         match err {
             VerificationError::CodeExpired => Error::Validation("Code has expired".to_string()),
-            VerificationError::InvalidCode => Error::Validation("Invalid verification code".to_string()),
+            VerificationError::InvalidCode => {
+                Error::Validation("Invalid verification code".to_string())
+            },
             VerificationError::TooManyAttempts => {
                 Error::Validation("Too many verification attempts".to_string())
             },
-            VerificationError::RateLimitExceeded => Error::Validation("Rate limit exceeded".to_string()),
+            VerificationError::RateLimitExceeded => {
+                Error::Validation("Rate limit exceeded".to_string())
+            },
             VerificationError::SendMessageFailed(msg) => {
                 Error::Other(anyhow::anyhow!("Failed to send message: {}", msg))
             },
-            VerificationError::RecipientNotFound => Error::Validation("Recipient not found".to_string()),
+            VerificationError::RecipientNotFound => {
+                Error::Validation("Recipient not found".to_string())
+            },
         }
     }
 }
@@ -157,8 +163,13 @@ impl VerificationService {
         context: &TenantAwareContext,
     ) -> Result<VerificationCode> {
         // Check rate limit
-        self.check_rate_limit(user_id, verification_type, tenant_id_for_rate_limit, context)
-            .await?;
+        self.check_rate_limit(
+            user_id,
+            verification_type,
+            tenant_id_for_rate_limit,
+            context,
+        )
+        .await?;
 
         // Invalidate any pending codes for this user and type
         let _ = self
@@ -289,8 +300,12 @@ impl VerificationService {
     pub async fn cleanup_expired(&self, context: &TenantAwareContext) -> Result<u64> {
         let before = OffsetDateTime::now_utc();
         // Use a default tenant ID for cleanup since we don't have a specific tenant
-        let default_tenant_id = uuid::Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap();
-        let count = self.repo.delete_expired(before, default_tenant_id, context).await?;
+        let default_tenant_id =
+            uuid::Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap();
+        let count = self
+            .repo
+            .delete_expired(before, default_tenant_id, context)
+            .await?;
         debug!("Cleaned up {} expired verification codes", count);
         Ok(count)
     }

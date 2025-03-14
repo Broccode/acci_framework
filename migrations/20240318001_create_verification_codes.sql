@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS verification_codes (
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     code VARCHAR(32) NOT NULL,
     verification_type VARCHAR(20) NOT NULL,
-    destination VARCHAR(255) NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

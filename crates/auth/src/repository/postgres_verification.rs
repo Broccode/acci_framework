@@ -100,7 +100,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
                             "Invalid verification type: {}",
                             rec.verification_type
                         )));
-                    }
+                    },
                 };
                 let status = match rec.status.as_str() {
                     "Pending" => VerificationStatus::Pending,
@@ -112,7 +112,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
                             "Invalid verification status: {}",
                             rec.status
                         )));
-                    }
+                    },
                 };
 
                 Ok(Some(VerificationCode {
@@ -126,7 +126,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
                     status,
                     attempts: rec.attempts as usize,
                 }))
-            }
+            },
             None => Ok(None),
         }
     }
@@ -173,7 +173,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
                             "Invalid verification type: {}",
                             rec.verification_type
                         )));
-                    }
+                    },
                 };
                 let status = match rec.status.as_str() {
                     "Pending" => VerificationStatus::Pending,
@@ -185,7 +185,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
                             "Invalid verification status: {}",
                             rec.status
                         )));
-                    }
+                    },
                 };
 
                 Ok(Some(VerificationCode {
@@ -199,7 +199,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
                     status,
                     attempts: rec.attempts as usize,
                 }))
-            }
+            },
             None => Ok(None),
         }
     }
@@ -246,7 +246,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
                         "Invalid verification type: {}",
                         rec.verification_type
                     )));
-                }
+                },
             };
             let status = match rec.status.as_str() {
                 "Pending" => VerificationStatus::Pending,
@@ -258,7 +258,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
                         "Invalid verification status: {}",
                         rec.status
                     )));
-                }
+                },
             };
 
             codes.push(VerificationCode {
@@ -313,10 +313,10 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
 
     #[instrument(skip(self, _context), level = "debug")]
     async fn delete(
-        &self, 
-        id: Uuid, 
+        &self,
+        id: Uuid,
         tenant_id: TenantId,
-        _context: &TenantAwareContext
+        _context: &TenantAwareContext,
     ) -> Result<()> {
         let result = sqlx::query!(
             r#"

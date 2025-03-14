@@ -43,7 +43,12 @@ pub trait VerificationCodeRepository: Sync + Send {
     async fn update(&self, code: &VerificationCode, context: &TenantAwareContext) -> Result<()>;
 
     /// Delete a verification code
-    async fn delete(&self, id: Uuid, tenant_id: TenantId, context: &TenantAwareContext) -> Result<()>;
+    async fn delete(
+        &self,
+        id: Uuid,
+        tenant_id: TenantId,
+        context: &TenantAwareContext,
+    ) -> Result<()>;
 
     /// Delete all expired verification codes
     async fn delete_expired(

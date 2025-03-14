@@ -438,7 +438,7 @@ impl SessionRepository for PostgresSessionRepository {
                     "FAILED" => MfaStatus::Failed,
                     _ => MfaStatus::None, // Default if not specified
                 };
-                
+
                 Session {
                     id: row.id,
                     user_id: row.user_id,
@@ -533,7 +533,7 @@ impl SessionRepository for PostgresSessionRepository {
                         "FAILED" => MfaStatus::Failed,
                         _ => MfaStatus::None, // Default if not specified
                     };
-                    
+
                     Session {
                         id: row.id,
                         user_id: row.user_id,

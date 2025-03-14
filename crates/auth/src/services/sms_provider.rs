@@ -29,21 +29,21 @@ impl MessageProvider for TwilioSmsProvider {
     fn verification_type(&self) -> VerificationType {
         VerificationType::Sms
     }
-    
+
     #[instrument(skip(self, message), level = "debug")]
     async fn send_message(&self, message: Message) -> Result<String> {
         debug!(
             recipient = %message.recipient,
             "Sending SMS verification message via Twilio"
         );
-        
+
         // In a real implementation, we would use reqwest to call the Twilio API
         // For now, we'll return a placeholder message ID
         // The real implementation would look something like:
-        
+
         /*
         let client = reqwest::Client::new();
-        
+
         let response = client
             .post(&format!("{}/Accounts/{}/Messages.json", self.base_url, self.config.api_key))
             .basic_auth(&self.config.api_key, Some(&self.config.api_secret.clone().unwrap_or_default()))
@@ -58,29 +58,29 @@ impl MessageProvider for TwilioSmsProvider {
                 error!("Failed to send Twilio request: {}", err);
                 Error::Other(anyhow::anyhow!("Failed to send Twilio request: {}", err))
             })?;
-            
+
         if !response.status().is_success() {
             let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
             error!("Twilio API error: {}", error_text);
             return Err(Error::Other(anyhow::anyhow!("Twilio API error: {}", error_text)));
         }
-        
+
         let response_json: serde_json::Value = response.json().await.map_err(|err| {
             error!("Failed to parse Twilio response: {}", err);
             Error::Other(anyhow::anyhow!("Failed to parse Twilio response: {}", err))
         })?;
-        
+
         let message_sid = response_json["sid"].as_str().ok_or_else(|| {
             error!("Twilio response missing message SID");
             Error::Other(anyhow::anyhow!("Twilio response missing message SID"))
         })?;
         */
-        
+
         info!(
             recipient = %message.recipient,
             "SMS verification message sent successfully (simulated)"
         );
-        
+
         // Placeholder message ID
         Ok(format!("twilio:{}", uuid::Uuid::new_v4()))
     }
@@ -95,9 +95,7 @@ pub struct VonageSmsProvider {
 impl VonageSmsProvider {
     /// Create a new Vonage SMS provider
     pub fn new(config: SmsProviderConfig) -> Self {
-        Self {
-            config,
-        }
+        Self { config }
     }
 }
 
@@ -106,21 +104,21 @@ impl MessageProvider for VonageSmsProvider {
     fn verification_type(&self) -> VerificationType {
         VerificationType::Sms
     }
-    
+
     #[instrument(skip(self, message), level = "debug")]
     async fn send_message(&self, message: Message) -> Result<String> {
         debug!(
             recipient = %message.recipient,
             "Sending SMS verification message via Vonage (not yet implemented)"
         );
-        
+
         // Placeholder for Vonage implementation
-        
+
         info!(
             recipient = %message.recipient,
             "SMS verification message sent successfully (simulated)"
         );
-        
+
         // Placeholder message ID
         Ok(format!("vonage:{}", uuid::Uuid::new_v4()))
     }
@@ -138,7 +136,8 @@ pub fn create_sms_provider(config: SmsProviderConfig) -> Result<Arc<dyn MessageP
             Ok(Arc::new(provider))
         },
         _ => Err(Error::Config(format!(
-            "Unsupported SMS provider: {}", config.provider
+            "Unsupported SMS provider: {}",
+            config.provider
         ))),
     }
 }

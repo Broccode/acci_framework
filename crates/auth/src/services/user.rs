@@ -225,15 +225,11 @@ impl UserService {
         // Assume tenant_id from context since the User model doesn't have tenant_id field yet
         let tenant_id = Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap();
         verification_service
-            .send_verification(
-                tenant_id,
-                user.id,
-                verification_type,
-                recipient,
-                context,
-            )
+            .send_verification(tenant_id, user.id, verification_type, recipient, context)
             .await
-            .map_err(|e| UserServiceError::MfaVerificationFailed(format!("Verification failed: {}", e)))?;
+            .map_err(|e| {
+                UserServiceError::MfaVerificationFailed(format!("Verification failed: {}", e))
+            })?;
 
         Ok(())
     }
@@ -266,7 +262,9 @@ impl UserService {
         verification_service
             .verify_code(user.id, verification_type, code, tenant_id, context)
             .await
-            .map_err(|e| UserServiceError::MfaVerificationFailed(format!("Verification failed: {}", e)))?;
+            .map_err(|e| {
+                UserServiceError::MfaVerificationFailed(format!("Verification failed: {}", e))
+            })?;
 
         // Update session to verified status
         self.session_service
