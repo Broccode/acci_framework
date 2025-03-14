@@ -30,7 +30,7 @@ impl PostgresVerificationCodeRepository {
 #[async_trait]
 impl VerificationCodeRepository for PostgresVerificationCodeRepository {
     #[instrument(skip(self, code, _context), level = "debug")]
-    async fn save(&self, code: &VerificationCode, _context: &TenantAwareContext) -> Result<()> {
+    async fn save(&self, code: &VerificationCode, _context: &dyn TenantAwareContext) -> Result<()> {
         let tenant_id = code.tenant_id;
         let user_id = code.user_id;
         let verification_type = format!("{:?}", code.verification_type);
@@ -69,7 +69,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
         &self,
         id: Uuid,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<Option<VerificationCode>> {
         let tenant_id_str = tenant_id.to_string();
 
@@ -138,7 +138,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
         user_id: UserId,
         verification_type: VerificationType,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<Option<VerificationCode>> {
         let tenant_id_str = tenant_id.to_string();
         let user_id_str = user_id.to_string();
@@ -210,7 +210,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
         user_id: UserId,
         verification_type: VerificationType,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<Vec<VerificationCode>> {
         let tenant_id_str = tenant_id.to_string();
         let user_id_str = user_id.to_string();
@@ -278,7 +278,11 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
     }
 
     #[instrument(skip(self, code, _context), level = "debug")]
-    async fn update(&self, code: &VerificationCode, _context: &TenantAwareContext) -> Result<()> {
+    async fn update(
+        &self,
+        code: &VerificationCode,
+        _context: &dyn TenantAwareContext,
+    ) -> Result<()> {
         let status = format!("{:?}", code.status);
 
         let result = sqlx::query!(
@@ -316,7 +320,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
         &self,
         id: Uuid,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<()> {
         let result = sqlx::query!(
             r#"
@@ -343,7 +347,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
         &self,
         before: OffsetDateTime,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<u64> {
         let result = sqlx::query!(
             r#"
@@ -370,7 +374,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
         user_id: UserId,
         verification_type: VerificationType,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<u64> {
         let tenant_id_str = tenant_id.to_string();
         let user_id_str = user_id.to_string();
@@ -412,7 +416,7 @@ impl VerificationCodeRepository for PostgresVerificationCodeRepository {
         verification_type: VerificationType,
         since: OffsetDateTime,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<u64> {
         let tenant_id_str = tenant_id.to_string();
         let user_id_str = user_id.to_string();

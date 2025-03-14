@@ -248,6 +248,14 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Fixed
 
+- WebAuthn implementation compatibility with webauthn-rs 0.5.1
+  - Fixed the WebAuthnBuilder API usage to match new library version
+  - Corrected credential creation flow to work with new API structure
+  - Updated tenant-aware context implementation for proper dynamic dispatch 
+  - Improved transaction management in tenant-aware repositories
+  - Fixed error handling and conversion between domain and core errors
+  - Created properly structured placeholder implementation providing foundation for full WebAuthn support
+
 ### Changed
 
 ### Technical

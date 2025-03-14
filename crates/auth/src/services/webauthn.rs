@@ -9,7 +9,7 @@ use crate::{
 };
 use acci_core::error::{Error as CoreError, Result};
 use std::sync::Arc;
-use tracing::{debug, info, instrument, warn};
+use tracing::{debug, instrument};
 use uuid::Uuid;
 use webauthn_rs::prelude::*;
 
@@ -52,16 +52,15 @@ impl WebAuthnService {
         // Parse the origin URL
         let origin = Url::parse(&config.origin)
             .map_err(|e| WebAuthnError::Unexpected(format!("Invalid origin URL: {}", e)))?;
-            
+
         // Create the webauthn instance using the builder
-        let webauthn = WebauthnBuilder::new_unsafe_experts_only(
-            config.rp_id.clone(),
-            origin.to_string(),
-            config.rp_name.clone(),
-            None, // no icon
-        )
-        .map_err(|e| WebAuthnError::WebAuthn(format!("Failed to create WebAuthn instance: {}", e)))?
-        .build();
+        let webauthn_builder = WebauthnBuilder::new(&config.rp_id, &origin).map_err(|e| {
+            WebAuthnError::WebAuthn(format!("Failed to create WebAuthn instance: {}", e))
+        })?;
+
+        let webauthn = webauthn_builder.build().map_err(|e| {
+            WebAuthnError::WebAuthn(format!("Failed to build WebAuthn instance: {}", e))
+        })?;
 
         Ok(Self {
             webauthn,
@@ -82,7 +81,7 @@ impl WebAuthnService {
         // This is a stub implementation - in a real implementation, we would:
         // 1. Create and store a registration challenge
         // 2. Return WebAuthn options for the client
-        
+
         let challenge_json = serde_json::json!({
             "status": "success",
             "message": "WebAuthn registration started - implementation in progress"
@@ -111,7 +110,7 @@ impl WebAuthnService {
         // 1. Verify the attestation with the stored challenge
         // 2. Extract credential data
         // 3. Store the credential
-        
+
         // For demonstration, create a dummy credential
         let now = time::OffsetDateTime::now_utc();
         let cred = Credential {
@@ -181,7 +180,7 @@ impl WebAuthnService {
         // For demonstration, create a dummy user and credential
         let now = time::OffsetDateTime::now_utc();
         let user_id = Uuid::new_v4();
-        
+
         let user = User {
             id: user_id,
             email: format!("user-{}@example.com", user_id),
@@ -193,7 +192,7 @@ impl WebAuthnService {
             is_active: true,
             is_verified: true,
         };
-        
+
         let cred = Credential {
             id: CredentialID("dummy_credential_id".to_string()),
             uuid: Uuid::new_v4(),
@@ -219,7 +218,7 @@ impl WebAuthnService {
     #[instrument(skip(self), level = "debug")]
     pub async fn list_credentials(&self, user_id: &Uuid) -> Result<Vec<Credential>> {
         debug!("Listing WebAuthn credentials for user: {}", user_id);
-        
+
         // In a real implementation, we would query the repository
         // For stub implementation, return an empty list
         Ok(Vec::new())
@@ -229,7 +228,7 @@ impl WebAuthnService {
     #[instrument(skip(self), level = "debug")]
     pub async fn delete_credential(&self, credential_uuid: &Uuid, user_id: &Uuid) -> Result<()> {
         debug!("Deleting WebAuthn credential: {}", credential_uuid);
-        
+
         // In a real implementation, we would delete from the repository
         // For stub implementation, just return success
         Ok(())

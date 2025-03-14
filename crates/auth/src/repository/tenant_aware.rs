@@ -1,13 +1,12 @@
 use crate::models::tenant::TenantError;
 use futures::future::BoxFuture;
-use sqlx::{Pool, postgres::PgConnection, Postgres};
+use sqlx::{Pool, Postgres, postgres::PgConnection};
 use std::future::Future;
-use std::pin::Pin;
 use tracing::{debug, error};
 use uuid::Uuid;
 
 /// Trait for implementing tenant-aware contexts
-pub trait TenantAwareContext {
+pub trait TenantAwareContext: Send + Sync {
     /// Set the tenant context for the current repository
     fn set_tenant_context(&self, tenant_id: &Uuid) -> Result<(), RepositoryError>;
 }
@@ -70,7 +69,7 @@ impl TenantAwareContextManager {
         // Set the tenant ID in the current PostgreSQL session
         sqlx::query("SET app.tenant_id = $1")
             .bind(&tenant_id_str)
-            .execute(&mut conn)
+            .execute(&mut *conn)
             .await
             .map_err(|e| RepositoryError::DatabaseError(e.to_string()))?;
 
@@ -81,12 +80,15 @@ impl TenantAwareContextManager {
     }
 
     /// Gets a transaction with tenant isolation
-    pub async fn with_tenant_tx<F, R>(&self, tenant_id: &Uuid, f: F) -> Result<R, RepositoryError>
+    pub async fn with_tenant_tx<'c, F, R, Fut>(
+        &'c self,
+        tenant_id: &Uuid,
+        f: F,
+    ) -> Result<R, RepositoryError>
     where
-        F: for<'a> FnOnce(
-            &'a mut sqlx::Transaction<'a, sqlx::Postgres>,
-        )
-            -> Pin<Box<dyn Future<Output = Result<R, RepositoryError>> + Send + 'a>>,
+        F: FnOnce(sqlx::Transaction<'c, sqlx::Postgres>) -> Fut,
+        Fut: Future<Output = Result<(R, sqlx::Transaction<'c, sqlx::Postgres>), RepositoryError>>
+            + Send,
     {
         let tenant_id_str = tenant_id.to_string();
         let mut tx = self
@@ -98,15 +100,15 @@ impl TenantAwareContextManager {
         // Set the tenant ID in the transaction
         sqlx::query("SET app.tenant_id = $1")
             .bind(&tenant_id_str)
-            .execute(&mut tx)
+            .execute(&mut *tx)
             .await
             .map_err(|e| RepositoryError::DatabaseError(e.to_string()))?;
 
         debug!(tenant_id = %tenant_id_str, "Set tenant context in transaction");
 
-        // Execute the function with the tenant context and transaction
-        match f(&mut tx).await {
-            Ok(result) => {
+        // Execute the function and pass ownership of the transaction
+        match f(tx).await {
+            Ok((result, tx)) => {
                 // Commit the transaction
                 tx.commit()
                     .await
@@ -115,12 +117,8 @@ impl TenantAwareContextManager {
                 Ok(result)
             },
             Err(err) => {
-                // Roll back the transaction on error
-                if let Err(e) = tx.rollback().await {
-                    error!(error = %e, "Failed to roll back transaction");
-                } else {
-                    debug!("Successfully rolled back transaction");
-                }
+                // Transaction is dropped which automatically rolls it back
+                debug!("Transaction rolled back due to error");
                 Err(err)
             },
         }

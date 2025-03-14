@@ -1,20 +1,21 @@
-use crate::repository::tenant_aware::TenantAwareContext;
+use crate::repository::tenant_aware::{RepositoryError, TenantAwareContext};
+use uuid::Uuid;
 
 /// Mock implementation of TenantAwareContext for tests
 pub struct MockTenantAwareContext;
 
+impl TenantAwareContext for MockTenantAwareContext {
+    fn set_tenant_context(&self, _tenant_id: &Uuid) -> Result<(), RepositoryError> {
+        // Mock implementation that does nothing
+        Ok(())
+    }
+}
+
 impl MockTenantAwareContext {
     /// Creates a new mock tenant-aware context for testing
-    pub fn new() -> TenantAwareContext {
-        // We need to instrument the TenantAwareContext to make it test-friendly
-        // by extending it with a test-specific constructor
-        // For our tests, we'll just reimplement the interface enough for verification
-
-        // In a real project, we'd probably use a more sophisticated mocking approach
-        // or adapt the TenantAwareContext to be more test-friendly
-
-        // For now, we'll just return a dummy, non-functional context
-        TenantAwareContext::new(panic_on_use_pool())
+    pub fn new() -> impl TenantAwareContext {
+        // Return a new instance of our mock implementation
+        MockTenantAwareContext
     }
 }
 

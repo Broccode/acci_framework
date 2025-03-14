@@ -194,7 +194,7 @@ impl UserService {
         &self,
         user_id: Uuid,
         verification_type: VerificationType,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<(), UserServiceError> {
         // Get user by ID
         let user = self
@@ -241,7 +241,7 @@ impl UserService {
         verification_type: VerificationType,
         code: &str,
         session_token: &str,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<LoginResult, UserServiceError> {
         // Get user by ID
         let user = self

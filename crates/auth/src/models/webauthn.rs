@@ -5,7 +5,7 @@ use std::fmt::Display;
 use thiserror::Error;
 use time::OffsetDateTime;
 use uuid::Uuid;
-use webauthn_rs::error::WebauthnError as WnError;
+// WebauthnError moved to prelude
 use webauthn_rs::prelude::*;
 
 /// Represents the WebAuthn credential ID
@@ -78,20 +78,14 @@ pub struct Credential {
 impl Credential {
     /// Create a new credential from registration data
     pub fn new(
-        attestation: &AttestationObject,
         credential_id_bytes: Vec<u8>,
         public_key: Vec<u8>,
+        aaguid: Vec<u8>,
         credential_name: &str,
         user_id: Uuid,
         tenant_id: Uuid,
     ) -> Self {
         let now = OffsetDateTime::now_utc();
-
-        // Get AAGUID from attestation data if available, or use empty bytes
-        let aaguid: Vec<u8> = match &attestation.aaguid {
-            Some(aaguid_bytes) => aaguid_bytes.clone(),
-            None => vec![0u8; 16],
-        };
 
         Self {
             id: CredentialID::new(&credential_id_bytes),
@@ -139,12 +133,8 @@ pub struct RegisterCredential {
 
 impl RegisterCredential {
     pub fn parse(&self) -> Result<RegisterPublicKeyCredential> {
-        serde_json::from_str(&self.attestation).map_err(|e| {
-            CoreError::Validation(format!(
-                "Failed to parse registration data: {}",
-                e
-            ))
-        })
+        serde_json::from_str(&self.attestation)
+            .map_err(|e| CoreError::Validation(format!("Failed to parse registration data: {}", e)))
     }
 }
 
@@ -157,9 +147,8 @@ pub struct PublicKeyCredential {
 
 impl PublicKeyCredential {
     pub fn parse(&self) -> Result<RegisterPublicKeyCredential> {
-        serde_json::from_str(&self.assertion).map_err(|e| {
-            CoreError::Validation(format!("Failed to parse assertion data: {}", e))
-        })
+        serde_json::from_str(&self.assertion)
+            .map_err(|e| CoreError::Validation(format!("Failed to parse assertion data: {}", e)))
     }
 }
 

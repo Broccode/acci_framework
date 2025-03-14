@@ -40,7 +40,8 @@ pub trait VerificationCodeRepository: Sync + Send {
     ) -> Result<Vec<VerificationCode>>;
 
     /// Update an existing verification code
-    async fn update(&self, code: &VerificationCode, context: &TenantAwareContext) -> Result<()>;
+    async fn update(&self, code: &VerificationCode, context: &dyn TenantAwareContext)
+    -> Result<()>;
 
     /// Delete a verification code
     async fn delete(

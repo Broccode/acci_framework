@@ -27,7 +27,7 @@ pub struct VerificationAppState {
     /// Session service for session management
     pub session_service: Arc<SessionService>,
     /// Default tenant-aware context for operations
-    pub tenant_context: TenantAwareContext,
+    pub tenant_context: Arc<dyn TenantAwareContext>,
 }
 
 /// Send Verification Request DTO
@@ -215,7 +215,7 @@ pub async fn send_verification(
             user_id,
             verification_type,
             validated.recipient,
-            &state.tenant_context,
+            state.tenant_context.as_ref(),
         )
         .await
     {
@@ -365,7 +365,7 @@ pub async fn verify_code(
             verification_type,
             &validated.code,
             tenant_id,
-            &state.tenant_context,
+            state.tenant_context.as_ref(),
         )
         .await
     {

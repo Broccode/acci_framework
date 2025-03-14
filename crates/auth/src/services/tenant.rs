@@ -54,7 +54,9 @@ impl From<RepositoryError> for TenantServiceError {
     fn from(err: RepositoryError) -> Self {
         match err {
             RepositoryError::Tenant(e) => TenantServiceError::Tenant(e),
-            RepositoryError::NotFound(_) => TenantServiceError::NotFound("Resource not found".into()),
+            RepositoryError::NotFound(_) => {
+                TenantServiceError::NotFound("Resource not found".into())
+            },
             _ => TenantServiceError::Database(err.to_string()),
         }
     }

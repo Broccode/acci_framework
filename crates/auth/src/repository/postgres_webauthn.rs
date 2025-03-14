@@ -1,13 +1,12 @@
 use crate::{
     models::webauthn::{Credential, CredentialID},
     repository::{
-        tenant_aware::{RepositoryError, TenantAwareContext},
         WebAuthnRepository,
+        tenant_aware::{RepositoryError, TenantAwareContext},
     },
 };
 use async_trait::async_trait;
-use sqlx::{postgres::PgRow, Pool, Postgres, Row};
-use time::OffsetDateTime;
+use sqlx::{Pool, Postgres};
 use tracing::{debug, instrument};
 use uuid::Uuid;
 
@@ -26,7 +25,7 @@ impl PostgresWebAuthnRepository {
 impl TenantAwareContext for PostgresWebAuthnRepository {
     fn set_tenant_context(&self, tenant_id: &Uuid) -> Result<(), RepositoryError> {
         let tenant_id_str = tenant_id.to_string();
-        
+
         // In a real implementation, we would set the tenant context in PostgreSQL
         // For now, just log the tenant ID and return success
         debug!("Setting tenant context to {}", tenant_id_str);
@@ -51,21 +50,30 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
     }
 
     #[instrument(skip(self), level = "debug")]
-    async fn find_credential_by_id(&self, id: &CredentialID) -> Result<Option<Credential>, RepositoryError> {
+    async fn find_credential_by_id(
+        &self,
+        id: &CredentialID,
+    ) -> Result<Option<Credential>, RepositoryError> {
         debug!("Finding credential by ID: {}", id);
         // Stub implementation - in a real implementation, we would query the database
         Ok(None)
     }
 
     #[instrument(skip(self), level = "debug")]
-    async fn find_credential_by_uuid(&self, uuid: &Uuid) -> Result<Option<Credential>, RepositoryError> {
+    async fn find_credential_by_uuid(
+        &self,
+        uuid: &Uuid,
+    ) -> Result<Option<Credential>, RepositoryError> {
         debug!("Finding credential by UUID: {}", uuid);
         // Stub implementation - in a real implementation, we would query the database
         Ok(None)
     }
 
     #[instrument(skip(self), level = "debug")]
-    async fn list_credentials_for_user(&self, user_id: &Uuid) -> Result<Vec<Credential>, RepositoryError> {
+    async fn list_credentials_for_user(
+        &self,
+        user_id: &Uuid,
+    ) -> Result<Vec<Credential>, RepositoryError> {
         debug!("Listing credentials for user: {}", user_id);
         // Stub implementation - in a real implementation, we would query the database
         Ok(Vec::new())

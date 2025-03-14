@@ -64,7 +64,7 @@ impl MockVerificationCodeRepository {
 
 #[async_trait]
 impl VerificationCodeRepository for MockVerificationCodeRepository {
-    async fn save(&self, code: &VerificationCode, _context: &TenantAwareContext) -> Result<()> {
+    async fn save(&self, code: &VerificationCode, _context: &dyn TenantAwareContext) -> Result<()> {
         let mut codes = self.codes.lock().unwrap();
         codes.push(code.clone());
         Ok(())
@@ -74,7 +74,7 @@ impl VerificationCodeRepository for MockVerificationCodeRepository {
         &self,
         id: uuid::Uuid,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<Option<VerificationCode>> {
         let codes = self.codes.lock().unwrap();
         Ok(codes
@@ -89,7 +89,7 @@ impl VerificationCodeRepository for MockVerificationCodeRepository {
         user_id: UserId,
         verification_type: VerificationType,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<Option<VerificationCode>> {
         let codes = self.codes.lock().unwrap();
         Ok(codes
@@ -108,7 +108,7 @@ impl VerificationCodeRepository for MockVerificationCodeRepository {
         user_id: UserId,
         verification_type: VerificationType,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<Vec<VerificationCode>> {
         let codes = self.codes.lock().unwrap();
         Ok(codes
@@ -123,7 +123,11 @@ impl VerificationCodeRepository for MockVerificationCodeRepository {
             .collect())
     }
 
-    async fn update(&self, code: &VerificationCode, _context: &TenantAwareContext) -> Result<()> {
+    async fn update(
+        &self,
+        code: &VerificationCode,
+        _context: &dyn TenantAwareContext,
+    ) -> Result<()> {
         let mut codes = self.codes.lock().unwrap();
         for i in 0..codes.len() {
             if codes[i].id == code.id && codes[i].tenant_id == code.tenant_id {
@@ -140,7 +144,7 @@ impl VerificationCodeRepository for MockVerificationCodeRepository {
         &self,
         id: uuid::Uuid,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<()> {
         let mut codes = self.codes.lock().unwrap();
         let initial_len = codes.len();
@@ -157,7 +161,7 @@ impl VerificationCodeRepository for MockVerificationCodeRepository {
         &self,
         before: time::OffsetDateTime,
         _tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<u64> {
         let mut codes = self.codes.lock().unwrap();
         let initial_len = codes.len();
@@ -170,7 +174,7 @@ impl VerificationCodeRepository for MockVerificationCodeRepository {
         user_id: UserId,
         verification_type: VerificationType,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<u64> {
         let mut codes = self.codes.lock().unwrap();
         let mut count = 0;
@@ -193,7 +197,7 @@ impl VerificationCodeRepository for MockVerificationCodeRepository {
         verification_type: VerificationType,
         since: time::OffsetDateTime,
         tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<u64> {
         let codes = self.codes.lock().unwrap();
         let count = codes
