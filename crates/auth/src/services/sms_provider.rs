@@ -1,6 +1,8 @@
 use async_trait::async_trait;
+use reqwest::Client;
 use std::sync::Arc;
-use tracing::{debug, info, instrument};
+use tracing::{debug, error, info, instrument};
+use urlencoding::encode;
 
 use crate::models::VerificationType;
 use crate::services::message_provider::{Message, MessageProvider, SmsProviderConfig};
@@ -37,16 +39,29 @@ impl MessageProvider for TwilioSmsProvider {
             "Sending SMS verification message via Twilio"
         );
 
-        // In a real implementation, we would use reqwest to call the Twilio API
-        // For now, we'll return a placeholder message ID
-        // The real implementation would look something like:
+        // Get API key and secret from config
+        let api_key = &self.config.api_key;
+        let api_secret = self
+            .config
+            .api_secret
+            .clone()
+            .ok_or_else(|| Error::Config("Twilio API secret is required".to_string()))?;
 
-        /*
-        let client = reqwest::Client::new();
+        // Extract account SID from the API key (in Twilio, the API key is usually the account SID)
+        let account_sid = api_key;
 
+        // Create request client
+        let client = Client::new();
+
+        // Build the Twilio API request
+        let url = format!("{}/Accounts/{}/Messages.json", self.base_url, account_sid);
+
+        debug!("Sending request to Twilio API: {}", url);
+
+        // Send the request
         let response = client
-            .post(&format!("{}/Accounts/{}/Messages.json", self.base_url, self.config.api_key))
-            .basic_auth(&self.config.api_key, Some(&self.config.api_secret.clone().unwrap_or_default()))
+            .post(&url)
+            .basic_auth(api_key, Some(&api_secret))
             .form(&[
                 ("From", &self.config.sender),
                 ("To", &message.recipient),
@@ -59,30 +74,45 @@ impl MessageProvider for TwilioSmsProvider {
                 Error::Other(anyhow::anyhow!("Failed to send Twilio request: {}", err))
             })?;
 
+        // Check response status
         if !response.status().is_success() {
-            let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
-            error!("Twilio API error: {}", error_text);
-            return Err(Error::Other(anyhow::anyhow!("Twilio API error: {}", error_text)));
+            let status = response.status();
+            let error_text = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
+            error!(
+                status = %status,
+                error = %error_text,
+                "Twilio API error"
+            );
+            return Err(Error::Other(anyhow::anyhow!(
+                "Twilio API error: {} - {}",
+                status,
+                error_text
+            )));
         }
 
+        // Parse response
         let response_json: serde_json::Value = response.json().await.map_err(|err| {
             error!("Failed to parse Twilio response: {}", err);
             Error::Other(anyhow::anyhow!("Failed to parse Twilio response: {}", err))
         })?;
 
+        // Extract message SID
         let message_sid = response_json["sid"].as_str().ok_or_else(|| {
             error!("Twilio response missing message SID");
             Error::Other(anyhow::anyhow!("Twilio response missing message SID"))
         })?;
-        */
 
         info!(
             recipient = %message.recipient,
-            "SMS verification message sent successfully (simulated)"
+            message_sid = %message_sid,
+            "SMS verification message sent successfully via Twilio"
         );
 
-        // Placeholder message ID
-        Ok(format!("twilio:{}", uuid::Uuid::new_v4()))
+        // Return message ID
+        Ok(format!("twilio:{}", message_sid))
     }
 }
 
@@ -109,18 +139,94 @@ impl MessageProvider for VonageSmsProvider {
     async fn send_message(&self, message: Message) -> Result<String> {
         debug!(
             recipient = %message.recipient,
-            "Sending SMS verification message via Vonage (not yet implemented)"
+            "Sending SMS verification message via Vonage"
         );
 
-        // Placeholder for Vonage implementation
+        // Get API credentials
+        let api_key = &self.config.api_key;
+        let api_secret = self
+            .config
+            .api_secret
+            .clone()
+            .ok_or_else(|| Error::Config("Vonage API secret is required".to_string()))?;
+
+        // Create request client
+        let client = Client::new();
+
+        // Vonage API endpoint
+        let url = "https://rest.nexmo.com/sms/json";
+
+        // URL encode the message body and convert Cow<str> to String
+        let encoded_body: String = encode(&message.body).into_owned();
+
+        // Build and send the request
+        let response = client
+            .post(url)
+            .form(&[
+                ("api_key", api_key),
+                ("api_secret", &api_secret),
+                ("from", &self.config.sender),
+                ("to", &message.recipient),
+                ("text", &encoded_body),
+            ])
+            .send()
+            .await
+            .map_err(|err| {
+                error!("Failed to send Vonage request: {}", err);
+                Error::Other(anyhow::anyhow!("Failed to send Vonage request: {}", err))
+            })?;
+
+        // Check response status
+        if !response.status().is_success() {
+            let status = response.status();
+            let error_text = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
+            error!(
+                status = %status,
+                error = %error_text,
+                "Vonage API error"
+            );
+            return Err(Error::Other(anyhow::anyhow!(
+                "Vonage API error: {} - {}",
+                status,
+                error_text
+            )));
+        }
+
+        // Parse response
+        let response_json: serde_json::Value = response.json().await.map_err(|err| {
+            error!("Failed to parse Vonage response: {}", err);
+            Error::Other(anyhow::anyhow!("Failed to parse Vonage response: {}", err))
+        })?;
+
+        // Vonage returns messages as an array
+        let messages = response_json["messages"].as_array().ok_or_else(|| {
+            error!("Vonage response missing messages array");
+            Error::Other(anyhow::anyhow!("Vonage response missing messages array"))
+        })?;
+
+        if messages.is_empty() {
+            return Err(Error::Other(anyhow::anyhow!(
+                "Vonage response contains no messages"
+            )));
+        }
+
+        // Get the first message info
+        let message_id = messages[0]["message-id"].as_str().ok_or_else(|| {
+            error!("Vonage response missing message ID");
+            Error::Other(anyhow::anyhow!("Vonage response missing message ID"))
+        })?;
 
         info!(
             recipient = %message.recipient,
-            "SMS verification message sent successfully (simulated)"
+            message_id = %message_id,
+            "SMS verification message sent successfully via Vonage"
         );
 
-        // Placeholder message ID
-        Ok(format!("vonage:{}", uuid::Uuid::new_v4()))
+        // Return message ID
+        Ok(format!("vonage:{}", message_id))
     }
 }
 

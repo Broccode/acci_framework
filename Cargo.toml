@@ -66,6 +66,10 @@ tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 metrics = "0.24.1"
 metrics-exporter-prometheus = "0.16.2"
 
+# Email & SMS
+lettre = { version = "0.11.4", default-features = false, features = ["tokio1", "tokio1-rustls-tls", "builder", "smtp-transport"] }
+reqwest = { version = "0.12.4", features = ["json", "rustls-tls"] }
+
 # Error Handling
 thiserror = "2.0.11"
 anyhow = "1.0.96"

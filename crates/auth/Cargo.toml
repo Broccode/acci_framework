@@ -15,6 +15,8 @@ jsonwebtoken = { workspace = true }
 argon2 = { workspace = true }
 rand = { workspace = true }
 zxcvbn = { workspace = true }
+lettre = { workspace = true }
+reqwest = { workspace = true }
 uuid = { workspace = true }
 totp-rs = { workspace = true }
 base32 = { workspace = true }
@@ -50,8 +52,7 @@ sea-query = { workspace = true }
 # Rate Limiting
 governor = { workspace = true }
 
-# Email
-lettre = { version = "0.11", features = ["builder", "tokio1", "tokio1-native-tls", "smtp-transport"] }
+# Email is defined in workspace dependencies
 
 # Local Dependencies
 acci_core = { path = "../core" }
@@ -64,6 +65,7 @@ metrics = { workspace = true, optional = true }
 tokio-test = { workspace = true }
 rstest = { workspace = true }
 mockall = { workspace = true }
+regex = { workspace = true }
 
 [build-dependencies]
 proc-macro2 = { workspace = true }

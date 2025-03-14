@@ -7,6 +7,9 @@ pub mod totp;
 pub mod user;
 pub mod verification;
 
+#[cfg(test)]
+mod tests;
+
 pub use email_provider::{SendGridEmailProvider, SmtpEmailProvider, create_email_provider};
 pub use message_provider::{
     EmailProviderConfig, Message, MessageProvider, MessageProviderConfig, SmsProviderConfig,
