@@ -1,15 +1,12 @@
-use acci_core::error::Result;
+use acci_core::error::{Error as CoreError, Result};
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use serde::{Deserialize, Serialize};
 use std::fmt::Display;
 use thiserror::Error;
 use time::OffsetDateTime;
 use uuid::Uuid;
+use webauthn_rs::error::WebauthnError as WnError;
 use webauthn_rs::prelude::*;
-use webauthn_rs::attestation::AttestationObject;
-use webauthn_rs_core::proto::{
-    AuthenticatorAssertionResponseRaw, RegisterPublicKeyCredential,
-};
 
 /// Represents the WebAuthn credential ID
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -25,14 +22,14 @@ impl CredentialID {
         // Validate that this is valid base64
         URL_SAFE_NO_PAD
             .decode(encoded)
-            .map_err(|_| WebAuthnError::InvalidCredentialID)?;
+            .map_err(|_| CoreError::Validation("Invalid credential ID".to_string()))?;
         Ok(Self(encoded.to_string()))
     }
 
     pub fn as_bytes(&self) -> Result<Vec<u8>> {
         URL_SAFE_NO_PAD
             .decode(&self.0)
-            .map_err(|_| WebAuthnError::InvalidCredentialID)
+            .map_err(|_| CoreError::Validation("Invalid credential ID".to_string()))
     }
 
     pub fn to_webauthn_credential_id(&self) -> Result<CredentialID> {
@@ -67,10 +64,8 @@ pub struct Credential {
     /// User-friendly name for this credential
     pub name: String,
     /// The credential's AAGUID, identifying the authenticator model
-    #[serde(with = "serde_bytes")]
     pub aaguid: Vec<u8>,
     /// Public key and other credential data
-    #[serde(with = "serde_bytes")]
     pub public_key: Vec<u8>,
     /// Counter for signature use to prevent replay attacks
     pub counter: u32,
@@ -93,8 +88,8 @@ impl Credential {
         let now = OffsetDateTime::now_utc();
 
         // Get AAGUID from attestation data if available, or use empty bytes
-        let aaguid = match attestation.aaguid {
-            Some(ref aaguid) => aaguid.clone(),
+        let aaguid: Vec<u8> = match &attestation.aaguid {
+            Some(aaguid_bytes) => aaguid_bytes.clone(),
             None => vec![0u8; 16],
         };
 
@@ -145,7 +140,10 @@ pub struct RegisterCredential {
 impl RegisterCredential {
     pub fn parse(&self) -> Result<RegisterPublicKeyCredential> {
         serde_json::from_str(&self.attestation).map_err(|e| {
-            WebAuthnError::InvalidCredentialData(format!("Failed to parse registration data: {}", e))
+            CoreError::Validation(format!(
+                "Failed to parse registration data: {}",
+                e
+            ))
         })
     }
 }
@@ -158,9 +156,9 @@ pub struct PublicKeyCredential {
 }
 
 impl PublicKeyCredential {
-    pub fn parse(&self) -> Result<AuthenticatorAssertionResponseRaw> {
+    pub fn parse(&self) -> Result<RegisterPublicKeyCredential> {
         serde_json::from_str(&self.assertion).map_err(|e| {
-            WebAuthnError::InvalidCredentialData(format!("Failed to parse assertion data: {}", e))
+            CoreError::Validation(format!("Failed to parse assertion data: {}", e))
         })
     }
 }
@@ -198,8 +196,4 @@ pub enum WebAuthnError {
     Unexpected(String),
 }
 
-impl From<WebauthnError> for acci_core::error::Error {
-    fn from(error: WebAuthnError) -> Self {
-        acci_core::error::Error::Auth(error.to_string())
-    }
-}
+// Implementation moved to services/webauthn.rs due to orphan rule

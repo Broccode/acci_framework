@@ -132,7 +132,7 @@ impl VerificationService {
         _user_id: UserId,
         _verification_type: VerificationType,
         _tenant_id: TenantId,
-        _context: &TenantAwareContext,
+        _context: &dyn TenantAwareContext,
     ) -> Result<()> {
         // NOTE: Rate limiting is disabled temporarily due to build issues
         // TODO: Fix the rate limiting implementation
@@ -171,7 +171,7 @@ impl VerificationService {
         user_id: UserId,
         verification_type: VerificationType,
         tenant_id_for_rate_limit: TenantId,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<VerificationCode> {
         // Check rate limit
         self.check_rate_limit(
@@ -210,7 +210,7 @@ impl VerificationService {
         user_id: UserId,
         verification_type: VerificationType,
         recipient: String,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<()> {
         // Generate verification code
         let verification_code = self
@@ -274,7 +274,7 @@ impl VerificationService {
         verification_type: VerificationType,
         code: &str,
         tenant_id: TenantId,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<()> {
         // Get verification code
         let mut verification_code = self
@@ -327,7 +327,7 @@ impl VerificationService {
 
     /// Clean up expired verification codes
     #[instrument(skip(self, context), level = "debug")]
-    pub async fn cleanup_expired(&self, context: &TenantAwareContext) -> Result<u64> {
+    pub async fn cleanup_expired(&self, context: &dyn TenantAwareContext) -> Result<u64> {
         let before = OffsetDateTime::now_utc();
         // Use a default tenant ID for cleanup since we don't have a specific tenant
         let default_tenant_id =

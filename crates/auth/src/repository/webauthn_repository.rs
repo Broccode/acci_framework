@@ -13,13 +13,22 @@ pub trait WebAuthnRepository: Send + Sync + 'static {
     async fn update_credential(&self, credential: &Credential) -> Result<(), RepositoryError>;
 
     /// Find a credential by its ID
-    async fn find_credential_by_id(&self, id: &CredentialID) -> Result<Option<Credential>, RepositoryError>;
+    async fn find_credential_by_id(
+        &self,
+        id: &CredentialID,
+    ) -> Result<Option<Credential>, RepositoryError>;
 
     /// Find a credential by its UUID
-    async fn find_credential_by_uuid(&self, uuid: &Uuid) -> Result<Option<Credential>, RepositoryError>;
+    async fn find_credential_by_uuid(
+        &self,
+        uuid: &Uuid,
+    ) -> Result<Option<Credential>, RepositoryError>;
 
     /// List all credentials for a user
-    async fn list_credentials_for_user(&self, user_id: &Uuid) -> Result<Vec<Credential>, RepositoryError>;
+    async fn list_credentials_for_user(
+        &self,
+        user_id: &Uuid,
+    ) -> Result<Vec<Credential>, RepositoryError>;
 
     /// Delete a credential
     async fn delete_credential(&self, uuid: &Uuid) -> Result<(), RepositoryError>;

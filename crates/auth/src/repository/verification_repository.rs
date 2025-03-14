@@ -10,14 +10,14 @@ use acci_core::error::Result;
 #[async_trait]
 pub trait VerificationCodeRepository: Sync + Send {
     /// Save a verification code
-    async fn save(&self, code: &VerificationCode, context: &TenantAwareContext) -> Result<()>;
+    async fn save(&self, code: &VerificationCode, context: &dyn TenantAwareContext) -> Result<()>;
 
     /// Get a verification code by its ID
     async fn get_by_id(
         &self,
         id: Uuid,
         tenant_id: TenantId,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<Option<VerificationCode>>;
 
     /// Get a verification code by the code value
@@ -27,7 +27,7 @@ pub trait VerificationCodeRepository: Sync + Send {
         user_id: UserId,
         verification_type: VerificationType,
         tenant_id: TenantId,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<Option<VerificationCode>>;
 
     /// Get all pending verification codes for a user
@@ -36,7 +36,7 @@ pub trait VerificationCodeRepository: Sync + Send {
         user_id: UserId,
         verification_type: VerificationType,
         tenant_id: TenantId,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<Vec<VerificationCode>>;
 
     /// Update an existing verification code
@@ -47,7 +47,7 @@ pub trait VerificationCodeRepository: Sync + Send {
         &self,
         id: Uuid,
         tenant_id: TenantId,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<()>;
 
     /// Delete all expired verification codes
@@ -55,7 +55,7 @@ pub trait VerificationCodeRepository: Sync + Send {
         &self,
         before: OffsetDateTime,
         tenant_id: TenantId,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<u64>;
 
     /// Invalidate all pending verification codes for a user
@@ -64,7 +64,7 @@ pub trait VerificationCodeRepository: Sync + Send {
         user_id: UserId,
         verification_type: VerificationType,
         tenant_id: TenantId,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<u64>;
 
     /// Count recent verification attempts for a user within a timeframe
@@ -74,6 +74,6 @@ pub trait VerificationCodeRepository: Sync + Send {
         verification_type: VerificationType,
         since: OffsetDateTime,
         tenant_id: TenantId,
-        context: &TenantAwareContext,
+        context: &dyn TenantAwareContext,
     ) -> Result<u64>;
 }
