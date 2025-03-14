@@ -4,6 +4,7 @@ use crate::handlers::tenant::{
     TenantAppState, create_tenant, create_tenant_with_admin, delete_tenant, get_tenant,
     get_tenant_by_id, update_tenant,
 };
+use crate::handlers::verification::{VerificationAppState, send_verification, verify_code};
 use crate::response::ApiResponse;
 use axum::{
     Json, Router,
@@ -28,6 +29,7 @@ impl ApiRouter {
         &self,
         auth_state: ApiAppState,
         tenant_state: Option<TenantAppState>,
+        verification_state: Option<VerificationAppState>,
     ) -> Router {
         // Create auth routes
         let auth_routes = Router::new()
@@ -35,6 +37,16 @@ impl ApiRouter {
             .route("/register", post(api_register))
             .route("/validate-token", post(validate_token))
             .with_state(auth_state.clone());
+
+        // Create verification routes if verification state is provided
+        let verification_routes = if let Some(verification_state) = verification_state {
+            Router::new()
+                .route("/send", post(send_verification))
+                .route("/code", post(verify_code))
+                .with_state(verification_state)
+        } else {
+            Router::new()
+        };
 
         // Create tenant routes if tenant state is provided
         let tenant_routes = if let Some(tenant_state) = tenant_state {
@@ -50,14 +62,19 @@ impl ApiRouter {
             Router::new()
         };
 
+        // Create auth router with nested verification routes
+        let auth_router = Router::new()
+            .merge(auth_routes)
+            .nest("/verify", verification_routes);
+
         // Create base router
         let router = Router::new()
             // Health check
             .route("/health", get(|| async { "OK" }))
             // Example route demonstrating the API response
             .route("/example", get(example_handler))
-            // Nest auth routes
-            .nest("/auth", auth_routes)
+            // Nest auth routes (including verification routes)
+            .nest("/auth", auth_router)
             // Nest tenant routes if applicable
             .nest("/tenants", tenant_routes)
 
@@ -93,6 +110,15 @@ impl ApiRouter {
         } else {
             Router::new().nest(&self.config.base_path, router)
         }
+    }
+
+    /// Wrapper method for backward compatibility that doesn't require verification_state
+    pub fn create_router_with_auth_and_tenant(
+        &self,
+        auth_state: ApiAppState,
+        tenant_state: Option<TenantAppState>,
+    ) -> Router {
+        self.create_router_with_state(auth_state, tenant_state, None)
     }
 }
 

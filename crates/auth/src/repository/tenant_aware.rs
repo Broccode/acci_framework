@@ -7,6 +7,7 @@ use tracing::{debug, error};
 use uuid::Uuid;
 
 /// Tenant-aware database context manager for multi-tenancy
+#[derive(Clone)]
 pub struct TenantAwareContext {
     pool: PgPool,
 }

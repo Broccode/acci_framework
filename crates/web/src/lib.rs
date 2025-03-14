@@ -21,6 +21,9 @@ pub use components::auth::login_form::{login_form_ssr, login_form_ssr_legacy};
 pub use components::auth::registration_form::{
     registration_form_ssr, registration_form_ssr_legacy,
 };
+pub use components::auth::verification_form::{
+    send_verification_form_ssr, verification_form_ssr,
+};
 pub use components::common::error_display::{error_display_ssr, error_display_ssr_legacy};
 pub use components::common::loading_indicator::{
     loading_indicator_ssr, loading_indicator_ssr_legacy,
@@ -32,3 +35,4 @@ pub use components::layout::navigation::{navigation_ssr, navigation_ssr_legacy};
 pub use pages::home::render_home_page;
 pub use pages::login::render_login_page;
 pub use pages::register::render_register_page;
+pub use pages::verify::{render_send_verify_page, render_verify_page};

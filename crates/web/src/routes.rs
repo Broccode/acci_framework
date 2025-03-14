@@ -1,3 +1,6 @@
+use crate::handlers::verification::{
+    handle_send_verification, handle_verification, send_verify_page_handler, verify_page_handler,
+};
 use crate::handlers::{
     AppState, handle_login, handle_logout, handle_registration, login_page_handler,
 };
@@ -24,11 +27,15 @@ pub fn create_router(app_state: AppState) -> Router {
         .route("/", get(home_page_handler))
         .route("/login", get(login_page_handler))
         .route("/register", get(register_page_handler))
+        .route("/verify", get(verify_page_handler))
+        .route("/verify/send", get(send_verify_page_handler))
 
         // API-Endpunkte - für Formularübermittlungen
         .route("/api/auth/login", post(handle_login))
         .route("/api/auth/register", post(handle_registration))
         .route("/api/auth/logout", post(handle_logout))
+        .route("/api/auth/verify/code", post(handle_verification))
+        .route("/api/auth/verify/send", post(handle_send_verification))
 
         // Statische Dateien
         .nest_service("/static", ServeDir::new("static"))
