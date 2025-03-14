@@ -246,6 +246,16 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Added
 
+### Fixed
+
+### Changed
+
+### Technical
+
+## [0.3.0] - 2025-03-14
+
+### Added
+
 - Multi-tenancy implementation
   - Added database schema for tenant management with proper constraints and indexing
   - Implemented tenant repository for CRUD operations
@@ -281,6 +291,18 @@ Create a git tag for the version (e.g., v0.2.0)
   - Created session MFA status tracking with pending/verified states
   - Enhanced user authentication flow to support verification code challenges
   - Added configuration system for verification codes and providers
+
+- Verification UI Implementation
+  - Created verification code entry form component
+  - Implemented verification code request form component
+  - Added server-side rendering for verification forms
+  - Implemented verification code submission handlers
+  - Created verification code sending request handlers
+  - Added error handling and user feedback
+  - Implemented verification page templates
+  - Added responsive styling for verification forms
+  - Created tenant-aware verification flow
+  - Implemented session-aware verification status tracking
 
 ### Fixed
 
