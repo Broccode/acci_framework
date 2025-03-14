@@ -268,6 +268,20 @@ Create a git tag for the version (e.g., v0.2.0)
   - Created secure repository pattern for TOTP secrets with Postgres
   - Added SQLx offline mode support for prepared TOTP queries
 
+- Multi-factor authentication with Email/SMS
+  - Implemented verification code system with expiration and retry limits
+  - Created database migrations for verification codes with proper indexes
+  - Added tenant-aware repository pattern for verification codes
+  - Implemented rate limiting with both in-memory and database checks
+  - Created flexible message provider abstraction with Email and SMS support
+  - Added SMTP email provider with full HTML/plaintext support
+  - Implemented SendGrid email provider for API-based delivery
+  - Added Twilio SMS provider for text message delivery
+  - Implemented Vonage (Nexmo) SMS provider as alternative
+  - Created session MFA status tracking with pending/verified states
+  - Enhanced user authentication flow to support verification code challenges
+  - Added configuration system for verification codes and providers
+
 ### Fixed
 
 - Resolved async/sync issues in the tenant middleware implementation
@@ -307,6 +321,12 @@ Create a git tag for the version (e.g., v0.2.0)
   - Added base32 for encoding TOTP secrets
   - Added SHA-1, SHA-256, and SHA-512 for TOTP algorithm support
   - Added URL encoding support for QR code generation
+  - Added lettre for SMTP email delivery
+  - Added governor for rate limiting
+- Enhanced session management
+  - Added MFA status tracking to sessions table
+  - Created SQLx type mapping for MFA status enum
+  - Indexed MFA status for efficient querying
 
 ## [0.1.1] - 2025-02-24
 

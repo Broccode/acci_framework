@@ -54,7 +54,7 @@ This document provides a detailed breakdown of Milestone 2, which focuses on imp
 
 #### Day 5-8: SMS/Email Authentication
 
-- [ ] Add alternative second factors
+- [x] Add alternative second factors
   - Implement SMS verification code system
   - Create email verification code system
   - Design verification code throttling
@@ -235,7 +235,7 @@ This document provides a detailed breakdown of Milestone 2, which focuses on imp
 ### Security Requirements
 
 - [x] Tenant isolation passes penetration testing
-- [ ] MFA implementation passes security audit
+- [x] MFA implementation passes security audit
 - [ ] Password policies enforce strong credentials
 - [ ] Risk-based authentication detects suspicious activities
 - [ ] Compliance reports provide required information
