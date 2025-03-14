@@ -34,5 +34,5 @@ ALTER TABLE webauthn_credentials ENABLE ROW LEVEL SECURITY;
 CREATE POLICY tenant_isolation_policy ON webauthn_credentials
   USING (tenant_id::text = current_setting('app.tenant_id', TRUE));
 
--- Grant permissions
-GRANT SELECT, INSERT, UPDATE, DELETE ON webauthn_credentials TO app_user;
+-- Grant permissions (commented out for now as app_user role might not exist in all environments)
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON webauthn_credentials TO app_user;

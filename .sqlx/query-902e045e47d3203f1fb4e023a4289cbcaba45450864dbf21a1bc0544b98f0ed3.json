@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id, email, password_hash, created_at, updated_at,\n                last_login, is_active, is_verified\n            FROM users\n            WHERE email = $1\n            ",
+  "query": "\n            SELECT\n                id, email, password_hash, created_at, updated_at,\n                last_login, is_active, is_verified, email as display_name\n            FROM users\n            WHERE id = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -42,11 +42,16 @@
         "ordinal": 7,
         "name": "is_verified",
         "type_info": "Bool"
+      },
+      {
+        "ordinal": 8,
+        "name": "display_name",
+        "type_info": "Varchar"
       }
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Uuid"
       ]
     },
     "nullable": [
@@ -57,8 +62,9 @@
       false,
       true,
       false,
+      false,
       false
     ]
   },
-  "hash": "22b6e77a5896890fc111720e5cba550cc23024c51e834b761c28d879011bb530"
+  "hash": "902e045e47d3203f1fb4e023a4289cbcaba45450864dbf21a1bc0544b98f0ed3"
 }
