@@ -53,8 +53,8 @@ pub enum TenantServiceError {
 impl From<RepositoryError> for TenantServiceError {
     fn from(err: RepositoryError) -> Self {
         match err {
-            RepositoryError::TenantError(e) => TenantServiceError::Tenant(e),
-            RepositoryError::NotFound => TenantServiceError::NotFound("Resource not found".into()),
+            RepositoryError::Tenant(e) => TenantServiceError::Tenant(e),
+            RepositoryError::NotFound(_) => TenantServiceError::NotFound("Resource not found".into()),
             _ => TenantServiceError::Database(err.to_string()),
         }
     }

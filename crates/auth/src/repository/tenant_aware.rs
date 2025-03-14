@@ -1,15 +1,15 @@
 use crate::models::tenant::TenantError;
 use futures::future::BoxFuture;
-use sqlx::{Acquire, PgPool, postgres::PgConnection};
+use sqlx::{Pool, postgres::PgConnection, Postgres};
 use std::future::Future;
 use std::pin::Pin;
 use tracing::{debug, error};
 use uuid::Uuid;
 
-/// Tenant-aware database context manager for multi-tenancy
-#[derive(Clone)]
-pub struct TenantAwareContext {
-    pool: PgPool,
+/// Trait for implementing tenant-aware contexts
+pub trait TenantAwareContext {
+    /// Set the tenant context for the current repository
+    fn set_tenant_context(&self, tenant_id: &Uuid) -> Result<(), RepositoryError>;
 }
 
 /// Repository error types specific to tenant operations
@@ -24,13 +24,16 @@ pub enum RepositoryError {
     #[error("Database error: {0}")]
     DatabaseError(String),
 
-    #[error("Entity not found")]
-    NotFound,
+    #[error("Entity not found: {0}")]
+    NotFound(String),
+
+    #[error("Entity already exists: {0}")]
+    Duplicate(String),
 
     #[error("Tenant error: {0}")]
-    TenantError(#[from] TenantError),
+    Tenant(TenantError),
 
-    #[error("Validation error: {0}")]
+    #[error("Invalid input: {0}")]
     ValidationError(String),
 
     #[error("Serialization error: {0}")]
@@ -40,9 +43,15 @@ pub enum RepositoryError {
     DeserializationError(String),
 }
 
-impl TenantAwareContext {
+/// Tenant-aware database context manager for multi-tenancy
+#[derive(Clone)]
+pub struct TenantAwareContextManager {
+    pool: Pool<Postgres>,
+}
+
+impl TenantAwareContextManager {
     /// Creates a new tenant-aware database context
-    pub fn new(pool: PgPool) -> Self {
+    pub fn new(pool: Pool<Postgres>) -> Self {
         Self { pool }
     }
 
@@ -51,105 +60,83 @@ impl TenantAwareContext {
     where
         F: for<'a> FnOnce(&'a mut PgConnection) -> BoxFuture<'a, Result<R, RepositoryError>>,
     {
-        debug!("Executing operation in tenant context: {}", tenant_id);
-
-        // Acquire a connection from the pool
+        let tenant_id_str = tenant_id.to_string();
         let mut conn = self
             .pool
             .acquire()
             .await
             .map_err(|e| RepositoryError::ConnectionError(e.to_string()))?;
 
-        // Begin a transaction
-        let mut tx = conn
+        // Set the tenant ID in the current PostgreSQL session
+        sqlx::query("SET app.tenant_id = $1")
+            .bind(&tenant_id_str)
+            .execute(&mut conn)
+            .await
+            .map_err(|e| RepositoryError::DatabaseError(e.to_string()))?;
+
+        debug!(tenant_id = %tenant_id_str, "Set tenant context");
+
+        // Execute the function with the tenant context
+        f(&mut conn).await
+    }
+
+    /// Gets a transaction with tenant isolation
+    pub async fn with_tenant_tx<F, R>(&self, tenant_id: &Uuid, f: F) -> Result<R, RepositoryError>
+    where
+        F: for<'a> FnOnce(
+            &'a mut sqlx::Transaction<'a, sqlx::Postgres>,
+        )
+            -> Pin<Box<dyn Future<Output = Result<R, RepositoryError>> + Send + 'a>>,
+    {
+        let tenant_id_str = tenant_id.to_string();
+        let mut tx = self
+            .pool
             .begin()
             .await
             .map_err(|e| RepositoryError::TransactionError(e.to_string()))?;
 
-        // Set up the tenant context
-        self.set_tenant_context(&mut tx, tenant_id).await?;
+        // Set the tenant ID in the transaction
+        sqlx::query("SET app.tenant_id = $1")
+            .bind(&tenant_id_str)
+            .execute(&mut tx)
+            .await
+            .map_err(|e| RepositoryError::DatabaseError(e.to_string()))?;
 
-        // Execute the function within the transaction
-        let result = f(&mut tx).await;
+        debug!(tenant_id = %tenant_id_str, "Set tenant context in transaction");
 
-        // Commit or rollback the transaction
-        match result {
-            Ok(value) => {
+        // Execute the function with the tenant context and transaction
+        match f(&mut tx).await {
+            Ok(result) => {
+                // Commit the transaction
                 tx.commit()
                     .await
                     .map_err(|e| RepositoryError::TransactionError(e.to_string()))?;
-                debug!("Transaction committed for tenant: {}", tenant_id);
-                Ok(value)
+                debug!("Successfully committed transaction");
+                Ok(result)
             },
-            Err(e) => {
-                let _ = tx.rollback().await;
-                error!("Transaction rolled back for tenant {}: {}", tenant_id, e);
-                Err(e)
+            Err(err) => {
+                // Roll back the transaction on error
+                if let Err(e) = tx.rollback().await {
+                    error!(error = %e, "Failed to roll back transaction");
+                } else {
+                    debug!("Successfully rolled back transaction");
+                }
+                Err(err)
             },
         }
     }
 
-    /// Sets up the tenant context for a database connection
-    async fn set_tenant_context(
-        &self,
-        conn: &mut PgConnection,
-        tenant_id: &Uuid,
-    ) -> Result<(), RepositoryError> {
-        debug!("Setting tenant context: {}", tenant_id);
-
-        // Set the tenant ID as a session variable for row-level security
-        sqlx::query("SET LOCAL app.current_tenant_id = $1")
-            .bind(tenant_id.to_string())
-            .execute(&mut *conn)
-            .await
-            .map_err(|e| RepositoryError::DatabaseError(e.to_string()))?;
-
-        // Set the search path to include the tenant schema
-        let schema = format!("tenant_{}", tenant_id);
-        sqlx::query(&format!("SET LOCAL search_path = {}, public", schema))
-            .execute(conn)
-            .await
-            .map_err(|e| RepositoryError::DatabaseError(e.to_string()))?;
-
-        debug!("Tenant context set: {}", tenant_id);
-        Ok(())
-    }
-
-    /// Executes a query without a tenant context (in public schema)
-    pub async fn without_tenant<F, R>(&self, f: F) -> Result<R, RepositoryError>
-    where
-        F: FnOnce(PgPool) -> Pin<Box<dyn Future<Output = Result<R, RepositoryError>> + Send>>,
-    {
-        // Execute directly on the pool without setting tenant context
-        f(self.pool.clone()).await
-    }
-
-    /// Get a reference to the underlying connection pool
-    pub fn pool(&self) -> &PgPool {
-        &self.pool
+    /// Get a clone of the database pool
+    pub fn get_pool(&self) -> Pool<Postgres> {
+        self.pool.clone()
     }
 }
 
-/// Tenant-aware repository base trait
+/// Trait for repositories that are tenant-aware
 pub trait TenantAwareRepository {
-    /// Get the tenant-aware context
-    fn tenant_context(&self) -> &TenantAwareContext;
+    /// Set the current tenant context for all operations
+    fn set_tenant_context(&mut self, tenant_id: Uuid) -> Result<(), RepositoryError>;
 
-    /// Execute a query in the context of a specific tenant
-    #[allow(async_fn_in_trait)]
-    async fn execute_for_tenant<F, R>(&self, tenant_id: &Uuid, f: F) -> Result<R, RepositoryError>
-    where
-        F: for<'a> FnOnce(&'a mut PgConnection) -> BoxFuture<'a, Result<R, RepositoryError>>,
-    {
-        self.tenant_context().with_tenant(tenant_id, f).await
-    }
-
-    /// Execute a query without a tenant context (in public schema)
-    #[allow(async_fn_in_trait)]
-    async fn execute_without_tenant<F, R>(&self, f: F) -> Result<R, RepositoryError>
-    where
-        F: FnOnce(PgPool) -> Pin<Box<dyn Future<Output = Result<R, RepositoryError>> + Send>>,
-    {
-        self.tenant_context().without_tenant(f).await
-    }
+    /// Get the current tenant ID if set
+    fn get_current_tenant(&self) -> Option<Uuid>;
 }

@@ -16,6 +16,7 @@ pub struct User {
     pub last_login: Option<OffsetDateTime>,
     pub is_active: bool,
     pub is_verified: bool,
+    pub display_name: String, // Added for WebAuthn support
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -59,13 +60,14 @@ impl User {
         let now = OffsetDateTime::now_utc();
         Self {
             id: Uuid::new_v4(),
-            email,
+            email: email.clone(),
             password_hash,
             created_at: now,
             updated_at: now,
             last_login: None,
             is_active: true,
             is_verified: false,
+            display_name: email, // Default to email as display name
         }
     }
 

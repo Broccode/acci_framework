@@ -919,7 +919,7 @@ impl UserRepository for PostgresUserRepository {
             r#"
             SELECT
                 id, email, password_hash, created_at, updated_at,
-                last_login, is_active, is_verified
+                last_login, is_active, is_verified, email as display_name
             FROM users
             WHERE id = $1
             "#,
@@ -942,7 +942,7 @@ impl UserRepository for PostgresUserRepository {
             r#"
             SELECT
                 id, email, password_hash, created_at, updated_at,
-                last_login, is_active, is_verified
+                last_login, is_active, is_verified, email as display_name
             FROM users
             WHERE email = $1
             "#,
