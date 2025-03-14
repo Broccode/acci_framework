@@ -72,7 +72,7 @@ This document provides a detailed breakdown of Milestone 2, which focuses on imp
 
 #### Day 9-10: WebAuthn/FIDO2 Support
 
-- [ ] Implement WebAuthn/FIDO2 authentication
+- [x] Implement WebAuthn/FIDO2 authentication
   - Set up credential registration flow
   - Create credential validation process
   - Implement credential management UI

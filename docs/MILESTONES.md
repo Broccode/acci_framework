@@ -109,7 +109,7 @@ Implement multi-tenancy architecture and enhance security features.
 
 12 weeks
 
-### Progress (07.03.2025)
+### Progress (14.03.2025)
 
 - Implemented tenant resolution middleware with support for multiple identification methods:
   - Subdomain-based resolution (tenant.example.com)
@@ -138,6 +138,14 @@ Implement multi-tenancy architecture and enhance security features.
   - Created verification flow with time window support
   - Support for different hashing algorithms (SHA1, SHA256, SHA512)
   - Integrated MFA with session management
+- Implemented WebAuthn/FIDO2 authentication:
+  - Created WebAuthn credential management system
+  - Implemented registration flow for security keys and biometrics
+  - Added authentication flow with challenge-response verification
+  - Implemented tenant-aware credential storage with row-level security
+  - Added user verification policy configuration
+  - Created support for attestation verification
+  - Implemented replay attack prevention with counter verification
 
 ### Testing Focus
 
