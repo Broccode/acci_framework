@@ -1,0 +1,24 @@
+@@ -355,6 +356,7 @@
+                     is_valid: row.is_valid,
+                     invalidated_reason: row.invalidation_reason,
+                     metadata: row.metadata,
++                    mfa_status: MfaStatus::None,
+                 }
+             }))
+         }
+@@ -426,6 +428,7 @@
+                     is_valid: row.is_valid,
+                     invalidated_reason: row.invalidation_reason,
+                     metadata: row.metadata,
++                    mfa_status: MfaStatus::None,
+                 }
+             }))
+         }
+@@ -509,6 +512,7 @@
+                         is_valid: row.is_valid,
+                         invalidated_reason: row.invalidation_reason,
+                         metadata: row.metadata,
++                        mfa_status: MfaStatus::None,
+                     }
+                 })
+                 .collect(),

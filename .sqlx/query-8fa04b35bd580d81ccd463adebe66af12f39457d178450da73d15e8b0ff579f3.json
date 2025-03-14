@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE verification_codes\n            SET \n                code = $1, \n                expires_at = $2, \n                status = $3, \n                attempts = $4\n            WHERE \n                id = $5 AND tenant_id = $6\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Timestamptz",
+        "Varchar",
+        "Int4",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8fa04b35bd580d81ccd463adebe66af12f39457d178450da73d15e8b0ff579f3"
+}

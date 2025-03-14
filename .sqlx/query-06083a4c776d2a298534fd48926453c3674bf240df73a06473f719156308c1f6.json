@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT COUNT(*) as count\n            FROM verification_codes\n            WHERE \n                tenant_id::text = $1 AND \n                user_id::text = $2 AND \n                verification_type = $3 AND \n                created_at > $4\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Timestamptz"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "06083a4c776d2a298534fd48926453c3674bf240df73a06473f719156308c1f6"
+}

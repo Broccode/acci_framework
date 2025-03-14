@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO verification_codes (\n                id, tenant_id, user_id, code, verification_type, \n                created_at, expires_at, status, attempts\n            )\n            VALUES (\n                $1, $2, $3, $4, $5, $6, $7, $8, $9\n            )\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Varchar",
+        "Varchar",
+        "Timestamptz",
+        "Timestamptz",
+        "Varchar",
+        "Int4"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "1694e0df114ff87fec3ce6ac7aa41d25d4c86aa2fc27594b8fe134c18fa1b8a1"
+}

@@ -239,18 +239,17 @@ impl SessionRepository for PostgresSessionRepository {
                 r#"
                 INSERT INTO sessions (
                     id, user_id, token_hash, expires_at, created_at, last_activity_at,
-                    ip_address, user_agent, device_id, device_fingerprint, is_valid, metadata,
-                    mfa_status
+                    ip_address, user_agent, device_id, device_fingerprint, is_valid, metadata
                 )
                 VALUES (
                     gen_random_uuid(), $1, $2, $3, $4, $5,
-                    $6, $7, $8, $9, true, $10, $11
+                    $6, $7, $8, $9, true, $10
                 )
                 RETURNING
                     id, user_id, token_hash, previous_token_hash, token_rotation_at,
                     expires_at, created_at, last_activity_at, last_activity_update_at,
                     ip_address, user_agent, device_id, device_fingerprint,
-                    is_valid, invalidated_reason::text, metadata, mfa_status
+                    is_valid, invalidated_reason::text, metadata
                 "#,
                 user_id,
                 token_hash,
@@ -262,19 +261,10 @@ impl SessionRepository for PostgresSessionRepository {
                 device_id,
                 device_fingerprint_json,
                 metadata,
-                "NONE", // Default MFA status for new sessions
             )
             .fetch_one(&self.pool)
             .await
             .map_err(SessionError::Database)?;
-
-            let mfa_status = match row.mfa_status.as_str() {
-                "NONE" => MfaStatus::None,
-                "PENDING" => MfaStatus::Pending,
-                "VERIFIED" => MfaStatus::Verified,
-                "FAILED" => MfaStatus::Failed,
-                _ => MfaStatus::None, // Default if not specified
-            };
 
             Ok(Session {
                 id: row.id,
@@ -297,7 +287,6 @@ impl SessionRepository for PostgresSessionRepository {
                     .invalidated_reason
                     .map(|r| serde_json::from_str(&r.to_string()).unwrap()),
                 metadata: row.metadata,
-                mfa_status,
             })
         }
         .await;
@@ -336,8 +325,7 @@ impl SessionRepository for PostgresSessionRepository {
                     id, user_id, token_hash, previous_token_hash, token_rotation_at,
                     expires_at, created_at, last_activity_at, last_activity_update_at,
                     ip_address, user_agent, device_id, device_fingerprint,
-                    is_valid, invalidated_reason::text as "invalidated_reason?", metadata,
-                    mfa_status
+                    is_valid, invalidated_reason::text as "invalidated_reason?", metadata
                 FROM sessions
                 WHERE id = $1
                 "#,
@@ -347,38 +335,27 @@ impl SessionRepository for PostgresSessionRepository {
             .await
             .map_err(SessionError::Database)?;
 
-            Ok(row.map(|row| {
-                let mfa_status = match row.mfa_status.as_str() {
-                    "NONE" => MfaStatus::None,
-                    "PENDING" => MfaStatus::Pending,
-                    "VERIFIED" => MfaStatus::Verified,
-                    "FAILED" => MfaStatus::Failed,
-                    _ => MfaStatus::None, // Default if not specified
-                };
-
-                Session {
-                    id: row.id,
-                    user_id: row.user_id,
-                    token_hash: row.token_hash,
-                    previous_token_hash: row.previous_token_hash,
-                    token_rotation_at: row.token_rotation_at.map(|t| t.into()),
-                    expires_at: row.expires_at.into(),
-                    created_at: row.created_at.into(),
-                    last_activity_at: row.last_activity_at.into(),
-                    last_activity_update_at: row.last_activity_update_at.map(|t| t.into()),
-                    ip_address: row.ip_address.map(|ip| ip.to_string()),
-                    user_agent: row.user_agent,
-                    device_id: row.device_id,
-                    device_fingerprint: row
-                        .device_fingerprint
-                        .map(|v| serde_json::from_value(v).unwrap()),
-                    is_valid: row.is_valid,
-                    invalidated_reason: row
-                        .invalidated_reason
-                        .map(|r| serde_json::from_str(&r.to_string()).unwrap()),
-                    metadata: row.metadata,
-                    mfa_status,
-                }
+            Ok(row.map(|row| Session {
+                id: row.id,
+                user_id: row.user_id,
+                token_hash: row.token_hash,
+                previous_token_hash: row.previous_token_hash,
+                token_rotation_at: row.token_rotation_at.map(|t| t.into()),
+                expires_at: row.expires_at.into(),
+                created_at: row.created_at.into(),
+                last_activity_at: row.last_activity_at.into(),
+                last_activity_update_at: row.last_activity_update_at.map(|t| t.into()),
+                ip_address: row.ip_address.map(|ip| ip.to_string()),
+                user_agent: row.user_agent,
+                device_id: row.device_id,
+                device_fingerprint: row
+                    .device_fingerprint
+                    .map(|v| serde_json::from_value(v).unwrap()),
+                is_valid: row.is_valid,
+                invalidated_reason: row
+                    .invalidated_reason
+                    .map(|r| serde_json::from_str(&r.to_string()).unwrap()),
+                metadata: row.metadata,
             }))
         }
         .await;
@@ -419,8 +396,7 @@ impl SessionRepository for PostgresSessionRepository {
                     id, user_id, token_hash, previous_token_hash, token_rotation_at,
                     expires_at, created_at, last_activity_at, last_activity_update_at,
                     ip_address, user_agent, device_id, device_fingerprint,
-                    is_valid, invalidated_reason::text as "invalidated_reason?", metadata,
-                    mfa_status
+                    is_valid, invalidated_reason::text as "invalidated_reason?", metadata
                 FROM sessions
                 WHERE token_hash = $1 OR previous_token_hash = $1
                 "#,
@@ -430,38 +406,27 @@ impl SessionRepository for PostgresSessionRepository {
             .await
             .map_err(SessionError::Database)?;
 
-            Ok(row.map(|row| {
-                let mfa_status = match row.mfa_status.as_str() {
-                    "NONE" => MfaStatus::None,
-                    "PENDING" => MfaStatus::Pending,
-                    "VERIFIED" => MfaStatus::Verified,
-                    "FAILED" => MfaStatus::Failed,
-                    _ => MfaStatus::None, // Default if not specified
-                };
-                
-                Session {
-                    id: row.id,
-                    user_id: row.user_id,
-                    token_hash: row.token_hash,
-                    previous_token_hash: row.previous_token_hash,
-                    token_rotation_at: row.token_rotation_at.map(|t| t.into()),
-                    expires_at: row.expires_at.into(),
-                    created_at: row.created_at.into(),
-                    last_activity_at: row.last_activity_at.into(),
-                    last_activity_update_at: row.last_activity_update_at.map(|t| t.into()),
-                    ip_address: row.ip_address.map(|ip| ip.to_string()),
-                    user_agent: row.user_agent,
-                    device_id: row.device_id,
-                    device_fingerprint: row
-                        .device_fingerprint
-                        .map(|v| serde_json::from_value(v).unwrap()),
-                    is_valid: row.is_valid,
-                    invalidated_reason: row
-                        .invalidated_reason
-                        .map(|r| serde_json::from_str(&r.to_string()).unwrap()),
-                    metadata: row.metadata,
-                    mfa_status,
-                }
+            Ok(row.map(|row| Session {
+                id: row.id,
+                user_id: row.user_id,
+                token_hash: row.token_hash,
+                previous_token_hash: row.previous_token_hash,
+                token_rotation_at: row.token_rotation_at.map(|t| t.into()),
+                expires_at: row.expires_at.into(),
+                created_at: row.created_at.into(),
+                last_activity_at: row.last_activity_at.into(),
+                last_activity_update_at: row.last_activity_update_at.map(|t| t.into()),
+                ip_address: row.ip_address.map(|ip| ip.to_string()),
+                user_agent: row.user_agent,
+                device_id: row.device_id,
+                device_fingerprint: row
+                    .device_fingerprint
+                    .map(|v| serde_json::from_value(v).unwrap()),
+                is_valid: row.is_valid,
+                invalidated_reason: row
+                    .invalidated_reason
+                    .map(|r| serde_json::from_str(&r.to_string()).unwrap()),
+                metadata: row.metadata,
             }))
         }
         .await;
@@ -508,8 +473,7 @@ impl SessionRepository for PostgresSessionRepository {
                     id, user_id, token_hash, previous_token_hash, token_rotation_at,
                     expires_at, created_at, last_activity_at, last_activity_update_at,
                     ip_address, user_agent, device_id, device_fingerprint,
-                    is_valid, invalidated_reason::text as "invalidated_reason?", metadata,
-                    mfa_status
+                    is_valid, invalidated_reason::text as "invalidated_reason?", metadata
                 FROM sessions
                 WHERE user_id = $1
                 AND ($2 = false OR is_valid = $3)
@@ -525,38 +489,27 @@ impl SessionRepository for PostgresSessionRepository {
 
             Ok(rows
                 .into_iter()
-                .map(|row| {
-                    let mfa_status = match row.mfa_status.as_str() {
-                        "NONE" => MfaStatus::None,
-                        "PENDING" => MfaStatus::Pending,
-                        "VERIFIED" => MfaStatus::Verified,
-                        "FAILED" => MfaStatus::Failed,
-                        _ => MfaStatus::None, // Default if not specified
-                    };
-                    
-                    Session {
-                        id: row.id,
-                        user_id: row.user_id,
-                        token_hash: row.token_hash,
-                        previous_token_hash: row.previous_token_hash,
-                        token_rotation_at: row.token_rotation_at.map(|t| t.into()),
-                        expires_at: row.expires_at.into(),
-                        created_at: row.created_at.into(),
-                        last_activity_at: row.last_activity_at.into(),
-                        last_activity_update_at: row.last_activity_update_at.map(|t| t.into()),
-                        ip_address: row.ip_address.map(|ip| ip.to_string()),
-                        user_agent: row.user_agent,
-                        device_id: row.device_id,
-                        device_fingerprint: row
-                            .device_fingerprint
-                            .map(|v| serde_json::from_value(v).unwrap()),
-                        is_valid: row.is_valid,
-                        invalidated_reason: row
-                            .invalidated_reason
-                            .map(|r| serde_json::from_str(&r.to_string()).unwrap()),
-                        metadata: row.metadata,
-                        mfa_status,
-                    }
+                .map(|row| Session {
+                    id: row.id,
+                    user_id: row.user_id,
+                    token_hash: row.token_hash,
+                    previous_token_hash: row.previous_token_hash,
+                    token_rotation_at: row.token_rotation_at.map(|t| t.into()),
+                    expires_at: row.expires_at.into(),
+                    created_at: row.created_at.into(),
+                    last_activity_at: row.last_activity_at.into(),
+                    last_activity_update_at: row.last_activity_update_at.map(|t| t.into()),
+                    ip_address: row.ip_address.map(|ip| ip.to_string()),
+                    user_agent: row.user_agent,
+                    device_id: row.device_id,
+                    device_fingerprint: row
+                        .device_fingerprint
+                        .map(|v| serde_json::from_value(v).unwrap()),
+                    is_valid: row.is_valid,
+                    invalidated_reason: row
+                        .invalidated_reason
+                        .map(|r| serde_json::from_str(&r.to_string()).unwrap()),
+                    metadata: row.metadata,
                 })
                 .collect())
         }
@@ -846,7 +799,6 @@ mod tests {
             is_valid: true,
             invalidated_reason: None,
             metadata: None,
-            mfa_status: MfaStatus::None,
         };
 
         assert!(session.is_valid);
@@ -873,7 +825,6 @@ mod tests {
             is_valid: true,
             invalidated_reason: None,
             metadata: None,
-            mfa_status: MfaStatus::None,
         };
 
         assert!(SystemTime::now() >= session.expires_at);

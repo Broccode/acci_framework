@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE verification_codes\n            SET status = $1\n            WHERE \n                tenant_id::text = $2 AND \n                user_id::text = $3 AND \n                verification_type = $4 AND \n                status = $5\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "9353cc5cc4b02f03fd061036e9e91e9487d2e2974dded8c1b145ccc1edb81ce3"
+}

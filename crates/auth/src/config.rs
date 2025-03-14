@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use std::time::Duration;
 
+use crate::services::message_provider::MessageProviderConfig;
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct AuthConfig {
     /// JWT secret key for token signing
@@ -25,6 +27,57 @@ pub struct AuthConfig {
     pub enable_session_token_rotation: bool,
     /// Session token rotation interval in seconds
     pub session_token_rotation_interval_secs: u64,
+    /// Session configuration
+    pub session: SessionConfig,
+    /// Message provider configuration
+    pub message_providers: Option<MessageProviderConfig>,
+    /// Verification code configuration
+    pub verification: VerificationConfig,
+}
+
+/// Session configuration
+#[derive(Debug, Clone, Deserialize)]
+pub struct SessionConfig {
+    /// Session expiration in seconds
+    pub expiration_secs: u64,
+    /// Session token rotation interval in seconds
+    pub token_rotation_interval_secs: u64,
+    /// Session cleanup interval in seconds
+    pub cleanup_interval_secs: u64,
+}
+
+/// Verification code configuration
+#[derive(Debug, Clone, Deserialize)]
+pub struct VerificationConfig {
+    /// Length of the verification code
+    pub code_length: usize,
+    /// Expiration time in seconds
+    pub expiration_seconds: i64,
+    /// Maximum number of attempts
+    pub max_attempts: usize,
+    /// Throttling period in seconds
+    pub throttle_seconds: i64,
+}
+
+impl Default for SessionConfig {
+    fn default() -> Self {
+        Self {
+            expiration_secs: 86400,              // 24 hours
+            token_rotation_interval_secs: 43200, // 12 hours
+            cleanup_interval_secs: 3600,         // 1 hour
+        }
+    }
+}
+
+impl Default for VerificationConfig {
+    fn default() -> Self {
+        Self {
+            code_length: 6,
+            expiration_seconds: 600, // 10 minutes
+            max_attempts: 5,
+            throttle_seconds: 60, // 1 minute
+        }
+    }
 }
 
 impl Default for AuthConfig {
@@ -41,6 +94,9 @@ impl Default for AuthConfig {
             enable_device_fingerprinting: true,
             enable_session_token_rotation: true,
             session_token_rotation_interval_secs: 43200, // 12 hours
+            session: SessionConfig::default(),
+            message_providers: None,
+            verification: VerificationConfig::default(),
         }
     }
 }

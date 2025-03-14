@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                SELECT\n                    id, user_id, token_hash, previous_token_hash, token_rotation_at,\n                    expires_at, created_at, last_activity_at, last_activity_update_at,\n                    ip_address, user_agent, device_id, device_fingerprint,\n                    is_valid, invalidated_reason::text as \"invalidated_reason?\", metadata\n                FROM sessions\n                WHERE token_hash = $1 OR previous_token_hash = $1\n                ",
+  "query": "\n                SELECT\n                    id, user_id, token_hash, previous_token_hash, token_rotation_at,\n                    expires_at, created_at, last_activity_at, last_activity_update_at,\n                    ip_address, user_agent, device_id, device_fingerprint,\n                    is_valid, invalidated_reason::text as \"invalidated_reason?\", metadata,\n                    mfa_status\n                FROM sessions\n                WHERE id = $1\n                ",
   "describe": {
     "columns": [
       {
@@ -82,11 +82,16 @@
         "ordinal": 15,
         "name": "metadata",
         "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 16,
+        "name": "mfa_status",
+        "type_info": "Varchar"
       }
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Uuid"
       ]
     },
     "nullable": [
@@ -105,8 +110,9 @@
       true,
       false,
       null,
-      true
+      true,
+      false
     ]
   },
-  "hash": "91256342387bf0d2e5ce868fdc6bdeb10446970c5f036bccd6c332e5012bc204"
+  "hash": "7d3f7fd9b94c64d62cff7bc9f20926153cae28928738318db0766d11ed1916bd"
 }

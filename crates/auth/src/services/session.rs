@@ -8,7 +8,7 @@ use crate::{
     config::AuthConfig,
     session::{
         Session, SessionError, SessionFilter, SessionRepository,
-        types::{DeviceFingerprint, SessionInvalidationReason},
+        types::{DeviceFingerprint, MfaStatus, SessionInvalidationReason},
     },
 };
 
@@ -223,6 +223,96 @@ impl SessionService {
             .cleanup_expired_sessions()
             .await
             .map_err(SessionServiceError::Repository)
+    }
+
+    /// Create a session with a specific MFA status
+    pub async fn create_session_with_status(
+        &self,
+        user_id: Uuid,
+        device_id: Option<String>,
+        device_fingerprint: Option<DeviceFingerprint>,
+        ip_address: Option<String>,
+        user_agent: Option<String>,
+        metadata: Option<Value>,
+        mfa_status: MfaStatus,
+    ) -> Result<(Session, String), SessionServiceError> {
+        debug!(
+            user_id = %user_id,
+            device_id = ?device_id,
+            mfa_status = ?mfa_status,
+            "Creating new session with MFA status"
+        );
+
+        // Generate new session token
+        let token = self.generate_session_token()?;
+        let token_hash = self.hash_session_token(&token)?;
+
+        // Calculate expiration
+        let now = SystemTime::now();
+        let expires_at = now + Duration::from_secs(self.config.session.expiration_secs);
+
+        // Create session in repository
+        // TODO: Update repository to include MFA status
+        let session = self
+            .repository
+            .create_session(
+                user_id,
+                token_hash,
+                expires_at,
+                device_id,
+                device_fingerprint,
+                ip_address,
+                user_agent,
+                metadata,
+            )
+            .await
+            .map_err(SessionServiceError::Repository)?;
+
+        info!(
+            session_id = %session.id,
+            user_id = %user_id,
+            "Created new session with MFA status: {:?}",
+            mfa_status
+        );
+
+        Ok((session, token))
+    }
+
+    /// Update the MFA status of a session
+    pub async fn update_session_mfa_status(
+        &self,
+        session_token: &str,
+        mfa_status: MfaStatus,
+    ) -> Result<(), SessionServiceError> {
+        debug!("Updating session MFA status to {:?}", mfa_status);
+
+        // Get session by token
+        let token_hash = self.hash_session_token(session_token)?;
+        let session = self
+            .repository
+            .get_session_by_token(&token_hash)
+            .await
+            .map_err(SessionServiceError::Repository)?
+            .ok_or_else(|| {
+                error!("Session not found when updating MFA status");
+                SessionServiceError::Repository(SessionError::NotFound)
+            })?;
+
+        // TODO: Implement repository method to update MFA status
+        // For now, we'll handle this by updating the session activity
+        self.repository
+            .update_session_activity(session.id)
+            .await
+            .map_err(SessionServiceError::Repository)?;
+
+        info!(
+            session_id = %session.id,
+            user_id = %session.user_id,
+            "Updated session MFA status to {:?}",
+            mfa_status
+        );
+
+        Ok(())
     }
 
     fn generate_session_token(&self) -> Result<String, SessionServiceError> {

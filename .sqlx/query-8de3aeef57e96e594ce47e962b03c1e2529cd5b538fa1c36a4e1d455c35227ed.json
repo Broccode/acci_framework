@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            DELETE FROM verification_codes\n            WHERE tenant_id = $1 AND expires_at < $2\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "8de3aeef57e96e594ce47e962b03c1e2529cd5b538fa1c36a4e1d455c35227ed"
+}

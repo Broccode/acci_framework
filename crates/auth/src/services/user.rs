@@ -5,10 +5,15 @@ use uuid::Uuid;
 
 use crate::{
     AuthConfig, SessionService, SessionServiceError,
-    models::user::{CreateUser, User, UserError, UserRepository},
+    models::{
+        VerificationType,
+        user::{CreateUser, User, UserError, UserRepository},
+    },
+    repository::TenantAwareContext,
+    services::{VerificationError, VerificationService},
     session::{
         Session, SessionFilter,
-        types::{DeviceFingerprint, SessionInvalidationReason},
+        types::{DeviceFingerprint, MfaStatus, SessionInvalidationReason},
     },
     utils::{
         jwt::{JwtError, JwtUtils},
@@ -42,12 +47,25 @@ pub enum UserServiceError {
     Session(#[from] SessionServiceError),
     #[error("Rate limit exceeded")]
     RateLimitExceeded,
+    #[error("MFA required")]
+    MfaRequired,
+    #[error("MFA verification failed: {0}")]
+    MfaVerificationFailed(String),
+    #[error("MFA not configured")]
+    MfaNotConfigured,
+}
+
+impl From<VerificationError> for UserServiceError {
+    fn from(err: VerificationError) -> Self {
+        UserServiceError::MfaVerificationFailed(err.to_string())
+    }
 }
 
 pub struct UserService {
     repository: Arc<dyn UserRepository>,
     _jwt_utils: Arc<JwtUtils>,
     session_service: Arc<SessionService>,
+    verification_service: Option<Arc<VerificationService>>,
     _config: Arc<AuthConfig>,
 }
 
@@ -61,12 +79,14 @@ impl UserService {
         repository: Arc<dyn UserRepository>,
         jwt_utils: Arc<JwtUtils>,
         session_service: Arc<SessionService>,
+        verification_service: Option<Arc<VerificationService>>,
         config: Arc<AuthConfig>,
     ) -> Self {
         Self {
             repository,
             _jwt_utils: jwt_utils,
             session_service,
+            verification_service,
             _config: config,
         }
     }
@@ -116,10 +136,39 @@ impl UserService {
             return Err(UserServiceError::InvalidCredentials);
         }
 
+        // Check if MFA is required
+        // For now, we'll assume MFA is always disabled until we can properly add a field to User
+        let mfa_enabled = false;
+        if mfa_enabled {
+            // Create session with MFA pending status
+            let metadata = json!({
+                "login_type": "password",
+                "email": email,
+                "mfa_status": "pending",
+            });
+
+            let (_session, _session_token) = self
+                .session_service
+                .create_session_with_status(
+                    user.id,
+                    device_id,
+                    device_fingerprint,
+                    ip_address,
+                    user_agent,
+                    Some(metadata),
+                    MfaStatus::Pending,
+                )
+                .await?;
+
+            // Return early with MFA required error
+            return Err(UserServiceError::MfaRequired);
+        }
+
         // Create session with device information
         let metadata = json!({
             "login_type": "password",
             "email": email,
+            "mfa_status": "none",
         });
 
         let (_, session_token) = self
@@ -137,6 +186,97 @@ impl UserService {
         Ok(LoginResult {
             user,
             session_token,
+        })
+    }
+
+    /// Send MFA verification code to user
+    pub async fn send_mfa_verification(
+        &self,
+        user_id: Uuid,
+        verification_type: VerificationType,
+        context: &TenantAwareContext,
+    ) -> Result<(), UserServiceError> {
+        // Get user by ID
+        let user = self
+            .repository
+            .find_by_id(user_id)
+            .await?
+            .ok_or(UserServiceError::UserNotFound)?;
+
+        // Get verification service
+        let verification_service = self
+            .verification_service
+            .clone()
+            .ok_or(UserServiceError::MfaNotConfigured)?;
+
+        // Determine recipient based on verification type
+        let recipient = match verification_type {
+            VerificationType::Email => user.email.clone(),
+            VerificationType::Sms => {
+                // In the current implementation, users don't have a phone field yet
+                // We'll add a placeholder error until the User model is updated
+                return Err(UserServiceError::MfaVerificationFailed(
+                    "User has no phone number configured".to_string(),
+                ));
+            },
+        };
+
+        // Send verification code
+        // Assume tenant_id from context since the User model doesn't have tenant_id field yet
+        let tenant_id = Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap();
+        verification_service
+            .send_verification(
+                tenant_id,
+                user.id,
+                verification_type,
+                recipient,
+                context,
+            )
+            .await
+            .map_err(|e| UserServiceError::MfaVerificationFailed(format!("Verification failed: {}", e)))?;
+
+        Ok(())
+    }
+
+    /// Verify MFA code to complete authentication
+    pub async fn verify_mfa_code(
+        &self,
+        user_id: Uuid,
+        verification_type: VerificationType,
+        code: &str,
+        session_token: &str,
+        context: &TenantAwareContext,
+    ) -> Result<LoginResult, UserServiceError> {
+        // Get user by ID
+        let user = self
+            .repository
+            .find_by_id(user_id)
+            .await?
+            .ok_or(UserServiceError::UserNotFound)?;
+
+        // Get verification service
+        let verification_service = self
+            .verification_service
+            .clone()
+            .ok_or(UserServiceError::MfaNotConfigured)?;
+
+        // Verify code
+        // Assume tenant_id from context since the User model doesn't have tenant_id field yet
+        let tenant_id = Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap();
+        verification_service
+            .verify_code(user.id, verification_type, code, tenant_id, context)
+            .await
+            .map_err(|e| UserServiceError::MfaVerificationFailed(format!("Verification failed: {}", e)))?;
+
+        // Update session to verified status
+        self.session_service
+            .update_session_mfa_status(session_token, MfaStatus::Verified)
+            .await?;
+
+        // Return login result
+        Ok(LoginResult {
+            user,
+            session_token: session_token.to_string(),
         })
     }
 

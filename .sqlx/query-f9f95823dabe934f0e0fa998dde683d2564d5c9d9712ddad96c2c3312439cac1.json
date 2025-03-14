@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                INSERT INTO sessions (\n                    id, user_id, token_hash, expires_at, created_at, last_activity_at,\n                    ip_address, user_agent, device_id, device_fingerprint, is_valid, metadata\n                )\n                VALUES (\n                    gen_random_uuid(), $1, $2, $3, $4, $5,\n                    $6, $7, $8, $9, true, $10\n                )\n                RETURNING\n                    id, user_id, token_hash, previous_token_hash, token_rotation_at,\n                    expires_at, created_at, last_activity_at, last_activity_update_at,\n                    ip_address, user_agent, device_id, device_fingerprint,\n                    is_valid, invalidated_reason::text, metadata\n                ",
+  "query": "\n                SELECT\n                    id, user_id, token_hash, previous_token_hash, token_rotation_at,\n                    expires_at, created_at, last_activity_at, last_activity_update_at,\n                    ip_address, user_agent, device_id, device_fingerprint,\n                    is_valid, invalidated_reason::text as \"invalidated_reason?\", metadata,\n                    mfa_status\n                FROM sessions\n                WHERE token_hash = $1 OR previous_token_hash = $1\n                ",
   "describe": {
     "columns": [
       {
@@ -75,27 +75,23 @@
       },
       {
         "ordinal": 14,
-        "name": "invalidated_reason",
+        "name": "invalidated_reason?",
         "type_info": "Text"
       },
       {
         "ordinal": 15,
         "name": "metadata",
         "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 16,
+        "name": "mfa_status",
+        "type_info": "Varchar"
       }
     ],
     "parameters": {
       "Left": [
-        "Uuid",
-        "Text",
-        "Timestamptz",
-        "Timestamptz",
-        "Timestamptz",
-        "Inet",
-        "Text",
-        "Text",
-        "Jsonb",
-        "Jsonb"
+        "Text"
       ]
     },
     "nullable": [
@@ -114,8 +110,9 @@
       true,
       false,
       null,
-      true
+      true,
+      false
     ]
   },
-  "hash": "6b7ed35dd952310bd3f7654ab9d4858ff4b4654d40ac4121ee758fe587af9a03"
+  "hash": "f9f95823dabe934f0e0fa998dde683d2564d5c9d9712ddad96c2c3312439cac1"
 }

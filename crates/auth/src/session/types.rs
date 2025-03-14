@@ -8,6 +8,57 @@ use sqlx::{
 };
 use std::fmt;
 
+/// Multi-factor authentication status
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum MfaStatus {
+    /// No MFA required for this session
+    None,
+    /// MFA is required but not yet verified
+    Pending,
+    /// MFA has been verified
+    Verified,
+    /// MFA verification has failed
+    Failed,
+}
+
+// Add SQLx Type implementation for PostgreSQL
+impl Type<Postgres> for MfaStatus {
+    fn type_info() -> PgTypeInfo {
+        PgTypeInfo::with_name("text")
+    }
+}
+
+// Add SQLx Encode implementation for PostgreSQL
+impl Encode<'_, Postgres> for MfaStatus {
+    fn encode_by_ref(&self, buf: &mut PgArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        // Convert to the string representation used in the database
+        let s = match self {
+            MfaStatus::None => "NONE",
+            MfaStatus::Pending => "PENDING",
+            MfaStatus::Verified => "VERIFIED",
+            MfaStatus::Failed => "FAILED",
+        };
+
+        // Encode as a string
+        <&str as Encode<Postgres>>::encode(s, buf)
+    }
+}
+
+// Add SQLx Decode implementation for PostgreSQL
+impl<'r> Decode<'r, Postgres> for MfaStatus {
+    fn decode(value: sqlx::postgres::PgValueRef<'r>) -> Result<Self, BoxDynError> {
+        let s = <&str as Decode<Postgres>>::decode(value)?;
+        match s {
+            "NONE" => Ok(MfaStatus::None),
+            "PENDING" => Ok(MfaStatus::Pending),
+            "VERIFIED" => Ok(MfaStatus::Verified),
+            "FAILED" => Ok(MfaStatus::Failed),
+            _ => Err(format!("Unknown MFA status: {}", s).into()),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SessionInvalidationReason {
