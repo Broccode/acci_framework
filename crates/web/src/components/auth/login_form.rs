@@ -2,7 +2,7 @@ use crate::prelude::*;
 use crate::view;
 use serde::{Deserialize, Serialize};
 
-/// LoginForm-Struktur für die Datenverarbeitung
+/// LoginForm structure for data processing
 #[derive(Serialize, Deserialize, Clone)]
 pub struct LoginForm {
     pub email: String,
@@ -10,22 +10,22 @@ pub struct LoginForm {
     pub error: Option<String>,
 }
 
-/// Server-side rendered Login-Formular Komponente
+/// Server-side rendered login form component
 ///
-/// Diese Komponente stellt ein HTML-Formular für den Login bereit und
-/// wird ausschließlich auf dem Server gerendert (SSR).
+/// This component provides an HTML form for login and
+/// is rendered exclusively on the server (SSR).
 ///
-/// # Parameter
+/// # Parameters
 ///
-/// * `cx` - Der Leptos-Scope
-/// * `action_path` - Der Pfad, an den das Formular gesendet wird
-/// * `error` - Eine optionale Fehlermeldung, die angezeigt werden soll
+/// * `cx` - The Leptos scope
+/// * `action_path` - The path to which the form is submitted
+/// * `error` - An optional error message to be displayed
 #[allow(unused_variables)]
 pub fn login_form_ssr(cx: Scope, _action_path: String, _error: Option<String>) -> impl IntoView {
     view! { cx,
         <form method="post" action={_action_path} class="auth-form login-form">
             <div class="form-group">
-                <label for="email">E-Mail</label>
+                <label for="email">Email</label>
                 <input
                     type="email"
                     id="email"
@@ -34,7 +34,7 @@ pub fn login_form_ssr(cx: Scope, _action_path: String, _error: Option<String>) -
                 />
             </div>
             <div class="form-group">
-                <label for="password">Passwort</label>
+                <label for="password">Password</label>
                 <input
                     type="password"
                     id="password"
@@ -51,18 +51,18 @@ pub fn login_form_ssr(cx: Scope, _action_path: String, _error: Option<String>) -
             }
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Anmelden</button>
+                <button type="submit" class="btn btn-primary">Sign In</button>
             </div>
 
             <div class="form-links">
-                <a href="/register" class="register-link">Konto erstellen</a>
+                <a href="/register" class="register-link">Create Account</a>
             </div>
         </form>
     }
 }
 
-// Legacy-Funktion um Kompatibilität zu wahren
-#[deprecated(note = "Verwende login_form_ssr stattdessen")]
+// Legacy function to maintain compatibility
+#[deprecated(note = "Use login_form_ssr instead")]
 pub fn login_form_ssr_legacy(
     cx: Scope,
     action_path: String,
@@ -87,9 +87,9 @@ mod tests {
         // Then it should contain the proper form elements
         assert!(test_utils::assert_has_class(&html, "auth-form"));
         assert!(test_utils::assert_has_class(&html, "login-form"));
-        assert!(test_utils::assert_contains_text(&html, "E-Mail"));
-        assert!(test_utils::assert_contains_text(&html, "Passwort"));
-        assert!(test_utils::assert_contains_text(&html, "Anmelden"));
+        assert!(test_utils::assert_contains_text(&html, "Email"));
+        assert!(test_utils::assert_contains_text(&html, "Password"));
+        assert!(test_utils::assert_contains_text(&html, "Sign In"));
         assert!(test_utils::assert_contains_text(&html, "/register"));
     }
 
@@ -97,7 +97,7 @@ mod tests {
     fn test_login_form_displays_error_when_provided() {
         // Given a login form with an error message
         let action_path = "/api/auth/login".to_string();
-        let error_message = "Ungültige Anmeldedaten".to_string();
+        let error_message = "Invalid credentials".to_string();
 
         // When rendering the form with the error
         let html = test_utils::render_to_html(|cx| {

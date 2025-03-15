@@ -7,52 +7,52 @@ use thiserror::Error;
 #[cfg(feature = "enable_webauthn")]
 use uuid::Uuid;
 
-/// Fehler, die während der Authentifizierung auftreten können
+/// Errors that can occur during authentication
 #[derive(Error, Debug)]
 pub enum AuthError {
-    #[error("Ungültige Anmeldedaten")]
+    #[error("Invalid credentials")]
     InvalidCredentials,
 
-    #[error("Benutzer existiert bereits")]
+    #[error("User already exists")]
     UserAlreadyExists,
 
-    #[error("Konto gesperrt")]
+    #[error("Account locked")]
     AccountLocked,
 
-    #[error("Validierungsfehler: {0}")]
+    #[error("Validation error: {0}")]
     ValidationError(String),
 
-    #[error("Ungültiger Verifikationscode")]
+    #[error("Invalid verification code")]
     InvalidVerificationCode,
 
-    #[error("Verifikationscode abgelaufen")]
+    #[error("Verification code expired")]
     ExpiredVerificationCode,
 
-    #[error("Zu viele Verifikationsversuche")]
+    #[error("Too many verification attempts")]
     TooManyVerificationAttempts,
 
-    #[error("Rate-Limit überschritten")]
+    #[error("Rate limit exceeded")]
     RateLimitExceeded,
 
-    #[error("Interner Serverfehler: {0}")]
+    #[error("Internal server error: {0}")]
     InternalError(Box<dyn StdError + Send + Sync>),
 }
 
-/// Anmeldedaten
+/// Login credentials
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct LoginCredentials {
     pub email: String,
     pub password: String,
 }
 
-/// Daten für die Benutzerregistrierung
+/// User registration data
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct CreateUser {
     pub email: String,
     pub password: String,
 }
 
-/// Session-Informationen
+/// Session information
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Session {
     pub token: String,
@@ -61,16 +61,16 @@ pub struct Session {
     pub mfa_status: Option<MfaStatus>,
 }
 
-/// Status der Multi-Faktor-Authentifizierung
+/// Multi-factor authentication status
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
 pub enum MfaStatus {
-    /// Keine MFA erforderlich oder konfiguriert
+    /// No MFA required or configured
     None,
-    /// MFA ausstehend (Code wurde gesendet, aber noch nicht verifiziert)
+    /// MFA pending (code was sent but not yet verified)
     Pending,
-    /// MFA erfolgreich verifiziert
+    /// MFA successfully verified
     Verified,
-    /// MFA-Verifikation fehlgeschlagen
+    /// MFA verification failed
     Failed,
 }
 
@@ -190,11 +190,11 @@ pub struct SendVerificationRequest {
     pub session_token: Option<String>,
 }
 
-/// Vereinfachter Authentifizierungs-Service
+/// Simplified authentication service
 #[derive(Clone)]
 pub struct AuthService {
-    // In einer realen Anwendung würden hier Verbindungen zur Datenbank und
-    // andere benötigte Konfigurationen injiziert werden
+    // In a real application, connections to the database and
+    // other required configurations would be injected here
 }
 
 impl Default for AuthService {
@@ -204,23 +204,23 @@ impl Default for AuthService {
 }
 
 impl AuthService {
-    /// Erstellt eine neue Instanz des Auth-Service
+    /// Creates a new instance of the Auth service
     pub fn new() -> Self {
         Self {}
     }
 
-    /// Führt einen Login-Vorgang durch
+    /// Performs a login operation
     pub async fn login(&self, credentials: &LoginCredentials) -> Result<Session, AuthError> {
-        // In einer echten Implementierung würde hier die Datenbank abgefragt werden
-        // und ein echter Login-Prozess durchgeführt werden
+        // In a real implementation, the database would be queried here
+        // and a real login process would be performed
 
-        // Für Demonstrationszwecke simulieren wir eine erfolgreiche Anmeldung
-        // wenn die E-Mail "demo@example.com" und das Passwort "password" ist
+        // For demonstration purposes, we simulate a successful login
+        // when the email is "demo@example.com" and the password is "password"
         if credentials.email == "demo@example.com" && credentials.password == "password" {
             Ok(Session {
                 token: "demo-token-123".to_string(),
                 user_id: "user-1".to_string(),
-                expires_at: chrono::Utc::now().timestamp() + 86400, // 1 Tag
+                expires_at: chrono::Utc::now().timestamp() + 86400, // 1 day
                 mfa_status: Some(MfaStatus::None),
             })
         } else {
@@ -228,34 +228,34 @@ impl AuthService {
         }
     }
 
-    /// Registriert einen neuen Benutzer
+    /// Registers a new user
     pub async fn register(&self, user: &CreateUser) -> Result<(), AuthError> {
-        // In einer echten Implementierung würde hier ein neuer Benutzer erstellt werden
+        // In a real implementation, a new user would be created here
 
-        // Für Demonstrationszwecke simulieren wir, dass die Registrierung erfolgreich ist,
-        // wenn die E-Mail nicht "demo@example.com" ist (da dieser "bereits existiert")
+        // For demonstration purposes, we simulate that registration is successful
+        // if the email is not "demo@example.com" (since this user "already exists")
         if user.email == "demo@example.com" {
             Err(AuthError::UserAlreadyExists)
         } else if user.password.len() < 8 {
             Err(AuthError::ValidationError(
-                "Passwort muss mindestens 8 Zeichen lang sein".to_string(),
+                "Password must be at least 8 characters long".to_string(),
             ))
         } else {
             Ok(())
         }
     }
 
-    /// Überprüft die Gültigkeit eines Tokens
+    /// Validates the validity of a token
     pub async fn validate_token(&self, token: &str) -> Result<Session, AuthError> {
-        // In einer echten Implementierung würde hier der Token validiert werden
+        // In a real implementation, the token would be validated here
 
-        // Für Demonstrationszwecke simulieren wir, dass der Token gültig ist,
-        // wenn er "demo-token-123" ist
+        // For demonstration purposes, we simulate that the token is valid
+        // if it is "demo-token-123"
         if token == "demo-token-123" {
             Ok(Session {
                 token: token.to_string(),
                 user_id: "user-1".to_string(),
-                expires_at: chrono::Utc::now().timestamp() + 86400, // 1 Tag
+                expires_at: chrono::Utc::now().timestamp() + 86400, // 1 day
                 mfa_status: Some(MfaStatus::None),
             })
         } else {
@@ -263,55 +263,55 @@ impl AuthService {
         }
     }
 
-    /// Sendet einen Verifikationscode
+    /// Sends a verification code
     pub async fn send_verification(
         &self,
         request: &SendVerificationRequest,
     ) -> Result<(), AuthError> {
-        // In einer echten Implementierung würde hier der Verifikationscode generiert
-        // und an den Benutzer gesendet werden
+        // In a real implementation, the verification code would be generated here
+        // and sent to the user
 
-        // Für Demonstrationszwecke simulieren wir, dass dies immer erfolgreich ist,
-        // außer bei einer bestimmten Benutzer-ID
+        // For demonstration purposes, we simulate that this is always successful,
+        // except for a specific user ID
         if request.user_id == "rate-limited-user" {
             return Err(AuthError::RateLimitExceeded);
         }
 
-        // Simuliere Erfolg
+        // Simulate success
         Ok(())
     }
 
-    /// Verifiziert einen Code
+    /// Verifies a code
     pub async fn verify_code(&self, request: &VerificationRequest) -> Result<(), AuthError> {
-        // In einer echten Implementierung würde hier der Code mit dem gespeicherten Code verglichen werden
+        // In a real implementation, the code would be compared with the stored code here
 
-        // Für Demonstrationszwecke simulieren wir verschiedene Fehlerszenarien
-        // basierend auf bestimmten Codes
+        // For demonstration purposes, we simulate various error scenarios
+        // based on specific codes
         match request.code.as_str() {
             "111111" => Err(AuthError::InvalidVerificationCode),
             "222222" => Err(AuthError::ExpiredVerificationCode),
             "333333" => Err(AuthError::TooManyVerificationAttempts),
             "444444" => Err(AuthError::RateLimitExceeded),
-            "123456" => Ok(()), // Gültiger Code
+            "123456" => Ok(()), // Valid code
             _ => Err(AuthError::InvalidVerificationCode),
         }
     }
 
-    /// Aktualisiert den MFA-Status einer Session
+    /// Updates the MFA status of a session
     pub async fn update_session_mfa_status(
         &self,
         token: &str,
         status: MfaStatus,
     ) -> Result<Session, AuthError> {
-        // In einer echten Implementierung würde hier der Session-Status in der Datenbank aktualisiert werden
+        // In a real implementation, the session status would be updated in the database here
 
-        // Für Demonstrationszwecke simulieren wir, dass der Token gültig ist,
-        // wenn er "demo-token-123" ist und geben eine aktualisierte Session zurück
+        // For demonstration purposes, we simulate that the token is valid
+        // if it is "demo-token-123" and return an updated session
         if token == "demo-token-123" {
             Ok(Session {
                 token: token.to_string(),
                 user_id: "user-1".to_string(),
-                expires_at: chrono::Utc::now().timestamp() + 86400, // 1 Tag
+                expires_at: chrono::Utc::now().timestamp() + 86400, // 1 day
                 mfa_status: Some(status),
             })
         } else {
@@ -403,7 +403,7 @@ impl AuthService {
     }
 }
 
-/// Fehlertyp, der dem acci_auth::Error entspricht, damit wir die bestehenden Handler verwenden können
+/// Error type that corresponds to acci_auth::Error, allowing us to use the existing handlers
 pub enum Error {
     InvalidCredentials,
     UserAlreadyExists,
@@ -419,15 +419,15 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Error::InvalidCredentials => write!(f, "Ungültige Anmeldedaten"),
-            Error::UserAlreadyExists => write!(f, "Benutzer existiert bereits"),
-            Error::AccountLocked => write!(f, "Konto gesperrt"),
-            Error::ValidationError => write!(f, "Validierungsfehler"),
-            Error::InvalidVerificationCode => write!(f, "Ungültiger Verifikationscode"),
-            Error::ExpiredVerificationCode => write!(f, "Verifikationscode abgelaufen"),
-            Error::TooManyVerificationAttempts => write!(f, "Zu viele Verifikationsversuche"),
-            Error::RateLimitExceeded => write!(f, "Rate-Limit überschritten"),
-            Error::InternalError => write!(f, "Interner Serverfehler"),
+            Error::InvalidCredentials => write!(f, "Invalid credentials"),
+            Error::UserAlreadyExists => write!(f, "User already exists"),
+            Error::AccountLocked => write!(f, "Account locked"),
+            Error::ValidationError => write!(f, "Validation error"),
+            Error::InvalidVerificationCode => write!(f, "Invalid verification code"),
+            Error::ExpiredVerificationCode => write!(f, "Verification code expired"),
+            Error::TooManyVerificationAttempts => write!(f, "Too many verification attempts"),
+            Error::RateLimitExceeded => write!(f, "Rate limit exceeded"),
+            Error::InternalError => write!(f, "Internal server error"),
         }
     }
 }
