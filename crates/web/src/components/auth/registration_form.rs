@@ -100,10 +100,7 @@ mod tests {
         assert!(test_utils::assert_has_class(&html, "registration-form"));
         assert!(test_utils::assert_contains_text(&html, "Email"));
         assert!(test_utils::assert_contains_text(&html, "Password"));
-        assert!(test_utils::assert_contains_text(
-            &html,
-            "Confirm Password"
-        ));
+        assert!(test_utils::assert_contains_text(&html, "Confirm Password"));
         assert!(test_utils::assert_contains_text(&html, "Register"));
         assert!(test_utils::assert_contains_text(&html, "/login"));
     }
