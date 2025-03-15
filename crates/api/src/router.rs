@@ -5,6 +5,7 @@ use crate::handlers::tenant::{
     get_tenant_by_id, update_tenant,
 };
 use crate::handlers::verification::{VerificationAppState, send_verification, verify_code};
+#[cfg(feature = "enable_webauthn")]
 use crate::handlers::webauthn::{
     WebAuthnAppState, complete_authentication, complete_registration, start_authentication,
     start_registration,
@@ -34,7 +35,10 @@ impl ApiRouter {
         auth_state: ApiAppState,
         tenant_state: Option<TenantAppState>,
         verification_state: Option<VerificationAppState>,
+        #[cfg(feature = "enable_webauthn")]
         webauthn_state: Option<WebAuthnAppState>,
+        #[cfg(not(feature = "enable_webauthn"))]
+        webauthn_state: Option<()>,
     ) -> Router {
         // Create auth routes
         let auth_routes = Router::new()
@@ -68,6 +72,7 @@ impl ApiRouter {
         };
 
         // Create WebAuthn routes if webauthn state is provided
+        #[cfg(feature = "enable_webauthn")]
         let webauthn_routes = if let Some(webauthn_state) = webauthn_state {
             Router::new()
                 .route("/register/start", post(start_registration))
@@ -78,6 +83,9 @@ impl ApiRouter {
         } else {
             Router::new()
         };
+        
+        #[cfg(not(feature = "enable_webauthn"))]
+        let webauthn_routes = Router::new();
 
         // Create auth router with nested verification routes
         let auth_router = Router::new()

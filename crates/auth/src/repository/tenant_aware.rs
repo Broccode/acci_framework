@@ -29,6 +29,12 @@ pub enum RepositoryError {
     #[error("Entity already exists: {0}")]
     Duplicate(String),
 
+    #[error("Unique constraint violation: {0}")]
+    UniqueViolation(String),
+
+    #[error("Tenant ID is required for this operation")]
+    TenantRequired,
+
     #[error("Tenant error: {0}")]
     Tenant(TenantError),
 

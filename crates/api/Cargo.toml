@@ -10,6 +10,7 @@ repository = "https://github.com/your-org/acci-framework"
 [features]
 default = ["extended_errors"]
 extended_errors = []
+enable_webauthn = ["acci_auth/enable_webauthn"]
 
 [dependencies]
 # Backend Framework

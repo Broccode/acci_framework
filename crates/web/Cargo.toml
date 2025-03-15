@@ -5,6 +5,10 @@ edition.workspace = true
 authors.workspace = true
 license.workspace = true
 
+[features]
+default = []
+enable_webauthn = ["acci_auth/enable_webauthn"]
+
 [dependencies]
 # Frontend Framework
 leptos = { workspace = true }

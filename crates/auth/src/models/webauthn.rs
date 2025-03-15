@@ -146,8 +146,8 @@ pub struct PublicKeyCredential {
 }
 
 impl PublicKeyCredential {
-    pub fn parse(&self) -> Result<RegisterPublicKeyCredential> {
-        serde_json::from_str(&self.assertion)
+    pub fn parse(&self) -> Result<webauthn_rs::prelude::PublicKeyCredential> {
+        serde_json::from_str::<webauthn_rs::prelude::PublicKeyCredential>(&self.assertion)
             .map_err(|e| CoreError::Validation(format!("Failed to parse assertion data: {}", e)))
     }
 }

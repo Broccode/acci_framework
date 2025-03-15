@@ -8,6 +8,7 @@ license.workspace = true
 [features]
 default = []
 metrics = ["dep:metrics"]
+enable_webauthn = []
 
 [dependencies]
 # Authentication
