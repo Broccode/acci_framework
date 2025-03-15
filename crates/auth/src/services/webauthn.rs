@@ -16,7 +16,6 @@ use std::{
 use tracing::{debug, instrument};
 use uuid::Uuid;
 use webauthn_rs::prelude::*;
-use std::convert::TryFrom;
 
 /// Configuration for WebAuthn
 #[derive(Debug, Clone)]
@@ -389,13 +388,12 @@ impl WebAuthnService {
             .get_user(db_cred.user_id)
             .await
             .map_err(|e| WebAuthnError::Unexpected(format!("Failed to get user: {}", e)))?;
-            
+
         // Check if user exists
-        if user_opt.is_none() {
-            return Err(WebAuthnError::Unexpected("User not found".to_string()).into());
-        }
-        
-        let user = user_opt.unwrap();
+        let user = match user_opt {
+            None => return Err(WebAuthnError::Unexpected("User not found".to_string()).into()),
+            Some(user) => user,
+        };
 
         // Clear session state
         if let Some(obj) = session_data.as_object_mut() {
