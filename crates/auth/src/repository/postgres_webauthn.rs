@@ -12,6 +12,7 @@ use uuid::Uuid;
 
 /// PostgreSQL implementation of the WebAuthn repository
 pub struct PostgresWebAuthnRepository {
+    #[allow(dead_code)]
     pool: Pool<Postgres>,
 }
 

@@ -21,6 +21,7 @@ impl PostgresVerificationCodeRepository {
     }
 
     /// Start a transaction
+    #[allow(dead_code)]
     async fn begin_transaction(&self) -> Result<Transaction<'_, Postgres>> {
         let tx = self.pool.begin().await.map_err(Error::Database)?;
         Ok(tx)

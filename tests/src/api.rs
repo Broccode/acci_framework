@@ -5,9 +5,11 @@
 // Auth handler tests are included here
 pub mod auth_handler_test {
     // Import directly from source modules
+    #[allow(unused_imports)]
     use acci_api::handlers::auth::{
         ApiAppState, LoginRequest, LoginResponse, RegistrationRequest, RegistrationResponse,
     };
+    #[allow(unused_imports)]
     use acci_api::response::{ApiError, ApiResponse, ResponseStatus};
     use acci_auth::{
         models::user::{User, UserError},
@@ -26,7 +28,9 @@ pub mod auth_handler_test {
 
     // Mock for the monitoring module - reduces dependencies on metrics in tests
     mod monitoring {
+        #[allow(dead_code)]
         pub fn record_auth_operation(_operation: &str, _result: &str) {}
+        #[allow(dead_code)]
         pub fn record_request_duration(_duration_secs: f64, _method: &str, _path: &str) {}
     }
 
@@ -41,6 +45,7 @@ pub mod auth_handler_test {
             last_login: None,
             is_active: true,
             is_verified: false,
+            display_name: "Test User".to_string(),
         }
     }
 
@@ -219,6 +224,7 @@ pub mod auth_handler_test {
     #[derive(Clone)]
     struct TestApiAppState {
         user_service: Arc<TestUserService>,
+        #[allow(dead_code)]
         session_service: Arc<TestSessionService>,
     }
 

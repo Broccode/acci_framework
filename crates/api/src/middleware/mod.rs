@@ -17,6 +17,7 @@ use std::sync::Arc;
 ///
 /// This struct builds and applies the middleware stack for the API router.
 pub struct MiddlewareStack {
+    #[allow(dead_code)]
     config: ApiConfig,
     tenant_repository: Option<Arc<dyn TenantRepository>>,
     tenant_config: Option<tenant::TenantResolutionConfig>,

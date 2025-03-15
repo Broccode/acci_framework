@@ -11,10 +11,11 @@ use crate::view;
 /// * `cx` - Der Leptos-Scope
 /// * `is_authenticated` - Gibt an, ob der Benutzer angemeldet ist
 /// * `user_name` - Der Name des angemeldeten Benutzers (falls vorhanden)
+#[allow(unused_variables)]
 pub fn navigation_ssr(
     cx: Scope,
-    is_authenticated: bool,
-    user_name: Option<String>,
+    _is_authenticated: bool,
+    _user_name: Option<String>,
 ) -> impl IntoView {
     view! { cx,
         <nav class="main-navigation">
@@ -23,7 +24,7 @@ pub fn navigation_ssr(
             </div>
             <ul class="nav-links">
                 <li><a href="/">Home</a></li>
-                {if is_authenticated {
+                {if _is_authenticated {
                     view! { cx,
                         <>
                             <li><a href="/dashboard">Dashboard</a></li>
@@ -32,7 +33,7 @@ pub fn navigation_ssr(
                                     <button type="submit" class="btn-link">Abmelden</button>
                                 </form>
                             </li>
-                            <li class="user-info">{user_name.unwrap_or_else(|| "Benutzer".to_string())}</li>
+                            <li class="user-info">{_user_name.unwrap_or_else(|| "Benutzer".to_string())}</li>
                         </>
                     }
                 } else {

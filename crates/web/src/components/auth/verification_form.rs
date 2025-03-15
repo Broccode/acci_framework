@@ -27,30 +27,31 @@ pub struct VerificationForm {
 /// * `tenant_id` - Die Mandanten-ID für die Verifikation
 /// * `session_token` - Das Session-Token für Authentifizierung (optional)
 /// * `error` - Eine optionale Fehlermeldung, die angezeigt werden soll
+#[allow(unused_variables)]
 pub fn verification_form_ssr(
     cx: Scope,
-    action_path: String,
+    _action_path: String,
     verification_type: String,
-    user_id: String,
-    tenant_id: String,
-    session_token: Option<String>,
-    error: Option<String>,
+    _user_id: String,
+    _tenant_id: String,
+    _session_token: Option<String>,
+    _error: Option<String>,
 ) -> impl IntoView {
     // Anzeigename für den Verifikationstyp
-    let verification_type_display = match verification_type.to_lowercase().as_str() {
+    let _verification_type_display = match verification_type.to_lowercase().as_str() {
         "email" => "E-Mail",
         "sms" => "SMS",
         _ => "Verifikation",
     };
 
     view! { cx,
-        <form method="post" action={action_path} class="auth-form verification-form">
-            <input type="hidden" name="user_id" value={user_id} />
+        <form method="post" action={_action_path} class="auth-form verification-form">
+            <input type="hidden" name="user_id" value={_user_id} />
             <input type="hidden" name="verification_type" value={verification_type.clone()} />
-            <input type="hidden" name="tenant_id" value={tenant_id} />
+            <input type="hidden" name="tenant_id" value={_tenant_id} />
 
             {
-                session_token.clone().map(|token| {
+                _session_token.clone().map(|token| {
                     view! { cx,
                         <input type="hidden" name="session_token" value={token} />
                     }
@@ -58,7 +59,7 @@ pub fn verification_form_ssr(
             }
 
             <div class="verification-info">
-                <p>Bitte geben Sie den Code ein, den wir Ihnen per {verification_type_display} zugesendet haben.</p>
+                <p>Bitte geben Sie den Code ein, den wir Ihnen per {_verification_type_display} zugesendet haben.</p>
             </div>
 
             <div class="form-group">
@@ -78,7 +79,7 @@ pub fn verification_form_ssr(
             </div>
 
             {
-                match error {
+                match _error {
                     Some(err) => view! { cx, <div class="error-message">{err}</div> },
                     None => view! { cx, <> </> }
                 }
@@ -120,30 +121,31 @@ pub struct SendVerificationRequest {
 /// * `tenant_id` - Die Mandanten-ID für die Verifikation
 /// * `session_token` - Das Session-Token für Authentifizierung (optional)
 /// * `error` - Eine optionale Fehlermeldung, die angezeigt werden soll
+#[allow(unused_variables)]
 pub fn send_verification_form_ssr(
     cx: Scope,
-    action_path: String,
+    _action_path: String,
     verification_type: String,
-    user_id: String,
-    tenant_id: String,
-    session_token: Option<String>,
-    error: Option<String>,
+    _user_id: String,
+    _tenant_id: String,
+    _session_token: Option<String>,
+    _error: Option<String>,
 ) -> impl IntoView {
     // Feldbezeichnungen basierend auf dem Verifikationstyp
-    let (recipient_label, recipient_type, input_mode) =
+    let (_recipient_label, _recipient_type, _input_mode) =
         match verification_type.to_lowercase().as_str() {
             "sms" => ("Telefonnummer", "tel", "tel"),
             _ => ("E-Mail-Adresse", "email", "email"),
         };
 
     view! { cx,
-        <form method="post" action={action_path} class="auth-form send-verification-form">
-            <input type="hidden" name="user_id" value={user_id} />
+        <form method="post" action={_action_path} class="auth-form send-verification-form">
+            <input type="hidden" name="user_id" value={_user_id} />
             <input type="hidden" name="verification_type" value={verification_type} />
-            <input type="hidden" name="tenant_id" value={tenant_id} />
+            <input type="hidden" name="tenant_id" value={_tenant_id} />
 
             {
-                session_token.clone().map(|token| {
+                _session_token.clone().map(|token| {
                     view! { cx,
                         <input type="hidden" name="session_token" value={token} />
                     }
@@ -151,18 +153,18 @@ pub fn send_verification_form_ssr(
             }
 
             <div class="form-group">
-                <label for="recipient">{recipient_label}</label>
+                <label for="recipient">{_recipient_label}</label>
                 <input
-                    type={recipient_type}
+                    type={_recipient_type}
                     id="recipient"
                     name="recipient"
-                    inputmode={input_mode}
+                    inputmode={_input_mode}
                     required
                 />
             </div>
 
             {
-                match error {
+                match _error {
                     Some(err) => view! { cx, <div class="error-message">{err}</div> },
                     None => view! { cx, <> </> }
                 }

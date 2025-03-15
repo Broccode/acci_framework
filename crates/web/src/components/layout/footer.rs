@@ -9,8 +9,9 @@ use crate::view;
 /// # Parameter
 ///
 /// * `cx` - Der Leptos-Scope
+#[allow(unused_variables)]
 pub fn footer_ssr(cx: Scope) -> impl IntoView {
-    let current_year = 2025; // In einer realen Anwendung würde das dynamisch ermittelt werden
+    let _current_year = 2025; // In einer realen Anwendung würde das dynamisch ermittelt werden
 
     view! { cx,
         <footer class="main-footer">

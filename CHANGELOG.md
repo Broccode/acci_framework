@@ -256,6 +256,15 @@ Create a git tag for the version (e.g., v0.2.0)
   - Fixed error handling and conversion between domain and core errors
   - Created properly structured placeholder implementation providing foundation for full WebAuthn support
 
+- Fixed unused variable and field warnings across the codebase
+  - Added `#[allow(dead_code)]` annotations to intentionally unused fields in repositories
+  - Added `#[allow(unused_variables)]` to component functions in web crate
+  - Prefixed unused variables with underscores throughout the codebase
+  - Fixed unused imports with appropriate annotations
+  - Fixed missing fields in test struct instantiations
+  - Improved view template variable references to match parameters
+  - Fixed deprecated function warnings in the web components
+
 ### Changed
 
 ### Technical

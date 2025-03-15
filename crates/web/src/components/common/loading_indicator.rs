@@ -9,14 +9,15 @@ use crate::view;
 ///
 /// * `cx` - Der Leptos-Scope
 /// * `message` - Eine optionale Nachricht, die angezeigt werden soll
+#[allow(unused_variables)]
 pub fn loading_indicator_ssr(cx: Scope, message: Option<String>) -> impl IntoView {
     let default_message = "Wird geladen...".to_string();
-    let display_message = message.unwrap_or(default_message);
+    let _display_message = message.unwrap_or(default_message);
 
     view! { cx,
         <div class="loading-indicator">
             <div class="spinner"></div>
-            <div class="loading-message">{display_message}</div>
+            <div class="loading-message">{_display_message}</div>
         </div>
     }
 }

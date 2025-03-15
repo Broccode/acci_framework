@@ -21,13 +21,14 @@ pub struct RegistrationForm {
 /// * `cx` - Der Leptos-Scope
 /// * `action_path` - Der Pfad, an den das Formular gesendet wird
 /// * `error` - Eine optionale Fehlermeldung, die angezeigt werden soll
+#[allow(unused_variables)]
 pub fn registration_form_ssr(
     cx: Scope,
-    action_path: String,
-    error: Option<String>,
+    _action_path: String,
+    _error: Option<String>,
 ) -> impl IntoView {
     view! { cx,
-        <form method="post" action={action_path} class="auth-form registration-form">
+        <form method="post" action={_action_path} class="auth-form registration-form">
             <div class="form-group">
                 <label for="email">E-Mail</label>
                 <input
@@ -57,7 +58,7 @@ pub fn registration_form_ssr(
             </div>
 
             // Bedingte Anzeige einer Fehlermeldung, falls vorhanden
-            {error.map(|err| view! { cx, <div class="error-message">{err}</div> })}
+            {_error.map(|err| view! { cx, <div class="error-message">{err}</div> })}
 
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Registrieren</button>

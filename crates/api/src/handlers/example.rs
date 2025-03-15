@@ -562,6 +562,7 @@ mod tests {
     }
 
     // Angepasste Version der bestehenden make_json_request Funktion für invalid JSON
+    #[allow(dead_code)]
     pub async fn make_invalid_json_request(app: Router<ProductAppState>) -> Response {
         let request = Request::builder()
             .uri("/products")

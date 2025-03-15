@@ -404,7 +404,7 @@ pub mod ssr {
 #[macro_export]
 macro_rules! view {
     ($cx:expr, $($rest:tt)*) => {{
-        let scope: $crate::services::leptos::Scope = $cx;
+        let _scope: $crate::services::leptos::Scope = $cx;
 
         // Dies ist nur eine vereinfachte Implementierung
         // In einer realen Implementierung würde hier DOM-Elemente erzeugt werden

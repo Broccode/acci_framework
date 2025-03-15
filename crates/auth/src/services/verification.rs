@@ -77,6 +77,7 @@ pub struct VerificationService {
     /// Email message provider
     email_provider: Option<Arc<dyn MessageProvider>>,
     /// Rate limiter
+    #[allow(dead_code)]
     limiter: Arc<RateLimiter<NotKeyed, InMemoryState, DefaultClock, NoOpMiddleware>>,
 }
 

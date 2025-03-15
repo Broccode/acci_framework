@@ -42,7 +42,9 @@ const WEBAUTHN_AUTH_STATE_KEY: &str = "webauthn_authentication_state";
 
 /// Manages WebAuthn operations including registration and authentication
 pub struct WebAuthnService {
+    #[allow(dead_code)]
     webauthn: Webauthn,
+    #[allow(dead_code)]
     repository: Arc<dyn WebAuthnRepository>,
 }
 

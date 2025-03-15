@@ -20,9 +20,10 @@ pub struct LoginForm {
 /// * `cx` - Der Leptos-Scope
 /// * `action_path` - Der Pfad, an den das Formular gesendet wird
 /// * `error` - Eine optionale Fehlermeldung, die angezeigt werden soll
-pub fn login_form_ssr(cx: Scope, action_path: String, error: Option<String>) -> impl IntoView {
+#[allow(unused_variables)]
+pub fn login_form_ssr(cx: Scope, _action_path: String, _error: Option<String>) -> impl IntoView {
     view! { cx,
-        <form method="post" action={action_path} class="auth-form login-form">
+        <form method="post" action={_action_path} class="auth-form login-form">
             <div class="form-group">
                 <label for="email">E-Mail</label>
                 <input
@@ -43,7 +44,7 @@ pub fn login_form_ssr(cx: Scope, action_path: String, error: Option<String>) -> 
             </div>
 
             {
-                match error {
+                match _error {
                     Some(err) => view! { cx, <div class="error-message">{err}</div> },
                     None => view! { cx, <> </> }
                 }

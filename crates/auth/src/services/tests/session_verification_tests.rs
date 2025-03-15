@@ -190,6 +190,7 @@ impl SessionRepositoryExt for MockSessionRepository {
 // Instead of extending SessionService directly, we'll use our repository directly for MFA updates
 impl MockSessionRepository {
     // Get a shared reference to this repository from the create_test_services tuple
+    #[allow(dead_code)]
     fn from_tuple(
         services: &(
             VerificationService,

@@ -440,7 +440,7 @@ mod tests {
     async fn test_validated_data_extractor_valid() {
         let json_data =
             r#"{"username":"john","email":"john@example.com","password":"password123"}"#;
-        let request = create_json_request(json_data);
+        let _request = create_json_request(json_data);
 
         // Parse the JSON directly for testing
         let test_user: TestUser = serde_json::from_str(json_data).unwrap();

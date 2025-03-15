@@ -7,13 +7,14 @@ use crate::view;
 /// * `cx` - Der Leptos-Scope
 /// * `message` - Die anzuzeigende Fehlermeldung
 /// * `error_type` - Der Typ des Fehlers (optional, Standard ist "error")
-pub fn error_display_ssr(cx: Scope, message: String, error_type: Option<String>) -> impl IntoView {
-    let type_class = error_type.unwrap_or_else(|| "error".to_string());
+#[allow(unused_variables)]
+pub fn error_display_ssr(cx: Scope, _message: String, error_type: Option<String>) -> impl IntoView {
+    let _type_class = error_type.unwrap_or_else(|| "error".to_string());
 
     view! { cx,
-        <div class={format!("error-display {}", type_class)}>
+        <div class={format!("error-display {}", _type_class)}>
             <div class="error-icon">!</div>
-            <div class="error-message">{message}</div>
+            <div class="error-message">{_message}</div>
         </div>
     }
 }

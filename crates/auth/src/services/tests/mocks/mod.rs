@@ -20,6 +20,7 @@ impl MockTenantAwareContext {
 }
 
 // Function that creates a PgPool that will only be used for testing
+#[allow(dead_code)]
 fn panic_on_use_pool() -> sqlx::PgPool {
     sqlx::postgres::PgPoolOptions::new()
         .max_connections(1) // Need at least one connection
