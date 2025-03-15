@@ -390,10 +390,11 @@ impl WebAuthnService {
             .map_err(|e| WebAuthnError::Unexpected(format!("Failed to get user: {}", e)))?;
 
         // Check if user exists
-        let user = match user_opt {
-            None => return Err(WebAuthnError::Unexpected("User not found".to_string()).into()),
-            Some(user) => user,
-        };
+        if user_opt.is_none() {
+            return Err(WebAuthnError::Unexpected("User not found".to_string()).into());
+        }
+
+        let user = user_opt;
 
         // Clear session state
         if let Some(obj) = session_data.as_object_mut() {
