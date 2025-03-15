@@ -27,8 +27,7 @@ impl PostgresWebAuthnRepository {
 
     /// Get the current tenant ID
     fn get_tenant_id(&self) -> Result<Uuid, RepositoryError> {
-        self.tenant_id
-            .ok_or(RepositoryError::TenantRequired)
+        self.tenant_id.ok_or(RepositoryError::TenantRequired)
     }
 
     /// Helper to map database rows to Credential objects
