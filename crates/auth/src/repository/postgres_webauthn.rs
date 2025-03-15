@@ -6,7 +6,7 @@ use crate::{
     },
 };
 use async_trait::async_trait;
-use sqlx::{Pool, Postgres, Row, query};
+use sqlx::{Pool, Postgres, Row};
 use tracing::{debug, error, instrument};
 use uuid::Uuid;
 
@@ -28,7 +28,7 @@ impl PostgresWebAuthnRepository {
     /// Get the current tenant ID
     fn get_tenant_id(&self) -> Result<Uuid, RepositoryError> {
         self.tenant_id
-            .ok_or_else(|| RepositoryError::TenantRequired)
+            .ok_or(RepositoryError::TenantRequired)
     }
 
     /// Helper to map database rows to Credential objects
@@ -113,7 +113,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
         })?;
 
         // Set tenant context for this transaction
-        query("SET LOCAL app.tenant_id = $1")
+        sqlx::query::<sqlx::Postgres>("SET LOCAL app.tenant_id = $1")
             .bind(tenant_id.to_string())
             .execute(&mut *tx)
             .await
@@ -122,7 +122,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
             })?;
 
         // Insert the credential
-        let result = query(
+        let result = sqlx::query::<sqlx::Postgres>(
             r#"
             INSERT INTO webauthn_credentials (
                 uuid, credential_id, user_id, tenant_id, name, 
@@ -138,7 +138,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
         .bind(&credential.name)
         .bind(&credential.aaguid)
         .bind(&credential.public_key)
-        .bind(credential.counter)
+        .bind(credential.counter as i64)
         .bind(credential.created_at)
         .bind(credential.last_used_at)
         .execute(&mut *tx)
@@ -190,7 +190,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
         })?;
 
         // Set tenant context for this transaction
-        query("SET LOCAL app.tenant_id = $1")
+        sqlx::query("SET LOCAL app.tenant_id = $1")
             .bind(tenant_id.to_string())
             .execute(&mut *tx)
             .await
@@ -199,7 +199,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
             })?;
 
         // Update the credential
-        let result = query(
+        let result = sqlx::query::<sqlx::Postgres>(
             r#"
             UPDATE webauthn_credentials
             SET 
@@ -210,7 +210,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
             "#,
         )
         .bind(&credential.name)
-        .bind(credential.counter)
+        .bind(credential.counter as i64)
         .bind(credential.last_used_at)
         .bind(credential.uuid)
         .bind(tenant_id)
@@ -252,7 +252,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
         })?;
 
         // Set tenant context for this transaction
-        query("SET LOCAL app.tenant_id = $1")
+        sqlx::query::<sqlx::Postgres>("SET LOCAL app.tenant_id = $1")
             .bind(tenant_id.to_string())
             .execute(&mut *tx)
             .await
@@ -261,7 +261,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
             })?;
 
         // Query for the credential
-        let row_opt = query(
+        let row_opt = sqlx::query::<sqlx::Postgres>(
             r#"
             SELECT 
                 uuid, credential_id, user_id, tenant_id, name,
@@ -310,7 +310,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
         })?;
 
         // Set tenant context for this transaction
-        query("SET LOCAL app.tenant_id = $1")
+        sqlx::query::<sqlx::Postgres>("SET LOCAL app.tenant_id = $1")
             .bind(tenant_id.to_string())
             .execute(&mut *tx)
             .await
@@ -319,7 +319,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
             })?;
 
         // Query for the credential
-        let row_opt = query(
+        let row_opt = sqlx::query::<sqlx::Postgres>(
             r#"
             SELECT 
                 uuid, credential_id, user_id, tenant_id, name,
@@ -368,7 +368,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
         })?;
 
         // Set tenant context for this transaction
-        query("SET LOCAL app.tenant_id = $1")
+        sqlx::query::<sqlx::Postgres>("SET LOCAL app.tenant_id = $1")
             .bind(tenant_id.to_string())
             .execute(&mut *tx)
             .await
@@ -377,7 +377,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
             })?;
 
         // Query for all credentials for this user
-        let rows = query(
+        let rows = sqlx::query::<sqlx::Postgres>(
             r#"
             SELECT 
                 uuid, credential_id, user_id, tenant_id, name,
@@ -421,7 +421,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
         })?;
 
         // Set tenant context for this transaction
-        query("SET LOCAL app.tenant_id = $1")
+        sqlx::query::<sqlx::Postgres>("SET LOCAL app.tenant_id = $1")
             .bind(tenant_id.to_string())
             .execute(&mut *tx)
             .await
@@ -430,7 +430,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
             })?;
 
         // Delete the credential
-        let result = query(
+        let result = sqlx::query::<sqlx::Postgres>(
             r#"
             DELETE FROM webauthn_credentials
             WHERE uuid = $1 AND tenant_id = $2
@@ -476,7 +476,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
         })?;
 
         // Set tenant context for this transaction
-        query("SET LOCAL app.tenant_id = $1")
+        sqlx::query::<sqlx::Postgres>("SET LOCAL app.tenant_id = $1")
             .bind(tenant_id.to_string())
             .execute(&mut *tx)
             .await
@@ -485,7 +485,7 @@ impl WebAuthnRepository for PostgresWebAuthnRepository {
             })?;
 
         // Delete all credentials for this user
-        let result = query(
+        let result = sqlx::query::<sqlx::Postgres>(
             r#"
             DELETE FROM webauthn_credentials
             WHERE user_id = $1 AND tenant_id = $2

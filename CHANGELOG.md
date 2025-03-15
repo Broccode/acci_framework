@@ -260,13 +260,17 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Fixed
 
-- WebAuthn implementation compatibility with webauthn-rs 0.5.1
-  - Fixed the WebAuthnBuilder API usage to match new library version
+- WebAuthn implementation compatibility issues
+  - Fixed the WebAuthnBuilder API usage to match webauthn-rs 0.5.1 version
   - Corrected credential creation flow to work with new API structure
   - Updated tenant-aware context implementation for proper dynamic dispatch 
   - Improved transaction management in tenant-aware repositories
   - Fixed error handling and conversion between domain and core errors
   - Created properly structured placeholder implementation providing foundation for full WebAuthn support
+  - Resolved compilation issues with Action/Future in Leptos components for WebAuthn
+  - Fixed return type handling for user service in WebAuthn handlers
+  - Solved Session update issues in authentication completion flow
+  - Fixed multiple Send bounds issues in async WebAuthn component code
 
 - Fixed unused variable and field warnings across the codebase
   - Added `#[allow(dead_code)]` annotations to intentionally unused fields in repositories

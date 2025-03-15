@@ -6,7 +6,7 @@ use crate::{
         },
     },
     repository::WebAuthnRepository,
-    services::user::UserService,
+    services::user::{UserService, UserServiceError},
 };
 use acci_core::error::{Error as CoreError, Result};
 use std::{
@@ -69,6 +69,7 @@ impl RegistrationStateStore {
         states.insert(user_id, state);
     }
 
+    #[allow(dead_code)]
     fn get(&self, user_id: &Uuid) -> Option<RegistrationState> {
         let states = self.states.lock().unwrap();
         states.get(user_id).cloned()
@@ -98,6 +99,7 @@ impl AuthenticationStateStore {
         states.insert(user_id, state);
     }
 
+    #[allow(dead_code)]
     fn get(&self, user_id: &Uuid) -> Option<AuthenticationState> {
         let states = self.states.lock().unwrap();
         states.get(user_id).cloned()
@@ -371,7 +373,7 @@ impl WebAuthnService {
             .find_credential_by_id(&cred_id)
             .await
             .map_err(|e| WebAuthnError::Repository(e.to_string()))?
-            .ok_or_else(|| WebAuthnError::CredentialNotFound)?;
+            .ok_or(WebAuthnError::CredentialNotFound)?;
 
         // Update the credential counter and last used time
         db_cred.update_after_authentication(auth_result.counter());
@@ -383,18 +385,18 @@ impl WebAuthnService {
             .map_err(|e| WebAuthnError::Repository(e.to_string()))?;
 
         // Get the user
-        let user_opt = self
+        let user = self
             .user_service
             .get_user(db_cred.user_id)
             .await
-            .map_err(|e| WebAuthnError::Unexpected(format!("Failed to get user: {}", e)))?;
-
-        // Check if user exists
-        if user_opt.is_none() {
-            return Err(WebAuthnError::Unexpected("User not found".to_string()).into());
-        }
-
-        let user = user_opt;
+            .map_err(|e| {
+                // If the error is UserNotFound, convert to our error
+                if let UserServiceError::UserNotFound = e {
+                    WebAuthnError::Unexpected("User not found".to_string())
+                } else {
+                    WebAuthnError::Unexpected(format!("Failed to get user: {}", e))
+                }
+            })?;
 
         // Clear session state
         if let Some(obj) = session_data.as_object_mut() {
@@ -430,7 +432,7 @@ impl WebAuthnService {
             .find_credential_by_uuid(credential_uuid)
             .await
             .map_err(|e| WebAuthnError::Repository(e.to_string()))?
-            .ok_or_else(|| WebAuthnError::CredentialNotFound)?;
+            .ok_or(WebAuthnError::CredentialNotFound)?;
 
         if credential.user_id != *user_id {
             return Err(WebAuthnError::Unexpected(

@@ -7,7 +7,13 @@ license.workspace = true
 
 [features]
 default = []
-enable_webauthn = ["acci_auth/enable_webauthn"]
+enable_webauthn = [
+    "acci_auth/enable_webauthn",
+    "js-sys",
+    "wasm-bindgen",
+    "wasm-bindgen-futures",
+    "serde-wasm-bindgen"
+]
 
 [dependencies]
 # Frontend Framework
@@ -38,9 +44,19 @@ tracing = { workspace = true }
 # Time and Date
 chrono = { workspace = true }
 
+# UUID
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
 # Local Dependencies
 acci_core = { path = "../core" }
 acci_auth = { path = "../auth" }
+
+# WebAuthn dependencies
+# Only enabled when the "enable_webauthn" feature is active
+js-sys = { version = "0.3", optional = true }
+wasm-bindgen = { version = "0.2", optional = true }
+wasm-bindgen-futures = { version = "0.4", optional = true }
+serde-wasm-bindgen = { version = "0.6", optional = true }
 
 [dev-dependencies]
 rstest = { workspace = true }

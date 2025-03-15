@@ -1,8 +1,5 @@
-use crate::validation::{ValidatedJson, generate_request_id, validate_json_payload};
-use crate::{
-    monitoring,
-    response::{ApiError, ApiResponse},
-};
+use crate::response::{ApiError, ApiResponse};
+use crate::validation::{ValidatedJson, generate_request_id};
 use axum::{
     extract::{Json, Path, State},
     http::StatusCode,
@@ -16,7 +13,7 @@ use validator::Validate;
 
 // Import auth services
 use acci_auth::{
-    models::webauthn::{PublicKeyCredential, RegisterCredential, WebAuthnError},
+    models::webauthn::{PublicKeyCredential, RegisterCredential},
     services::{session::SessionService, user::UserService, webauthn::WebAuthnService},
 };
 
@@ -119,6 +116,8 @@ pub struct AuthenticationCompleteResponse {
 }
 
 /// Handler to start WebAuthn registration
+// Temporarily disabled for compilation purposes
+// #[axum::debug_handler]
 pub async fn start_registration(
     State(state): State<WebAuthnAppState>,
     ValidatedJson(request): ValidatedJson<StartRegistrationRequest>,
@@ -146,9 +145,9 @@ pub async fn start_registration(
     };
 
     // Get the user
-    let user = match state.user_service.get_user_by_id(&request.user_id).await {
-        Ok(Some(user)) => user,
-        Ok(None) => {
+    let user = match state.user_service.get_user(request.user_id).await {
+        Ok(user) => user,
+        Err(acci_auth::services::user::UserServiceError::UserNotFound) => {
             return ApiError::new(
                 StatusCode::NOT_FOUND,
                 "User not found",
@@ -213,6 +212,8 @@ pub async fn start_registration(
 }
 
 /// Handler to complete WebAuthn registration
+// Temporarily disabled for compilation purposes
+// #[axum::debug_handler]
 pub async fn complete_registration(
     State(state): State<WebAuthnAppState>,
     Path(user_id): Path<Uuid>,
@@ -238,9 +239,9 @@ pub async fn complete_registration(
     };
 
     // Get the user
-    let user = match state.user_service.get_user_by_id(&user_id).await {
-        Ok(Some(user)) => user,
-        Ok(None) => {
+    let user = match state.user_service.get_user(user_id).await {
+        Ok(user) => user,
+        Err(acci_auth::services::user::UserServiceError::UserNotFound) => {
             return ApiError::new(
                 StatusCode::NOT_FOUND,
                 "User not found",
@@ -311,6 +312,8 @@ pub async fn complete_registration(
 }
 
 /// Handler to start WebAuthn authentication
+// Temporarily disabled for compilation purposes
+// #[axum::debug_handler]
 pub async fn start_authentication(
     State(state): State<WebAuthnAppState>,
     ValidatedJson(request): ValidatedJson<StartAuthenticationRequest>,
@@ -372,6 +375,8 @@ pub async fn start_authentication(
 }
 
 /// Handler to complete WebAuthn authentication
+// Temporarily disabled for compilation purposes
+// #[axum::debug_handler]
 pub async fn complete_authentication(
     State(state): State<WebAuthnAppState>,
     ValidatedJson(request): ValidatedJson<CompleteAuthenticationRequest>,
@@ -407,14 +412,17 @@ pub async fn complete_authentication(
         .complete_authentication(&tenant_id, &mut session_data, request.credential)
         .await
     {
-        Ok((user, credential)) => {
+        Ok((user, _credential)) => {
             // Update the session to mark it as verified with WebAuthn
             match state
                 .session_service
-                .mark_session_webauthn_verified(&request.session_id)
+                .update_session_mfa_status(
+                    &request.session_id.to_string(),
+                    acci_auth::session::types::MfaStatus::Verified,
+                )
                 .await
             {
-                Ok(updated_session) => {
+                Ok(_updated_session) => {
                     info!(
                         request_id = %request_id,
                         user_id = %user.id,
@@ -424,8 +432,8 @@ pub async fn complete_authentication(
 
                     let response = AuthenticationCompleteResponse {
                         user_id: user.id,
-                        session_id: updated_session.id,
-                        mfa_verified: updated_session.mfa_verified,
+                        session_id: request.session_id,
+                        mfa_verified: true,
                     };
 
                     let api_response = ApiResponse::success(response, request_id);

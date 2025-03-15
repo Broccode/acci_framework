@@ -3,6 +3,10 @@ use std::error::Error as StdError;
 use std::fmt;
 use thiserror::Error;
 
+// WebAuthn-related imports
+#[cfg(feature = "enable_webauthn")]
+use uuid::Uuid;
+
 /// Fehler, die während der Authentifizierung auftreten können
 #[derive(Error, Debug)]
 pub enum AuthError {
@@ -68,6 +72,102 @@ pub enum MfaStatus {
     Verified,
     /// MFA-Verifikation fehlgeschlagen
     Failed,
+}
+
+// WebAuthn DTOs - These are simplified versions of the full webauthn-rs types
+// They are used for serialization/deserialization with the JavaScript WebAuthn API
+#[cfg(feature = "enable_webauthn")]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct WebAuthnPublicKeyCredentialCreationOptions {
+    pub rp: RelyingParty,
+    pub user: WebAuthnUser,
+    pub challenge: String,
+    pub pubkey_cred_params: Vec<CredentialParameter>,
+    pub timeout: Option<u32>,
+    pub attestation: Option<String>,
+    pub authenticator_selection: Option<AuthenticatorSelectionCriteria>,
+}
+
+#[cfg(feature = "enable_webauthn")]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct RelyingParty {
+    pub name: String,
+    pub id: String,
+}
+
+#[cfg(feature = "enable_webauthn")]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct WebAuthnUser {
+    pub id: String,
+    pub name: String,
+    pub display_name: String,
+}
+
+#[cfg(feature = "enable_webauthn")]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct CredentialParameter {
+    pub type_: String,
+    pub alg: i32,
+}
+
+#[cfg(feature = "enable_webauthn")]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct AuthenticatorSelectionCriteria {
+    pub authenticator_attachment: Option<String>,
+    pub require_resident_key: Option<bool>,
+    pub user_verification: Option<String>,
+}
+
+#[cfg(feature = "enable_webauthn")]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct WebAuthnPublicKeyCredentialRequestOptions {
+    pub challenge: String,
+    pub timeout: Option<u32>,
+    pub rp_id: String,
+    pub allow_credentials: Vec<PublicKeyCredentialDescriptor>,
+    pub user_verification: Option<String>,
+}
+
+#[cfg(feature = "enable_webauthn")]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct PublicKeyCredentialDescriptor {
+    pub type_: String,
+    pub id: String,
+    pub transports: Option<Vec<String>>,
+}
+
+#[cfg(feature = "enable_webauthn")]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct RegisterCredential {
+    pub id: String,
+    pub raw_id: String,
+    pub response: AuthenticatorAttestationResponse,
+    pub type_: String,
+}
+
+#[cfg(feature = "enable_webauthn")]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct AuthenticatorAttestationResponse {
+    pub client_data_json: String,
+    pub attestation_object: String,
+}
+
+#[cfg(feature = "enable_webauthn")]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct PublicKeyCredential {
+    pub id: String,
+    pub raw_id: String,
+    pub response: AuthenticatorAssertionResponse,
+    pub type_: String,
+}
+
+#[cfg(feature = "enable_webauthn")]
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct AuthenticatorAssertionResponse {
+    pub client_data_json: String,
+    pub authenticator_data: String,
+    pub signature: String,
+    pub user_handle: Option<String>,
 }
 
 /// Verification Request DTO
@@ -217,6 +317,89 @@ impl AuthService {
         } else {
             Err(AuthError::InvalidCredentials)
         }
+    }
+
+    // WebAuthn methods - conditionally compiled when the feature is enabled
+    #[cfg(feature = "enable_webauthn")]
+    pub async fn start_webauthn_registration(
+        &self,
+        user_id: Uuid,
+    ) -> Result<WebAuthnPublicKeyCredentialCreationOptions, String> {
+        // In a real implementation, this would call the auth service to start registration
+        // For demonstration, we return a mock credential creation options object
+
+        Ok(WebAuthnPublicKeyCredentialCreationOptions {
+            rp: RelyingParty {
+                name: "ACCI Framework".to_string(),
+                id: "localhost".to_string(),
+            },
+            user: WebAuthnUser {
+                id: user_id.to_string(),
+                name: "demo@example.com".to_string(),
+                display_name: "Demo User".to_string(),
+            },
+            challenge: "random_challenge_base64_string".to_string(),
+            pubkey_cred_params: vec![CredentialParameter {
+                type_: "public-key".to_string(),
+                alg: -7, // ES256
+            }],
+            timeout: Some(60000), // 1 minute
+            attestation: Some("none".to_string()),
+            authenticator_selection: Some(AuthenticatorSelectionCriteria {
+                authenticator_attachment: Some("platform".to_string()),
+                require_resident_key: Some(false),
+                user_verification: Some("preferred".to_string()),
+            }),
+        })
+    }
+
+    #[cfg(feature = "enable_webauthn")]
+    pub async fn finish_webauthn_registration(
+        &self,
+        user_id: Uuid,
+        _name: &str,
+        _credential: RegisterCredential,
+    ) -> Result<String, String> {
+        // In a real implementation, this would call the auth service to verify and store the credential
+        // For demonstration, we return a mock credential ID
+
+        // Simulate verification and storage
+        let credential_id = format!("credential-{}", user_id);
+        Ok(credential_id)
+    }
+
+    #[cfg(feature = "enable_webauthn")]
+    pub async fn start_webauthn_authentication(
+        &self,
+        _user_id: Option<Uuid>,
+    ) -> Result<WebAuthnPublicKeyCredentialRequestOptions, String> {
+        // In a real implementation, this would call the auth service to start authentication
+        // For demonstration, we return a mock credential request options object
+
+        Ok(WebAuthnPublicKeyCredentialRequestOptions {
+            challenge: "random_challenge_base64_string".to_string(),
+            timeout: Some(60000), // 1 minute
+            rp_id: "localhost".to_string(),
+            allow_credentials: vec![PublicKeyCredentialDescriptor {
+                type_: "public-key".to_string(),
+                id: "credential_id_base64".to_string(),
+                transports: Some(vec!["internal".to_string()]),
+            }],
+            user_verification: Some("preferred".to_string()),
+        })
+    }
+
+    #[cfg(feature = "enable_webauthn")]
+    pub async fn finish_webauthn_authentication(
+        &self,
+        _session_id: Uuid,
+        _credential: PublicKeyCredential,
+    ) -> Result<(), String> {
+        // In a real implementation, this would call the auth service to verify the credential
+        // For demonstration, we always return success
+
+        // Simulate verification
+        Ok(())
     }
 }
 
