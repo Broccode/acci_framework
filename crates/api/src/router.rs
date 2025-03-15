@@ -5,6 +5,10 @@ use crate::handlers::tenant::{
     get_tenant_by_id, update_tenant,
 };
 use crate::handlers::verification::{VerificationAppState, send_verification, verify_code};
+use crate::handlers::webauthn::{
+    WebAuthnAppState, complete_authentication, complete_registration, start_authentication,
+    start_registration,
+};
 use crate::response::ApiResponse;
 use axum::{
     Json, Router,
@@ -30,6 +34,7 @@ impl ApiRouter {
         auth_state: ApiAppState,
         tenant_state: Option<TenantAppState>,
         verification_state: Option<VerificationAppState>,
+        webauthn_state: Option<WebAuthnAppState>,
     ) -> Router {
         // Create auth routes
         let auth_routes = Router::new()
@@ -62,6 +67,18 @@ impl ApiRouter {
             Router::new()
         };
 
+        // Create WebAuthn routes if webauthn state is provided
+        let webauthn_routes = if let Some(webauthn_state) = webauthn_state {
+            Router::new()
+                .route("/register/start", post(start_registration))
+                .route("/register/complete/:user_id", post(complete_registration))
+                .route("/authenticate/start", post(start_authentication))
+                .route("/authenticate/complete", post(complete_authentication))
+                .with_state(webauthn_state)
+        } else {
+            Router::new()
+        };
+
         // Create auth router with nested verification routes
         let auth_router = Router::new()
             .merge(auth_routes)
@@ -77,6 +94,8 @@ impl ApiRouter {
             .nest("/auth", auth_router)
             // Nest tenant routes if applicable
             .nest("/tenants", tenant_routes)
+            // Nest WebAuthn routes if applicable
+            .nest("/webauthn", webauthn_routes)
 
             // Apply middleware chain (in reverse order of execution)
             .layer(middleware::from_fn(crate::middleware::logging::logging_middleware))
@@ -118,7 +137,7 @@ impl ApiRouter {
         auth_state: ApiAppState,
         tenant_state: Option<TenantAppState>,
     ) -> Router {
-        self.create_router_with_state(auth_state, tenant_state, None)
+        self.create_router_with_state(auth_state, tenant_state, None, None)
     }
 }
 

@@ -246,6 +246,17 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Added
 
+- Completed WebAuthn implementation for passwordless authentication
+  - Implemented full WebAuthnService with registration and authentication flows
+  - Created PostgresWebAuthnRepository with tenant isolation for credential storage
+  - Added in-memory state management for WebAuthn challenge-response workflow
+  - Implemented WebAuthn API endpoints for registration and authentication
+  - Created UI components for WebAuthn registration and authentication
+  - Added client-side JavaScript for WebAuthn API interactions
+  - Integrated WebAuthn with existing session management system
+  - Added proper error handling and user feedback
+  - Implemented tenant-aware WebAuthn credentials
+
 ### Fixed
 
 - WebAuthn implementation compatibility with webauthn-rs 0.5.1
@@ -267,7 +278,19 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Changed
 
+- Enhanced multi-factor authentication capabilities
+  - Added WebAuthn as an MFA option alongside TOTP and Email/SMS verification
+  - Updated session model to include WebAuthn verification status
+  - Improved authentication flow to support passwordless login with WebAuthn
+  - Updated milestone documentation to mark WebAuthn implementation as complete
+
 ### Technical
+
+- Added WebAuthn infrastructure
+  - Integrated webauthn-rs 0.5.1 with tenant-aware credential storage
+  - Implemented challenge-response protocol with secure state management
+  - Added client-side JavaScript with proper Base64URL encoding/decoding
+  - Used Wasm-bindgen for browser-Rust communication in WebAuthn components
 
 ## [0.3.0] - 2025-03-14
 
