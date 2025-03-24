@@ -26,14 +26,14 @@ extern "C" {
 #[component]
 #[cfg(feature = "enable_webauthn")]
 pub fn WebAuthnRegistrationForm(
-    #[prop(into)] user_id: Signal<Uuid>,
+    #[prop(into)] _user_id: Signal<Uuid>,
     #[prop(optional)] credential_name: Option<Signal<String>>,
     #[prop(optional)] _on_success: Option<Callback<String>>,
     #[prop(optional)] _on_error: Option<Callback<String>>,
     #[prop(optional)] _on_cancel: Option<Callback<()>>,
 ) -> impl IntoView {
     // Get authentication service from context
-    let auth_service = use_context::<AuthService>().expect("AuthService must be provided");
+    let _auth_service = use_context::<AuthService>().expect("AuthService must be provided");
 
     // Component state
     let error = RwSignal::new(None::<String>);
@@ -159,14 +159,14 @@ pub fn WebAuthnAuthenticationForm(
 #[component]
 #[cfg(feature = "enable_webauthn")]
 pub fn WebAuthnAuthenticationForm(
-    #[prop(optional)] user_id: Option<Signal<Uuid>>,
-    #[prop(into)] session_id: Signal<Uuid>,
+    #[prop(optional)] _user_id: Option<Signal<Uuid>>,
+    #[prop(into)] _session_id: Signal<Uuid>,
     #[prop(optional)] _on_success: Option<Callback<()>>,
     #[prop(optional)] _on_error: Option<Callback<String>>,
     #[prop(optional)] _on_cancel: Option<Callback<()>>,
 ) -> impl IntoView {
     // Get authentication service from context
-    let auth_service = use_context::<AuthService>().expect("AuthService must be provided");
+    let _auth_service = use_context::<AuthService>().expect("AuthService must be provided");
 
     // Component state
     let error = RwSignal::new(None::<String>);

@@ -70,6 +70,9 @@ pub enum SessionInvalidationReason {
     TokenExpired,
     DeviceChanged,
     ManualInvalidation,
+    SuspiciousActivity,
+    SuspiciousLocation,
+    ConcurrentSessionLimit,
 }
 
 // Add SQLx Type implementation for PostgreSQL
@@ -96,6 +99,9 @@ impl Encode<'_, Postgres> for SessionInvalidationReason {
             SessionInvalidationReason::TokenExpired => "TOKEN_EXPIRED",
             SessionInvalidationReason::DeviceChanged => "DEVICE_CHANGED",
             SessionInvalidationReason::ManualInvalidation => "MANUAL_INVALIDATION",
+            SessionInvalidationReason::SuspiciousActivity => "SUSPICIOUS_ACTIVITY",
+            SessionInvalidationReason::SuspiciousLocation => "SUSPICIOUS_LOCATION",
+            SessionInvalidationReason::ConcurrentSessionLimit => "CONCURRENT_SESSION_LIMIT",
         };
 
         // Encode as a string with explicit type annotation for Postgres
@@ -116,6 +122,9 @@ impl<'r> Decode<'r, Postgres> for SessionInvalidationReason {
             "TOKEN_EXPIRED" => Ok(SessionInvalidationReason::TokenExpired),
             "DEVICE_CHANGED" => Ok(SessionInvalidationReason::DeviceChanged),
             "MANUAL_INVALIDATION" => Ok(SessionInvalidationReason::ManualInvalidation),
+            "SUSPICIOUS_ACTIVITY" => Ok(SessionInvalidationReason::SuspiciousActivity),
+            "SUSPICIOUS_LOCATION" => Ok(SessionInvalidationReason::SuspiciousLocation),
+            "CONCURRENT_SESSION_LIMIT" => Ok(SessionInvalidationReason::ConcurrentSessionLimit),
             _ => Err(format!("Unknown session invalidation reason: {}", s).into()),
         }
     }
@@ -133,6 +142,11 @@ impl fmt::Display for SessionInvalidationReason {
             SessionInvalidationReason::TokenExpired => f.write_str("TOKEN_EXPIRED"),
             SessionInvalidationReason::DeviceChanged => f.write_str("DEVICE_CHANGED"),
             SessionInvalidationReason::ManualInvalidation => f.write_str("MANUAL_INVALIDATION"),
+            SessionInvalidationReason::SuspiciousActivity => f.write_str("SUSPICIOUS_ACTIVITY"),
+            SessionInvalidationReason::SuspiciousLocation => f.write_str("SUSPICIOUS_LOCATION"),
+            SessionInvalidationReason::ConcurrentSessionLimit => {
+                f.write_str("CONCURRENT_SESSION_LIMIT")
+            },
         }
     }
 }

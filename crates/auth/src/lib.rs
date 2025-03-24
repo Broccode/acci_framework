@@ -35,6 +35,12 @@ pub use services::{
     user::{UserService, UserServiceError},
     verification::{VerificationError, VerificationService},
 };
+pub use session::enhanced_security::{
+    EnhancedFingerprintRepository, EnhancedSessionFingerprint,
+    PostgresEnhancedFingerprintRepository, PostgresRiskAssessmentRepository,
+    PostgresSessionLocationRepository, RiskAssessmentRepository, SessionLocation,
+    SessionLocationRepository, SessionRiskAssessment,
+};
 pub use session::{
     Session, SessionError, SessionFilter, SessionRepository,
     types::{DeviceFingerprint, SessionInvalidationReason},

@@ -24,7 +24,10 @@
                 "INACTIVITY_TIMEOUT",
                 "TOKEN_EXPIRED",
                 "DEVICE_CHANGED",
-                "MANUAL_INVALIDATION"
+                "MANUAL_INVALIDATION",
+                "SUSPICIOUS_ACTIVITY",
+                "SUSPICIOUS_LOCATION",
+                "CONCURRENT_SESSION_LIMIT"
               ]
             }
           }
