@@ -19,6 +19,7 @@ const METRIC_UPDATE_ACTIVITY: &str = "update_activity";
 const METRIC_INVALIDATE: &str = "invalidate";
 const METRIC_ROTATE_TOKEN: &str = "rotate_token";
 const METRIC_CLEANUP: &str = "cleanup";
+const METRIC_UPDATE_MFA: &str = "update_mfa_status";
 
 // Mock implementations when metrics feature is not enabled
 #[cfg(not(feature = "metrics"))]
@@ -165,6 +166,9 @@ pub trait SessionRepository: Send + Sync + 'static {
     ) -> Result<(), SessionError>;
 
     async fn cleanup_expired_sessions(&self) -> Result<u64, SessionError>;
+
+    /// Update the MFA status for a session
+    async fn update_mfa_status(&self, id: Uuid, status: MfaStatus) -> Result<(), SessionError>;
 }
 
 pub struct PostgresSessionRepository {
@@ -245,13 +249,13 @@ impl SessionRepository for PostgresSessionRepository {
                 )
                 VALUES (
                     gen_random_uuid(), $1, $2, $3, $4, $5,
-                    $6, $7, $8, $9, true, $10, $11
+                    $6, $7, $8, $9, true, $10, 'NONE'
                 )
                 RETURNING
                     id, user_id, token_hash, previous_token_hash, token_rotation_at,
                     expires_at, created_at, last_activity_at, last_activity_update_at,
                     ip_address, user_agent, device_id, device_fingerprint,
-                    is_valid, invalidated_reason::text, metadata, mfa_status
+                    is_valid, invalidated_reason::text, metadata, mfa_status::text
                 "#,
                 user_id,
                 token_hash,
@@ -263,18 +267,19 @@ impl SessionRepository for PostgresSessionRepository {
                 device_id,
                 device_fingerprint_json,
                 metadata,
-                "NONE", // Default MFA status for new sessions
             )
             .fetch_one(&self.pool)
             .await
             .map_err(SessionError::Database)?;
 
-            let mfa_status = match row.mfa_status.as_str() {
-                "NONE" => MfaStatus::None,
-                "PENDING" => MfaStatus::Pending,
-                "VERIFIED" => MfaStatus::Verified,
-                "FAILED" => MfaStatus::Failed,
-                _ => MfaStatus::None, // Default if not specified
+            let mfa_status = match row.mfa_status {
+                Some(status_str) => match status_str.as_str() {
+                    "NONE" => MfaStatus::None,
+                    "REQUIRED" => MfaStatus::Required,
+                    "VERIFIED" => MfaStatus::Verified,
+                    _ => MfaStatus::None, // Default if not specified
+                },
+                None => MfaStatus::None,
             };
 
             Ok(Session {
@@ -316,7 +321,7 @@ impl SessionRepository for PostgresSessionRepository {
             Err(error) => {
                 tracing::error!(
                     user_id = %user_id,
-                    error = %error,
+                    error = ?error,
                     "Failed to create session"
                 );
                 Self::record_error_metrics(METRIC_CREATE, error);
@@ -338,7 +343,7 @@ impl SessionRepository for PostgresSessionRepository {
                     expires_at, created_at, last_activity_at, last_activity_update_at,
                     ip_address, user_agent, device_id, device_fingerprint,
                     is_valid, invalidated_reason::text as "invalidated_reason?", metadata,
-                    mfa_status
+                    mfa_status::text as "mfa_status?"
                 FROM sessions
                 WHERE id = $1
                 "#,
@@ -349,12 +354,14 @@ impl SessionRepository for PostgresSessionRepository {
             .map_err(SessionError::Database)?;
 
             Ok(row.map(|row| {
-                let mfa_status = match row.mfa_status.as_str() {
-                    "NONE" => MfaStatus::None,
-                    "PENDING" => MfaStatus::Pending,
-                    "VERIFIED" => MfaStatus::Verified,
-                    "FAILED" => MfaStatus::Failed,
-                    _ => MfaStatus::None, // Default if not specified
+                let mfa_status = match &row.mfa_status {
+                    Some(status_str) => match status_str.as_str() {
+                        "NONE" => MfaStatus::None,
+                        "REQUIRED" => MfaStatus::Required,
+                        "VERIFIED" => MfaStatus::Verified,
+                        _ => MfaStatus::None, // Default if not specified
+                    },
+                    None => MfaStatus::None,
                 };
 
                 Session {
@@ -396,7 +403,7 @@ impl SessionRepository for PostgresSessionRepository {
             Err(error) => {
                 tracing::error!(
                     session_id = %id,
-                    error = %error,
+                    error = ?error,
                     "Failed to get session"
                 );
                 Self::record_error_metrics(METRIC_GET, error);
@@ -421,7 +428,7 @@ impl SessionRepository for PostgresSessionRepository {
                     expires_at, created_at, last_activity_at, last_activity_update_at,
                     ip_address, user_agent, device_id, device_fingerprint,
                     is_valid, invalidated_reason::text as "invalidated_reason?", metadata,
-                    mfa_status
+                    mfa_status::text as "mfa_status?"
                 FROM sessions
                 WHERE token_hash = $1 OR previous_token_hash = $1
                 "#,
@@ -432,12 +439,14 @@ impl SessionRepository for PostgresSessionRepository {
             .map_err(SessionError::Database)?;
 
             Ok(row.map(|row| {
-                let mfa_status = match row.mfa_status.as_str() {
-                    "NONE" => MfaStatus::None,
-                    "PENDING" => MfaStatus::Pending,
-                    "VERIFIED" => MfaStatus::Verified,
-                    "FAILED" => MfaStatus::Failed,
-                    _ => MfaStatus::None, // Default if not specified
+                let mfa_status = match &row.mfa_status {
+                    Some(status_str) => match status_str.as_str() {
+                        "NONE" => MfaStatus::None,
+                        "REQUIRED" => MfaStatus::Required,
+                        "VERIFIED" => MfaStatus::Verified,
+                        _ => MfaStatus::None, // Default if not specified
+                    },
+                    None => MfaStatus::None,
                 };
 
                 Session {
@@ -474,7 +483,7 @@ impl SessionRepository for PostgresSessionRepository {
             },
             Err(error) => {
                 tracing::error!(
-                    error = %error,
+                    error = ?error,
                     "Failed to get session by token"
                 );
                 Self::record_error_metrics(METRIC_GET_BY_TOKEN, error);
@@ -510,7 +519,7 @@ impl SessionRepository for PostgresSessionRepository {
                     expires_at, created_at, last_activity_at, last_activity_update_at,
                     ip_address, user_agent, device_id, device_fingerprint,
                     is_valid, invalidated_reason::text as "invalidated_reason?", metadata,
-                    mfa_status
+                    mfa_status::text as "mfa_status?"
                 FROM sessions
                 WHERE user_id = $1
                 AND ($2 = false OR is_valid = $3)
@@ -527,12 +536,14 @@ impl SessionRepository for PostgresSessionRepository {
             Ok(rows
                 .into_iter()
                 .map(|row| {
-                    let mfa_status = match row.mfa_status.as_str() {
-                        "NONE" => MfaStatus::None,
-                        "PENDING" => MfaStatus::Pending,
-                        "VERIFIED" => MfaStatus::Verified,
-                        "FAILED" => MfaStatus::Failed,
-                        _ => MfaStatus::None, // Default if not specified
+                    let mfa_status = match &row.mfa_status {
+                        Some(status_str) => match status_str.as_str() {
+                            "NONE" => MfaStatus::None,
+                            "REQUIRED" => MfaStatus::Required,
+                            "VERIFIED" => MfaStatus::Verified,
+                            _ => MfaStatus::None, // Default if not specified
+                        },
+                        None => MfaStatus::None,
                     };
 
                     Session {
@@ -575,7 +586,7 @@ impl SessionRepository for PostgresSessionRepository {
             Err(error) => {
                 tracing::error!(
                     user_id = %user_id,
-                    error = %error,
+                    error = ?error,
                     "Failed to get user sessions"
                 );
                 Self::record_error_metrics(METRIC_GET_USER, error);
@@ -621,7 +632,7 @@ impl SessionRepository for PostgresSessionRepository {
             Err(error) => {
                 tracing::error!(
                     session_id = %id,
-                    error = %error,
+                    error = ?error,
                     "Failed to update session activity"
                 );
                 Self::record_error_metrics(METRIC_UPDATE_ACTIVITY, error);
@@ -680,7 +691,7 @@ impl SessionRepository for PostgresSessionRepository {
                 tracing::error!(
                     session_id = %id,
                     reason = ?reason,
-                    error = %error,
+                    error = ?error,
                     "Failed to invalidate session"
                 );
                 Self::record_error_metrics(METRIC_INVALIDATE, error);
@@ -734,7 +745,7 @@ impl SessionRepository for PostgresSessionRepository {
             Err(error) => {
                 tracing::error!(
                     session_id = %id,
-                    error = %error,
+                    error = ?error,
                     "Failed to rotate session token"
                 );
                 Self::record_error_metrics(METRIC_ROTATE_TOKEN, error);
@@ -811,10 +822,60 @@ impl SessionRepository for PostgresSessionRepository {
             },
             Err(error) => {
                 tracing::error!(
-                    error = %error,
+                    error = ?error,
                     "Failed to cleanup expired sessions"
                 );
                 Self::record_error_metrics(METRIC_CLEANUP, error);
+            },
+        }
+
+        result
+    }
+
+    async fn update_mfa_status(&self, id: Uuid, status: MfaStatus) -> Result<(), SessionError> {
+        let start = SystemTime::now();
+        tracing::debug!(session_id = %id, status = ?status, "Updating session MFA status");
+
+        let result: Result<(), SessionError> = async {
+            // Use regular query instead of macro to avoid type issues
+            let result = sqlx::query(
+                r#"
+                UPDATE sessions
+                SET mfa_status = $2
+                WHERE id = $1 AND is_valid = true
+                RETURNING id
+                "#,
+            )
+            .bind(id)
+            .bind(status.to_string())
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(SessionError::Database)?;
+
+            match result {
+                Some(_) => Ok(()),
+                None => Err(SessionError::NotFound),
+            }
+        }
+        .await;
+
+        match &result {
+            Ok(_) => {
+                tracing::info!(
+                    session_id = %id,
+                    status = ?status,
+                    "Session MFA status updated successfully"
+                );
+                Self::record_metrics(METRIC_UPDATE_MFA, start);
+            },
+            Err(error) => {
+                tracing::error!(
+                    session_id = %id,
+                    status = ?status,
+                    error = ?error,
+                    "Failed to update session MFA status"
+                );
+                Self::record_error_metrics(METRIC_UPDATE_MFA, error);
             },
         }
 
@@ -892,10 +953,10 @@ mod tests {
     #[test]
     fn test_session_error() {
         let error = SessionError::NotFound;
-        assert_eq!(error.to_string(), "Session not found");
+        assert_eq!(format!("{:?}", error), "NotFound");
 
         let error = SessionError::Expired;
-        assert_eq!(error.to_string(), "Session expired");
+        assert_eq!(format!("{:?}", error), "Expired");
     }
 
     #[test]

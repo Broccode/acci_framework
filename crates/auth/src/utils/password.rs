@@ -17,6 +17,8 @@ pub enum PasswordError {
     StrengthCheckError,
     #[error("Password too weak (score {0} < {1})")]
     TooWeak(u8, u8),
+    #[error("Other error: {0}")]
+    Other(String),
 }
 
 pub fn hash_password(password: &str) -> Result<String, PasswordError> {
@@ -39,7 +41,8 @@ pub fn verify_password(password: &str, hash: &str) -> Result<bool, PasswordError
 }
 
 pub fn check_password_strength(password: &str, user_inputs: &[&str]) -> Result<(), PasswordError> {
-    let estimate = zxcvbn::zxcvbn(password, user_inputs);
+    let estimate = zxcvbn::zxcvbn(password, user_inputs)
+        .map_err(|e| PasswordError::Other(format!("zxcvbn error: {}", e)))?;
     let score = estimate.score() as u8;
 
     if score < MIN_PASSWORD_SCORE {

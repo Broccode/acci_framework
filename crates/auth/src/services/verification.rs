@@ -113,9 +113,6 @@ impl VerificationService {
         code
     }
 
-    // We're keeping the regular check_rate_limit function
-    // but will modify our tests to accommodate rate limiting
-
     /// Get the appropriate message provider for the verification type
     fn get_provider(
         &self,
@@ -130,38 +127,37 @@ impl VerificationService {
     /// Check if a user has exceeded the rate limit
     async fn check_rate_limit(
         &self,
-        _user_id: UserId,
-        _verification_type: VerificationType,
-        _tenant_id: TenantId,
-        _context: &dyn TenantAwareContext,
+        user_id: UserId,
+        verification_type: VerificationType,
+        tenant_id: TenantId,
+        context: &dyn TenantAwareContext,
     ) -> Result<()> {
-        // NOTE: Rate limiting is disabled temporarily due to build issues
-        // TODO: Fix the rate limiting implementation
+        // In tests, we'll skip all the rate limiting checks
+        #[cfg(test)]
+        return Ok(());
 
-        // // In tests, we'll skip all the rate limiting checks
-        // #[cfg(not(test))]
-        // {
-        //     // Check in-memory rate limiter first
-        //     if self.limiter.check().is_err() {
-        //         warn!("Rate limit exceeded for user {}", user_id);
-        //         return Err(VerificationError::RateLimitExceeded.into());
-        //     }
-        //
-        //     // Check database rate limit
-        //     let since = OffsetDateTime::now_utc() - Duration::seconds(self.config.throttle_seconds);
-        //     let attempt_count = self
-        //         .repo
-        //         .count_recent_attempts(user_id, verification_type, since, tenant_id, context)
-        //         .await?;
-        //
-        //     if attempt_count >= 3 {
-        //         warn!("Database rate limit exceeded for user {}", user_id);
-        //         return Err(VerificationError::RateLimitExceeded.into());
-        //     }
-        // }
+        #[cfg(not(test))]
+        {
+            // Check in-memory rate limiter first
+            if self.limiter.check().is_err() {
+                warn!("Rate limit exceeded for user {}", user_id);
+                return Err(VerificationError::RateLimitExceeded.into());
+            }
 
-        // For now, we just pass through without checking
-        Ok(())
+            // Check database rate limit
+            let since = OffsetDateTime::now_utc() - Duration::seconds(self.config.throttle_seconds);
+            let attempt_count = self
+                .repo
+                .count_recent_attempts(user_id, verification_type, since, tenant_id, context)
+                .await?;
+
+            if attempt_count >= 3 {
+                warn!("Database rate limit exceeded for user {}", user_id);
+                return Err(VerificationError::RateLimitExceeded.into());
+            }
+
+            Ok(())
+        }
     }
 
     /// Generate a verification code for a user
@@ -339,5 +335,134 @@ impl VerificationService {
             .await?;
         debug!("Cleaned up {} expired verification codes", count);
         Ok(count)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::VerificationConfig;
+    use crate::repository::TenantAwareContext;
+    use async_trait::async_trait;
+    use std::sync::Arc;
+    use uuid::Uuid;
+
+    // Mock repository for testing
+    struct MockVerificationCodeRepository;
+
+    #[async_trait]
+    impl VerificationCodeRepository for MockVerificationCodeRepository {
+        async fn save(
+            &self,
+            _code: &VerificationCode,
+            _context: &dyn TenantAwareContext,
+        ) -> Result<()> {
+            Ok(())
+        }
+
+        async fn get_by_code(
+            &self,
+            _code: &str,
+            _user_id: Uuid,
+            _verification_type: VerificationType,
+            _tenant_id: Uuid,
+            _context: &dyn TenantAwareContext,
+        ) -> Result<Option<VerificationCode>> {
+            Ok(None)
+        }
+
+        async fn update(
+            &self,
+            _code: &VerificationCode,
+            _context: &dyn TenantAwareContext,
+        ) -> Result<()> {
+            Ok(())
+        }
+
+        async fn invalidate_pending(
+            &self,
+            _user_id: Uuid,
+            _verification_type: VerificationType,
+            _tenant_id: Uuid,
+            _context: &dyn TenantAwareContext,
+        ) -> Result<u64> {
+            Ok(0)
+        }
+
+        async fn get_pending_by_user(
+            &self,
+            _user_id: Uuid,
+            _verification_type: VerificationType,
+            _tenant_id: Uuid,
+            _context: &dyn TenantAwareContext,
+        ) -> Result<Vec<VerificationCode>> {
+            Ok(vec![])
+        }
+
+        async fn count_recent_attempts(
+            &self,
+            _user_id: Uuid,
+            _verification_type: VerificationType,
+            _since: OffsetDateTime,
+            _tenant_id: Uuid,
+            _context: &dyn TenantAwareContext,
+        ) -> Result<u64> {
+            Ok(0)
+        }
+
+        async fn get_by_id(
+            &self,
+            _id: Uuid,
+            _tenant_id: TenantId,
+            _context: &dyn TenantAwareContext,
+        ) -> Result<Option<VerificationCode>> {
+            Ok(None)
+        }
+
+        async fn delete(
+            &self,
+            _id: Uuid,
+            _tenant_id: TenantId,
+            _context: &dyn TenantAwareContext,
+        ) -> Result<()> {
+            Ok(())
+        }
+
+        async fn delete_expired(
+            &self,
+            _before: OffsetDateTime,
+            _tenant_id: Uuid,
+            _context: &dyn TenantAwareContext,
+        ) -> Result<u64> {
+            Ok(0)
+        }
+    }
+
+    #[test]
+    fn test_generate_code() {
+        // Create verification config with code length 6
+        let config = VerificationConfig {
+            code_length: 6,
+            expiration_seconds: 300,
+            max_attempts: 3,
+            throttle_seconds: 300,
+        };
+
+        // Create verification service
+        let repo = Arc::new(MockVerificationCodeRepository);
+        let service = VerificationService::new(repo, config, None, None);
+
+        // Generate code
+        let code = service.generate_code();
+
+        // Check that code is correct length
+        assert_eq!(code.len(), 6);
+
+        // Check that code only contains digits
+        assert!(code.chars().all(|c| c.is_digit(10)));
+
+        // Generate another code and ensure they're different
+        let code2 = service.generate_code();
+        assert_ne!(code, code2, "Generated codes should be random");
     }
 }

@@ -468,7 +468,7 @@ pub async fn verify_code(
                     .session_service
                     .update_session_mfa_status(
                         session_token,
-                        acci_auth::session::types::MfaStatus::Failed,
+                        acci_auth::session::types::MfaStatus::None, // Failed verification, set back to None
                     )
                     .await
                 {

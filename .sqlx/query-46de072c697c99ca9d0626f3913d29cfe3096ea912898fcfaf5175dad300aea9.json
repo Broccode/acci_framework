@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE fingerprints\n            SET fingerprint = $1, last_seen = $2, last_ip = $3, session_id = $4, trusted = $5\n            WHERE id = $6 AND tenant_id = $7 AND user_id = $8\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Jsonb",
+        "Timestamptz",
+        "Inet",
+        "Uuid",
+        "Bool",
+        "Uuid",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "46de072c697c99ca9d0626f3913d29cfe3096ea912898fcfaf5175dad300aea9"
+}

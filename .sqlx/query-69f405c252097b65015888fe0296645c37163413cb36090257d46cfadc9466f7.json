@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            DELETE FROM fingerprints\n            WHERE tenant_id = $1 AND last_seen < $2\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "69f405c252097b65015888fe0296645c37163413cb36090257d46cfadc9466f7"
+}

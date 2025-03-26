@@ -1,0 +1,71 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, tenant_id, user_id, fingerprint, first_seen, last_seen, \n                   last_ip, session_id, trusted\n            FROM fingerprints\n            WHERE tenant_id = $1 AND user_id = $2\n            ORDER BY last_seen DESC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "tenant_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 3,
+        "name": "fingerprint",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 4,
+        "name": "first_seen",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "last_seen",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "last_ip",
+        "type_info": "Inet"
+      },
+      {
+        "ordinal": 7,
+        "name": "session_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 8,
+        "name": "trusted",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "41356e007210265fc135442e0447fffb3c55ce278f9291cf0b9280ea16688c82"
+}

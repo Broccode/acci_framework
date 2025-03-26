@@ -9,6 +9,11 @@ use uuid::Uuid;
 pub trait TenantAwareContext: Send + Sync {
     /// Set the tenant context for the current repository
     fn set_tenant_context(&self, tenant_id: &Uuid) -> Result<(), RepositoryError>;
+
+    /// Get the current tenant ID if available
+    fn tenant_id(&self) -> Option<Uuid> {
+        None
+    }
 }
 
 /// Repository error types specific to tenant operations

@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO fingerprints (\n                id, tenant_id, user_id, fingerprint, first_seen, last_seen, \n                last_ip, session_id, trusted\n            )\n            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Uuid",
+        "Jsonb",
+        "Timestamptz",
+        "Timestamptz",
+        "Inet",
+        "Uuid",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "75b013cd790c344570b98f9fd6c53a548b94d12cf6c737aefc981492c159f086"
+}

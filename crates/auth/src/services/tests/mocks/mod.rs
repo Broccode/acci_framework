@@ -17,6 +17,11 @@ impl MockTenantAwareContext {
         // Return a new instance of our mock implementation
         MockTenantAwareContext
     }
+
+    /// Mock implementation to get tenant ID for tests
+    pub fn tenant_id(&self) -> Option<Uuid> {
+        Some(Uuid::nil())
+    }
 }
 
 // Function that creates a PgPool that will only be used for testing

@@ -301,11 +301,9 @@ impl SessionService {
                 SessionServiceError::Repository(SessionError::NotFound)
             })?;
 
-        // Note: For production implementations, we would add a proper repository method
-        // For now, in real code, we'll just update the session activity
-        // In tests, this gets properly implemented in the test-specific extension
+        // Update the MFA status using the repository method
         self.repository
-            .update_session_activity(session.id)
+            .update_mfa_status(session.id, mfa_status.clone())
             .await
             .map_err(SessionServiceError::Repository)?;
 
@@ -327,7 +325,13 @@ impl SessionService {
     }
 
     fn hash_session_token(&self, token: &str) -> Result<String, SessionServiceError> {
-        let salt = "AcciSessionSalt123456789012345678901234567890";
+        // Use the configured salt from AuthConfig
+        let salt = &self.config.session_salt;
+
+        // Ensure the salt is at least 22 characters for the hash format
+        if salt.len() < 22 {
+            return Err(SessionServiceError::TokenHashing);
+        }
 
         let password_hash = format!(
             "$argon2id$v=19$m=16384,t=3,p=1${}${}",
@@ -349,6 +353,7 @@ mod tests {
         // Create a test config
         let config = Arc::new(AuthConfig {
             session_lifetime_secs: 3600,
+            session_salt: "AcciSessionSalt123456789012345678901234567890".to_string(),
             ..Default::default()
         });
 
@@ -371,6 +376,7 @@ mod tests {
         // Create a test config
         let config = Arc::new(AuthConfig {
             session_lifetime_secs: 3600,
+            session_salt: "TestSessionSalt123456789012345678901234567890".to_string(),
             ..Default::default()
         });
 
@@ -388,6 +394,32 @@ mod tests {
         let hash = result.unwrap();
         assert!(!hash.is_empty());
         assert!(hash.starts_with("$argon2"));
+        assert!(hash.contains("TestSes")); // Check that our custom salt is used
+    }
+
+    #[test]
+    fn test_session_token_hashing_with_short_salt() {
+        // Create a test config with too short salt
+        let config = Arc::new(AuthConfig {
+            session_lifetime_secs: 3600,
+            session_salt: "ShortSalt".to_string(),
+            ..Default::default()
+        });
+
+        // Create a test service with a dummy repository
+        let service = SessionService {
+            repository: Arc::new(DummyRepository),
+            config,
+        };
+
+        // Test token hashing with short salt should fail
+        let token = "test_token";
+        let result = service.hash_session_token(token);
+        assert!(result.is_err());
+        assert!(matches!(
+            result.unwrap_err(),
+            SessionServiceError::TokenHashing
+        ));
     }
 
     // Dummy repository that implements the SessionRepository trait
@@ -450,6 +482,14 @@ mod tests {
         }
 
         async fn cleanup_expired_sessions(&self) -> Result<u64, SessionError> {
+            unimplemented!("Not needed for these tests")
+        }
+
+        async fn update_mfa_status(
+            &self,
+            _id: Uuid,
+            _status: MfaStatus,
+        ) -> Result<(), SessionError> {
             unimplemented!("Not needed for these tests")
         }
     }

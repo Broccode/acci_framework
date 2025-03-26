@@ -1,3 +1,4 @@
+use lazy_static::lazy_static;
 use regex::Regex;
 use serde_json::json;
 use std::sync::Arc;
@@ -21,12 +22,18 @@ use crate::{
     },
 };
 
-lazy_static::lazy_static! {
+// Define constants for the service
+lazy_static! {
+    /// Regex for validating email addresses
     static ref EMAIL_REGEX: Regex = Regex::new(concat!(
         r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@",
         r"[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?",
         r"(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$"
     )).expect("Failed to compile email regex pattern - this is a bug");
+
+    /// Default tenant ID for use when no tenant ID is provided
+    static ref DEFAULT_TENANT_ID: Uuid = Uuid::parse_str("00000000-0000-0000-0000-000000000000")
+        .expect("Invalid default tenant UUID");
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -156,7 +163,7 @@ impl UserService {
                     ip_address,
                     user_agent,
                     Some(metadata),
-                    MfaStatus::Pending,
+                    MfaStatus::Required,
                 )
                 .await?;
 
@@ -221,9 +228,9 @@ impl UserService {
             },
         };
 
-        // Send verification code
-        // Assume tenant_id from context since the User model doesn't have tenant_id field yet
-        let tenant_id = Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap();
+        // TODO: Once TenantAwareContext has a tenant_id method, use that instead
+        let tenant_id = *DEFAULT_TENANT_ID;
+
         verification_service
             .send_verification(tenant_id, user.id, verification_type, recipient, context)
             .await
@@ -256,9 +263,9 @@ impl UserService {
             .clone()
             .ok_or(UserServiceError::MfaNotConfigured)?;
 
-        // Verify code
-        // Assume tenant_id from context since the User model doesn't have tenant_id field yet
-        let tenant_id = Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap();
+        // TODO: Once TenantAwareContext has a tenant_id method, use that instead
+        let tenant_id = *DEFAULT_TENANT_ID;
+
         verification_service
             .verify_code(user.id, verification_type, code, tenant_id, context)
             .await

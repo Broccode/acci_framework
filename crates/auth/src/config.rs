@@ -33,6 +33,8 @@ pub struct AuthConfig {
     pub message_providers: Option<MessageProviderConfig>,
     /// Verification code configuration
     pub verification: VerificationConfig,
+    /// Salt used for hashing session tokens
+    pub session_salt: String,
 }
 
 /// Session configuration
@@ -97,6 +99,7 @@ impl Default for AuthConfig {
             session: SessionConfig::default(),
             message_providers: None,
             verification: VerificationConfig::default(),
+            session_salt: "AcciSessionSalt123456789012345678901234567890".to_string(), // Default salt, should be changed in production
         }
     }
 }

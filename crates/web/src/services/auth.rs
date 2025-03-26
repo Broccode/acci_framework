@@ -66,12 +66,10 @@ pub struct Session {
 pub enum MfaStatus {
     /// No MFA required or configured
     None,
-    /// MFA pending (code was sent but not yet verified)
-    Pending,
+    /// MFA required but not yet verified
+    Required,
     /// MFA successfully verified
     Verified,
-    /// MFA verification failed
-    Failed,
 }
 
 // WebAuthn DTOs - These are simplified versions of the full webauthn-rs types

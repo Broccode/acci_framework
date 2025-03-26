@@ -1,6 +1,7 @@
 pub mod config;
 pub mod models;
 pub mod repository;
+pub mod security;
 pub mod services;
 pub mod session;
 pub mod utils;
@@ -19,6 +20,11 @@ pub use repository::{
     PostgresTenantRepository, PostgresTotpRepository, PostgresUserRepository,
     PostgresVerificationCodeRepository, RepositoryConfig, RepositoryError, TenantAwareContext,
     TenantAwareRepository, TotpSecretRepository, VerificationCodeRepository,
+};
+pub use security::{
+    BruteForceError, BruteForceProtection, Challenge, CredentialStuffingProtection, NonceStore,
+    RateLimitConfig, RateLimitMiddleware, ReplayProtectionMiddleware, RiskLevel, SecurityConfig,
+    SecurityProtection, create_security_protection,
 };
 pub use services::{
     email_provider::{SendGridEmailProvider, SmtpEmailProvider, create_email_provider},

@@ -116,7 +116,10 @@ impl MessageProvider for MockMessageProvider {
     }
 
     async fn send_message(&self, message: Message) -> Result<String> {
-        let mut last_message = self.last_message.lock().unwrap();
+        let mut last_message = self
+            .last_message
+            .lock()
+            .map_err(|e| anyhow::anyhow!("Failed to acquire lock: {}", e))?;
         *last_message = Some(message);
         Ok(self.response.clone())
     }

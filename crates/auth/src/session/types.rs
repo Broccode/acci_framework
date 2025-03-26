@@ -15,17 +15,29 @@ pub enum MfaStatus {
     /// No MFA required for this session
     None,
     /// MFA is required but not yet verified
-    Pending,
+    Required,
     /// MFA has been verified
     Verified,
-    /// MFA verification has failed
-    Failed,
 }
 
 // Add SQLx Type implementation for PostgreSQL
 impl Type<Postgres> for MfaStatus {
     fn type_info() -> PgTypeInfo {
-        PgTypeInfo::with_name("text")
+        PgTypeInfo::with_name("session_mfa_status")
+    }
+
+    fn compatible(ty: &PgTypeInfo) -> bool {
+        ty.to_string() == "session_mfa_status" || ty.to_string() == "text"
+    }
+}
+
+impl ToString for MfaStatus {
+    fn to_string(&self) -> String {
+        match self {
+            MfaStatus::None => "NONE".to_string(),
+            MfaStatus::Required => "REQUIRED".to_string(),
+            MfaStatus::Verified => "VERIFIED".to_string(),
+        }
     }
 }
 
@@ -35,9 +47,8 @@ impl Encode<'_, Postgres> for MfaStatus {
         // Convert to the string representation used in the database
         let s = match self {
             MfaStatus::None => "NONE",
-            MfaStatus::Pending => "PENDING",
+            MfaStatus::Required => "REQUIRED",
             MfaStatus::Verified => "VERIFIED",
-            MfaStatus::Failed => "FAILED",
         };
 
         // Encode as a string
@@ -51,9 +62,8 @@ impl<'r> Decode<'r, Postgres> for MfaStatus {
         let s = <&str as Decode<Postgres>>::decode(value)?;
         match s {
             "NONE" => Ok(MfaStatus::None),
-            "PENDING" => Ok(MfaStatus::Pending),
+            "REQUIRED" => Ok(MfaStatus::Required),
             "VERIFIED" => Ok(MfaStatus::Verified),
-            "FAILED" => Ok(MfaStatus::Failed),
             _ => Err(format!("Unknown MFA status: {}", s).into()),
         }
     }

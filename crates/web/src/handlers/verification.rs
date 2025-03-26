@@ -88,19 +88,19 @@ pub async fn handle_verification(
             // Fehler bei der Verifikation
             let (error_message, update_status) = match e {
                 AuthError::InvalidVerificationCode => {
-                    ("Ungültiger Verifikationscode", MfaStatus::Failed)
+                    ("Ungültiger Verifikationscode", MfaStatus::None)
                 },
                 AuthError::ExpiredVerificationCode => {
-                    ("Verifikationscode ist abgelaufen", MfaStatus::Failed)
+                    ("Verifikationscode ist abgelaufen", MfaStatus::None)
                 },
                 AuthError::TooManyVerificationAttempts => {
-                    ("Zu viele Verifikationsversuche", MfaStatus::Failed)
+                    ("Zu viele Verifikationsversuche", MfaStatus::None)
                 },
                 AuthError::RateLimitExceeded => (
                     "Rate-Limit überschritten. Bitte versuchen Sie es später erneut.",
-                    MfaStatus::Pending,
+                    MfaStatus::Required,
                 ),
-                _ => ("Ein Fehler ist aufgetreten", MfaStatus::Failed),
+                _ => ("Ein Fehler ist aufgetreten", MfaStatus::None),
             };
 
             // Wenn ein Session-Token vorhanden ist, aktualisiere den MFA-Status entsprechend
@@ -144,7 +144,7 @@ pub async fn handle_send_verification(
             if let Some(token) = send_request.session_token.clone() {
                 if let Err(e) = state
                     .auth_service
-                    .update_session_mfa_status(&token, MfaStatus::Pending)
+                    .update_session_mfa_status(&token, MfaStatus::Required)
                     .await
                 {
                     // Fehler beim Aktualisieren des MFA-Status

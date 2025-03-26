@@ -157,51 +157,19 @@ impl SessionRepository for MockSessionRepository {
         sessions.retain(|s| s.expires_at > now);
         Ok(count as u64)
     }
-}
 
-// Extension for session repository to update MFA status
-#[async_trait::async_trait]
-trait SessionRepositoryExt {
     async fn update_mfa_status(
         &self,
-        session_id: Uuid,
-        status: MfaStatus,
-    ) -> std::result::Result<(), SessionError>;
-}
-
-#[async_trait::async_trait]
-impl SessionRepositoryExt for MockSessionRepository {
-    async fn update_mfa_status(
-        &self,
-        session_id: Uuid,
+        id: Uuid,
         status: MfaStatus,
     ) -> std::result::Result<(), SessionError> {
         let mut sessions = self.sessions.lock().unwrap();
-        if let Some(session) = sessions.iter_mut().find(|s| s.id == session_id) {
+        if let Some(session) = sessions.iter_mut().find(|s| s.id == id) {
             session.mfa_status = status;
             Ok(())
         } else {
             Err(SessionError::NotFound)
         }
-    }
-}
-
-// Extend SessionService to work with the SessionRepositoryExt for updating MFA status
-// Instead of extending SessionService directly, we'll use our repository directly for MFA updates
-impl MockSessionRepository {
-    // Get a shared reference to this repository from the create_test_services tuple
-    #[allow(dead_code)]
-    fn from_tuple(
-        services: &(
-            VerificationService,
-            SessionService,
-            Arc<MockVerificationCodeRepository>,
-            Arc<MockSessionRepository>,
-            Arc<MockMessageProvider>,
-            Arc<MockMessageProvider>,
-        ),
-    ) -> &Arc<Self> {
-        &services.3
     }
 }
 
@@ -255,7 +223,7 @@ fn create_test_services() -> (
 async fn test_create_session_with_mfa_pending() {
     let (_, session_service, _, session_repo, _, _) = create_test_services();
 
-    // Create a session with MFA pending
+    // Create a session with MFA required
     let user_id = Uuid::new_v4();
     let (session, _) = session_service
         .create_session_with_status(
@@ -265,7 +233,7 @@ async fn test_create_session_with_mfa_pending() {
             Some("127.0.0.1".to_string()),
             Some("Test User Agent".to_string()),
             None,
-            MfaStatus::Pending,
+            MfaStatus::Required,
         )
         .await
         .unwrap();
@@ -291,7 +259,7 @@ async fn test_complete_verification_flow() {
     let tenant_id = TenantId::new_v4();
     let user_id = UserId::new_v4();
 
-    // Create a session with MFA pending status
+    // Create a session with MFA required status
     let (session, _) = session_service
         .create_session_with_status(
             user_id.into(),
@@ -300,14 +268,14 @@ async fn test_complete_verification_flow() {
             Some("127.0.0.1".to_string()),
             Some("Test User Agent".to_string()),
             None,
-            MfaStatus::Pending,
+            MfaStatus::Required,
         )
         .await
         .unwrap();
 
-    // Set the MFA status manually because our create_session_with_status doesn't actually set it
+    // Set the MFA status manually
     session_repo
-        .update_mfa_status(session.id, MfaStatus::Pending)
+        .update_mfa_status(session.id, MfaStatus::Required)
         .await
         .unwrap();
 
@@ -315,7 +283,7 @@ async fn test_complete_verification_flow() {
     {
         let sessions = session_repo.sessions.lock().unwrap();
         assert_eq!(sessions.len(), 1);
-        assert_eq!(sessions[0].mfa_status, MfaStatus::Pending);
+        assert_eq!(sessions[0].mfa_status, MfaStatus::Required);
     }
 
     // Send a verification code
@@ -377,7 +345,7 @@ async fn test_failed_verification_flow() {
     let tenant_id = TenantId::new_v4();
     let user_id = UserId::new_v4();
 
-    // Create a session with MFA pending status
+    // Create a session with MFA required status
     let (session, _) = session_service
         .create_session_with_status(
             user_id.into(),
@@ -386,7 +354,7 @@ async fn test_failed_verification_flow() {
             Some("127.0.0.1".to_string()),
             Some("Test User Agent".to_string()),
             None,
-            MfaStatus::Pending,
+            MfaStatus::Required,
         )
         .await
         .unwrap();
@@ -394,7 +362,7 @@ async fn test_failed_verification_flow() {
     // Set the MFA status manually
     {
         let mut sessions = session_repo.sessions.lock().unwrap();
-        sessions[0].mfa_status = MfaStatus::Pending;
+        sessions[0].mfa_status = MfaStatus::Required;
     }
 
     // Try to verify with an invalid code
@@ -417,17 +385,17 @@ async fn test_failed_verification_flow() {
         _ => panic!("Expected validation error"),
     }
 
-    // Update the session MFA status to Failed directly through the repository
+    // Update the session MFA status to None (failed) directly through the repository
     session_repo
-        .update_mfa_status(session.id, MfaStatus::Failed)
+        .update_mfa_status(session.id, MfaStatus::None)
         .await
         .unwrap();
 
-    // Verify the session MFA status is now Failed
+    // Verify the session MFA status is now None (failed)
     let sessions = session_repo.sessions.lock().unwrap();
     assert_eq!(sessions.len(), 1);
     assert_eq!(sessions[0].id, session.id);
-    assert_eq!(sessions[0].mfa_status, MfaStatus::Failed);
+    assert_eq!(sessions[0].mfa_status, MfaStatus::None);
 
     // Session should still be valid even though MFA failed
     assert!(sessions[0].is_valid);
@@ -443,7 +411,7 @@ async fn test_verification_flow_with_too_many_attempts() {
     let tenant_id = TenantId::new_v4();
     let user_id = UserId::new_v4();
 
-    // Create a session with MFA pending status
+    // Create a session with MFA required status
     let (session, _) = session_service
         .create_session_with_status(
             user_id.into(),
@@ -452,7 +420,7 @@ async fn test_verification_flow_with_too_many_attempts() {
             Some("127.0.0.1".to_string()),
             Some("Test User Agent".to_string()),
             None,
-            MfaStatus::Pending,
+            MfaStatus::Required,
         )
         .await
         .unwrap();
@@ -460,7 +428,7 @@ async fn test_verification_flow_with_too_many_attempts() {
     // Set the MFA status manually
     {
         let mut sessions = session_repo.sessions.lock().unwrap();
-        sessions[0].mfa_status = MfaStatus::Pending;
+        sessions[0].mfa_status = MfaStatus::Required;
     }
 
     // Send a verification code
@@ -492,16 +460,16 @@ async fn test_verification_flow_with_too_many_attempts() {
         codes[0].status = VerificationStatus::Invalidated; // Manually mark as invalidated
     }
 
-    // Update the session MFA status to Failed directly
+    // Update the session MFA status to None (failed) directly
     session_repo
-        .update_mfa_status(session.id, MfaStatus::Failed)
+        .update_mfa_status(session.id, MfaStatus::None)
         .await
         .unwrap();
 
     // Verify that session is properly marked as failed
     {
         let sessions = session_repo.sessions.lock().unwrap();
-        assert_eq!(sessions[0].mfa_status, MfaStatus::Failed);
+        assert_eq!(sessions[0].mfa_status, MfaStatus::None);
     }
 
     // Try to verify with the correct code but after too many attempts
@@ -532,11 +500,11 @@ async fn test_verification_flow_with_too_many_attempts() {
         VerificationStatus::Invalidated
     );
 
-    // Verify the session MFA status is Failed
+    // Verify the session MFA status is None (failed)
     let sessions = session_repo.sessions.lock().unwrap();
     assert_eq!(sessions.len(), 1);
     assert_eq!(sessions[0].id, session.id);
-    assert_eq!(sessions[0].mfa_status, MfaStatus::Failed);
+    assert_eq!(sessions[0].mfa_status, MfaStatus::None);
 
     // Session should still be valid even with failed MFA
     assert!(sessions[0].is_valid);
@@ -552,7 +520,7 @@ async fn test_verification_flow_with_expired_code() {
     let tenant_id = TenantId::new_v4();
     let user_id = UserId::new_v4();
 
-    // Create a session with MFA pending status
+    // Create a session with MFA required status
     let (session, _) = session_service
         .create_session_with_status(
             user_id.into(),
@@ -561,7 +529,7 @@ async fn test_verification_flow_with_expired_code() {
             Some("127.0.0.1".to_string()),
             Some("Test User Agent".to_string()),
             None,
-            MfaStatus::Pending,
+            MfaStatus::Required,
         )
         .await
         .unwrap();
@@ -569,7 +537,7 @@ async fn test_verification_flow_with_expired_code() {
     // Set the MFA status manually
     {
         let mut sessions = session_repo.sessions.lock().unwrap();
-        sessions[0].mfa_status = MfaStatus::Pending;
+        sessions[0].mfa_status = MfaStatus::Required;
     }
 
     // Send a verification code
@@ -610,18 +578,18 @@ async fn test_verification_flow_with_expired_code() {
     // Check that verification failed due to expired code
     assert!(result.is_err());
 
-    // Update the session MFA status to Failed directly
+    // Update the session MFA status to None (failed) directly
     session_repo
-        .update_mfa_status(session.id, MfaStatus::Failed)
+        .update_mfa_status(session.id, MfaStatus::None)
         .await
         .unwrap();
 
-    // Verify the session MFA status is now Failed
+    // Verify the session MFA status is now None (failed)
     {
         let sessions = session_repo.sessions.lock().unwrap();
         assert_eq!(sessions.len(), 1);
         assert_eq!(sessions[0].id, session.id);
-        assert_eq!(sessions[0].mfa_status, MfaStatus::Failed);
+        assert_eq!(sessions[0].mfa_status, MfaStatus::None);
         assert!(sessions[0].is_valid); // Session is still valid even with failed MFA
     }
 
@@ -654,9 +622,9 @@ async fn test_verification_flow_with_expired_code() {
         codes[0].attempts = 0;
     }
 
-    // Set the session back to pending for retry
+    // Set the session back to required for retry
     session_repo
-        .update_mfa_status(session.id, MfaStatus::Pending)
+        .update_mfa_status(session.id, MfaStatus::Required)
         .await
         .unwrap();
 
@@ -718,7 +686,7 @@ async fn test_multi_tenant_verification_isolation() {
             Some("127.0.0.1".to_string()),
             Some("Test User Agent".to_string()),
             None,
-            MfaStatus::Pending,
+            MfaStatus::Required,
         )
         .await
         .unwrap();
@@ -731,7 +699,7 @@ async fn test_multi_tenant_verification_isolation() {
             Some("127.0.0.1".to_string()),
             Some("Test User Agent".to_string()),
             None,
-            MfaStatus::Pending,
+            MfaStatus::Required,
         )
         .await
         .unwrap();
@@ -740,7 +708,7 @@ async fn test_multi_tenant_verification_isolation() {
     {
         let mut sessions = session_repo.sessions.lock().unwrap();
         for session in sessions.iter_mut() {
-            session.mfa_status = MfaStatus::Pending;
+            session.mfa_status = MfaStatus::Required;
         }
     }
 
@@ -853,7 +821,7 @@ async fn test_sms_verification_flow() {
     let tenant_id = TenantId::new_v4();
     let user_id = UserId::new_v4();
 
-    // Create a session with MFA pending status
+    // Create a session with MFA required status
     let (session, _) = session_service
         .create_session_with_status(
             user_id.into(),
@@ -862,7 +830,7 @@ async fn test_sms_verification_flow() {
             Some("127.0.0.1".to_string()),
             Some("Test User Agent".to_string()),
             None,
-            MfaStatus::Pending,
+            MfaStatus::Required,
         )
         .await
         .unwrap();
@@ -870,7 +838,7 @@ async fn test_sms_verification_flow() {
     // Set the MFA status manually
     {
         let mut sessions = session_repo.sessions.lock().unwrap();
-        sessions[0].mfa_status = MfaStatus::Pending;
+        sessions[0].mfa_status = MfaStatus::Required;
     }
 
     // Send an SMS verification code
