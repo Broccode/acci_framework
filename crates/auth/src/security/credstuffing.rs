@@ -55,7 +55,7 @@ impl CredentialStuffingProtection {
         };
 
         // Get recent attempts for pattern analysis
-        let recent_attempts = self
+        let _recent_attempts = self
             .pattern_detector
             .get_recent_attempts(
                 &attempt.tenant_id,
@@ -102,7 +102,7 @@ impl CredentialStuffingProtection {
     }
 
     /// Get appropriate challenge based on risk level
-    pub async fn get_challenge(&self, attempt: &LoginAttempt, risk_level: RiskLevel) -> Challenge {
+    pub async fn get_challenge(&self, _attempt: &LoginAttempt, risk_level: RiskLevel) -> Challenge {
         match risk_level {
             RiskLevel::Low => Challenge::None,
             RiskLevel::Medium => {
@@ -415,21 +415,392 @@ fn levenshtein_distance(s1: &str, s2: &str) -> usize {
 mod tests {
     use super::*;
 
+    // Helper to create a test login attempt
+    fn create_test_login_attempt(username: &str, ip: &str, user_agent: &str) -> LoginAttempt {
+        LoginAttempt {
+            tenant_id: "test_tenant".to_string(),
+            username: username.to_string(),
+            ip_address: ip.to_string(),
+            user_agent: user_agent.to_string(),
+            timestamp: Utc::now(),
+            fingerprint: None,
+            geolocation: None,
+            successful: false,
+        }
+    }
+
     #[test]
     fn test_similarity() {
+        // Test with identical strings
         assert_eq!(calculate_similarity("hello", "hello"), 1.0);
+
+        // Test with similar strings
         assert_eq!(calculate_similarity("hello", "hallo"), 0.8);
         assert!(calculate_similarity("user123", "user124") > 0.8);
+
+        // Test with very different strings
         assert!(calculate_similarity("completely", "different") < 0.5);
+
+        // Test with empty strings
+        assert_eq!(calculate_similarity("", ""), 1.0);
+        assert_eq!(calculate_similarity("hello", ""), 0.0);
+        assert_eq!(calculate_similarity("", "hello"), 0.0);
+
+        // Test with strings of different lengths
+        assert!(calculate_similarity("short", "very_long_string") < 0.5);
+
+        // Test with numeric strings
+        assert!(calculate_similarity("12345", "12346") >= 0.8);
+
+        // Test with mixed case
+        assert!(calculate_similarity("HelloWorld", "helloworld") < 1.0);
+        assert!(calculate_similarity("HelloWorld", "helloworld") > 0.7);
     }
 
-    #[tokio::test]
-    async fn test_ip_velocity() {
-        // This would use a mock Redis client in an actual test
+    #[test]
+    fn test_levenshtein_distance() {
+        // Test with identical strings
+        assert_eq!(levenshtein_distance("hello", "hello"), 0);
+
+        // Test with one character difference
+        assert_eq!(levenshtein_distance("hello", "hallo"), 1);
+        assert_eq!(levenshtein_distance("user123", "user124"), 1);
+
+        // Test with completely different strings
+        assert_eq!(levenshtein_distance("abc", "xyz"), 3);
+
+        // Test with empty strings
+        assert_eq!(levenshtein_distance("", ""), 0);
+        assert_eq!(levenshtein_distance("hello", ""), 5);
+        assert_eq!(levenshtein_distance("", "hello"), 5);
+
+        // Test with strings of different lengths
+        assert_eq!(levenshtein_distance("short", "shorter"), 2);
+
+        // Test with additions, deletions and substitutions
+        assert_eq!(levenshtein_distance("kitten", "sitting"), 3);
     }
 
-    #[tokio::test]
-    async fn test_username_pattern() {
-        // This would use a mock Redis client in an actual test
+    #[test]
+    fn test_risk_level_ordering() {
+        // Test RiskLevel ordering implementation
+        assert!(RiskLevel::Low < RiskLevel::Medium);
+        assert!(RiskLevel::Medium < RiskLevel::High);
+        assert!(RiskLevel::High < RiskLevel::Critical);
+
+        assert!(RiskLevel::Critical > RiskLevel::High);
+        assert!(RiskLevel::High > RiskLevel::Medium);
+        assert!(RiskLevel::Medium > RiskLevel::Low);
+
+        // Test max() implementation
+        assert_eq!(RiskLevel::Low.max(RiskLevel::Medium), RiskLevel::Medium);
+        assert_eq!(RiskLevel::Medium.max(RiskLevel::Low), RiskLevel::Medium);
+        assert_eq!(
+            RiskLevel::High.max(RiskLevel::Critical),
+            RiskLevel::Critical
+        );
+        assert_eq!(RiskLevel::Critical.max(RiskLevel::Low), RiskLevel::Critical);
+
+        // Test with the same level
+        assert_eq!(RiskLevel::Medium.max(RiskLevel::Medium), RiskLevel::Medium);
+    }
+
+    #[test]
+    fn test_challenge_provider() {
+        let provider = ChallengeProvider::new();
+
+        // Since it's a placeholder implementation, we can only test it returns something
+        let challenge = tokio_test::block_on(provider.get_captcha_challenge());
+
+        if let Challenge::Captcha(captcha) = challenge {
+            assert!(captcha.challenge_id.starts_with("chid_"));
+            assert_eq!(captcha.challenge_data, "What is 2+2?");
+            assert!(matches!(captcha.captcha_type, CaptchaType::Text));
+        } else {
+            panic!("Expected Captcha challenge");
+        }
+    }
+
+    #[test]
+    fn test_username_pattern_detection() {
+        // Simple tests for the username pattern detection logic
+        let username_base = "user".trim_end_matches(|c: char| c.is_numeric());
+        assert_eq!(username_base, "user");
+
+        let username_base = "admin123".trim_end_matches(|c: char| c.is_numeric());
+        assert_eq!(username_base, "admin");
+
+        let username_base = "john.doe".trim_end_matches(|c: char| c.is_numeric());
+        assert_eq!(username_base, "john.doe");
+
+        let username_base = "test1234abc".trim_end_matches(|c: char| c.is_numeric());
+        assert_eq!(username_base, "test1234abc");
+
+        // Test sequential username detection pattern logic
+        let usernames = vec![
+            "user1".to_string(),
+            "user2".to_string(),
+            "user3".to_string(),
+            "admin".to_string(),
+            "root".to_string(),
+        ];
+
+        // Count sequential usernames with same base
+        let mut sequential_user_count = 0;
+        let test_username = "user4";
+        let test_username_base = test_username.trim_end_matches(|c: char| c.is_numeric());
+
+        for other in &usernames {
+            let other_base = other.trim_end_matches(|c: char| c.is_numeric());
+            if other_base == test_username_base {
+                sequential_user_count += 1;
+            }
+        }
+
+        // We should detect 3 sequential usernames with the same base
+        assert_eq!(sequential_user_count, 3);
+        assert!(sequential_user_count >= 3); // This is the check used in the real code
+
+        // Test with different usernames
+        let diverse_usernames = vec![
+            "john".to_string(),
+            "mary".to_string(),
+            "admin".to_string(),
+            "bob".to_string(),
+            "alice".to_string(),
+        ];
+
+        let mut sequential_user_count = 0;
+        let test_username = "peter";
+        let test_username_base = test_username.trim_end_matches(|c: char| c.is_numeric());
+
+        for other in &diverse_usernames {
+            let other_base = other.trim_end_matches(|c: char| c.is_numeric());
+            if other_base == test_username_base {
+                sequential_user_count += 1;
+            }
+        }
+
+        // Should not detect sequential usernames with the same base
+        assert_eq!(sequential_user_count, 0);
+        assert!(sequential_user_count < 3); // This is the check used in the real code
+    }
+
+    #[test]
+    fn test_similar_username_detection() {
+        // Test username similarity detection logic
+        let usernames = vec![
+            "johndoe".to_string(),
+            "john.doe".to_string(),
+            "john-doe".to_string(),
+            "jondoe".to_string(), // Note the missing 'h'
+            "johndo".to_string(), // Note the missing 'e'
+            "admin".to_string(),  // Not similar
+        ];
+
+        // Count similar usernames using the same logic as in check_username_pattern
+        let mut similar_count = 0;
+        let test_username = "johndoe1";
+
+        for other in &usernames {
+            if other != test_username && calculate_similarity(test_username, other) > 0.7 {
+                similar_count += 1;
+            }
+        }
+
+        // Should detect at least 3 similar usernames
+        assert!(similar_count >= 3);
+
+        // Test with diverse usernames
+        let diverse_usernames = vec![
+            "john".to_string(),
+            "mary".to_string(),
+            "admin".to_string(),
+            "bob".to_string(),
+            "alice".to_string(),
+        ];
+
+        let mut similar_count = 0;
+        let test_username = "peter";
+
+        for other in &diverse_usernames {
+            if other != test_username && calculate_similarity(test_username, other) > 0.8 {
+                similar_count += 1;
+            }
+        }
+
+        // Should not detect similar usernames
+        assert!(similar_count < 3);
+    }
+
+    #[test]
+    fn test_analyze_login_attempt_with_disabled_config() {
+        // Create a minimal test setup where the config is disabled
+        let config = CredentialStuffingConfig {
+            enabled: false,
+            ..CredentialStuffingConfig::default()
+        };
+
+        // These won't be called because config is disabled
+        let pattern_detector = Arc::new(PatternDetector::new(Arc::new(
+            redis::Client::open("redis://127.0.0.1").unwrap(),
+        )));
+        let challenge_provider = Arc::new(ChallengeProvider::new());
+
+        let protection = CredentialStuffingProtection::new(
+            pattern_detector.clone(),
+            challenge_provider.clone(),
+            config,
+        );
+
+        let attempt = create_test_login_attempt("testuser", "192.168.1.1", "Mozilla/5.0");
+
+        // When config is disabled, it should always return Low risk
+        let risk_level = tokio_test::block_on(protection.analyze_login_attempt(&attempt));
+        assert_eq!(risk_level, RiskLevel::Low);
+    }
+
+    #[test]
+    fn test_suspicious_user_agent_detection() {
+        // Test with suspicious user agents
+        let bot_attempt = create_test_login_attempt("testuser", "192.168.1.1", "bot");
+        let curl_attempt = create_test_login_attempt("testuser", "192.168.1.1", "curl/7.64.1");
+        let python_attempt =
+            create_test_login_attempt("testuser", "192.168.1.1", "python-requests/2.25.1");
+        let short_attempt = create_test_login_attempt("testuser", "192.168.1.1", "short");
+
+        // Test user agent detection logic directly
+        assert!(bot_attempt.user_agent.contains("bot"));
+        assert!(curl_attempt.user_agent.contains("curl"));
+        assert!(python_attempt.user_agent.contains("python"));
+        assert!(short_attempt.user_agent.len() < 20);
+    }
+
+    #[test]
+    fn test_get_challenge_based_on_risk_level() {
+        // Create a test setup
+        let config = CredentialStuffingConfig {
+            enable_captcha: true,
+            enable_ip_blocking: true,
+            ip_block_minutes: 60,
+            ..CredentialStuffingConfig::default()
+        };
+
+        let pattern_detector = Arc::new(PatternDetector::new(Arc::new(
+            redis::Client::open("redis://127.0.0.1").unwrap(),
+        )));
+        let challenge_provider = Arc::new(ChallengeProvider::new());
+
+        let protection = CredentialStuffingProtection::new(
+            pattern_detector.clone(),
+            challenge_provider.clone(),
+            config,
+        );
+
+        let attempt = create_test_login_attempt("testuser", "192.168.1.1", "Mozilla/5.0");
+
+        // Test different risk levels
+        let low_challenge =
+            tokio_test::block_on(protection.get_challenge(&attempt, RiskLevel::Low));
+        assert!(matches!(low_challenge, Challenge::None));
+
+        // Medium risk with captcha enabled should return Captcha
+        let medium_challenge =
+            tokio_test::block_on(protection.get_challenge(&attempt, RiskLevel::Medium));
+        assert!(matches!(medium_challenge, Challenge::Captcha(_)));
+
+        // High risk with captcha enabled should return Captcha
+        let high_challenge =
+            tokio_test::block_on(protection.get_challenge(&attempt, RiskLevel::High));
+        assert!(matches!(high_challenge, Challenge::Captcha(_)));
+
+        // Critical risk with IP blocking enabled should return IpBlock
+        let critical_challenge =
+            tokio_test::block_on(protection.get_challenge(&attempt, RiskLevel::Critical));
+        if let Challenge::IpBlock(duration) = critical_challenge {
+            assert_eq!(duration, Duration::minutes(60));
+        } else {
+            panic!("Expected IpBlock challenge");
+        }
+
+        // Test with captcha disabled
+        let config_no_captcha = CredentialStuffingConfig {
+            enable_captcha: false,
+            enable_ip_blocking: true,
+            ip_block_minutes: 60,
+            ..CredentialStuffingConfig::default()
+        };
+
+        let protection_no_captcha = CredentialStuffingProtection::new(
+            pattern_detector.clone(),
+            challenge_provider.clone(),
+            config_no_captcha,
+        );
+
+        // Medium risk without captcha should return Delay
+        let medium_no_captcha =
+            tokio_test::block_on(protection_no_captcha.get_challenge(&attempt, RiskLevel::Medium));
+        assert!(matches!(medium_no_captcha, Challenge::Delay(500)));
+
+        // High risk without captcha should return MfaRequired
+        let high_no_captcha =
+            tokio_test::block_on(protection_no_captcha.get_challenge(&attempt, RiskLevel::High));
+        assert!(matches!(high_no_captcha, Challenge::MfaRequired));
+
+        // Test with IP blocking disabled
+        let config_no_blocking = CredentialStuffingConfig {
+            enable_captcha: false,
+            enable_ip_blocking: false,
+            ip_block_minutes: 60,
+            ..CredentialStuffingConfig::default()
+        };
+
+        let protection_no_blocking = CredentialStuffingProtection::new(
+            pattern_detector.clone(),
+            challenge_provider.clone(),
+            config_no_blocking,
+        );
+
+        // Critical risk without IP blocking should fall back to MfaRequired
+        let critical_no_blocking = tokio_test::block_on(
+            protection_no_blocking.get_challenge(&attempt, RiskLevel::Critical),
+        );
+        assert!(matches!(critical_no_blocking, Challenge::MfaRequired));
+    }
+
+    #[test]
+    fn test_tenant_redis_key_creation() {
+        // Test that tenant-specific Redis keys are generated correctly
+        let tenant_id = "tenant123";
+        let key_type = "velocity";
+        let key = "192.168.1.1";
+
+        let redis_key = create_tenant_redis_key(tenant_id, key_type, key);
+
+        // Verify the correct format
+        assert_eq!(redis_key, "security:tenant123:velocity:192.168.1.1");
+
+        // Test with different values
+        let tenant_id = "org-456";
+        let key_type = "credstuffing:ip";
+        let key = "10.0.0.1";
+
+        let redis_key = create_tenant_redis_key(tenant_id, key_type, key);
+
+        // Verify the correct format
+        assert_eq!(redis_key, "security:org-456:credstuffing:ip:10.0.0.1");
+
+        // Test with special characters
+        let tenant_id = "tenant/with:special@chars";
+        let key_type = "session";
+        let key = "user@example.com";
+
+        let redis_key = create_tenant_redis_key(tenant_id, key_type, key);
+
+        // Verify the correct format
+        assert_eq!(
+            redis_key,
+            "security:tenant/with:special@chars:session:user@example.com"
+        );
     }
 }

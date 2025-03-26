@@ -22,7 +22,7 @@ dependencies = [
  "lazy_static",
  "metrics",
  "metrics-exporter-prometheus",
- "mockall",
+ "mockall 0.13.1",
  "pretty_assertions",
  "regex",
  "secrecy",
@@ -52,17 +52,21 @@ dependencies = [
  "axum 0.7.9",
  "base32",
  "base64 0.21.7",
+ "bytes",
  "chrono",
  "cookie",
  "futures",
  "governor",
  "hex",
+ "hmac",
+ "http-body-util",
  "hyper 1.6.0",
  "jsonwebtoken",
  "lazy_static",
  "lettre",
  "maxminddb",
  "metrics",
+ "mockall 0.12.1",
  "rand 0.9.0",
  "rand_core 0.6.4",
  "redis",
@@ -76,6 +80,7 @@ dependencies = [
  "thiserror 2.0.11",
  "time",
  "tokio",
+ "tokio-test",
  "totp-rs",
  "tower",
  "tracing",
@@ -94,7 +99,7 @@ dependencies = [
  "futures",
  "metrics",
  "metrics-exporter-prometheus",
- "mockall",
+ "mockall 0.13.1",
  "once_cell",
  "rstest",
  "serde",
@@ -146,7 +151,7 @@ dependencies = [
  "futures",
  "http-body-util",
  "hyper 1.6.0",
- "mockall",
+ "mockall 0.13.1",
  "once_cell",
  "rstest",
  "serde",
@@ -176,7 +181,7 @@ dependencies = [
  "leptos",
  "leptos_meta",
  "leptos_router",
- "mockall",
+ "mockall 0.13.1",
  "rstest",
  "serde",
  "serde-wasm-bindgen",
@@ -3034,6 +3039,21 @@ dependencies = [
 
 [[package]]
 name = "mockall"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43766c2b5203b10de348ffe19f7e54564b64f3d6018ff7648d1e2d6d3a0f0a48"
+dependencies = [
+ "cfg-if",
+ "downcast",
+ "fragile",
+ "lazy_static",
+ "mockall_derive 0.12.1",
+ "predicates",
+ "predicates-tree",
+]
+
+[[package]]
+name = "mockall"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39a6bfcc6c8c7eed5ee98b9c3e33adc726054389233e201c95dab2d41a3839d2"
@@ -3041,9 +3061,21 @@ dependencies = [
  "cfg-if",
  "downcast",
  "fragile",
- "mockall_derive",
+ "mockall_derive 0.13.1",
  "predicates",
  "predicates-tree",
+]
+
+[[package]]
+name = "mockall_derive"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af7cbce79ec385a1d4f54baa90a76401eb15d9cab93685f62e7e9f942aa00ae2"
+dependencies = [
+ "cfg-if",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.98",
 ]
 
 [[package]]

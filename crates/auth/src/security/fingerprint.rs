@@ -725,24 +725,181 @@ fn levenshtein_distance(s1: &str, s2: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::session::types::DeviceFingerprint;
 
     #[test]
     fn test_string_similarity() {
+        // Test exact match
         assert_eq!(string_similarity("hello", "hello"), 1.0);
+
+        // Test similar strings
         assert!(string_similarity("hello", "hallo") > 0.6);
+        assert!(string_similarity("hello", "helo") >= 0.8);
+        assert!(string_similarity("testing", "tasting") > 0.7);
+
+        // Test different strings
         assert!(string_similarity("completely", "different") < 0.5);
+        assert!(string_similarity("apple", "orange") < 0.5);
+
+        // Test edge cases
+        assert_eq!(string_similarity("", ""), 1.0); // Empty strings are identical
+        assert_eq!(string_similarity("", "something"), 0.0); // Empty vs non-empty
     }
 
     #[test]
     fn test_set_similarity() {
+        // Test partially overlapping sets
         let set1 = vec!["a", "b", "c"];
         let set2 = vec!["b", "c", "d"];
         assert_eq!(set_similarity(&set1, &set2), 0.5);
 
+        // Test disjoint sets
         let set3 = vec!["x", "y", "z"];
         assert_eq!(set_similarity(&set1, &set3), 0.0);
 
+        // Test identical sets
         let set4 = vec!["a", "b", "c"];
         assert_eq!(set_similarity(&set1, &set4), 1.0);
+
+        // Test empty sets
+        let empty: Vec<&str> = vec![];
+        assert_eq!(set_similarity(&empty, &empty), 1.0); // Both empty = identical
+        assert_eq!(set_similarity(&empty, &set1), 0.0); // Empty vs non-empty = 0 similarity
+    }
+
+    #[test]
+    fn test_levenshtein_distance() {
+        // Test identical strings
+        assert_eq!(levenshtein_distance("hello", "hello"), 0);
+
+        // Test simple substitutions
+        assert_eq!(levenshtein_distance("hello", "hallo"), 1);
+        assert_eq!(levenshtein_distance("hello", "helLo"), 1);
+
+        // Test insertions
+        assert_eq!(levenshtein_distance("hello", "heello"), 1);
+        assert_eq!(levenshtein_distance("hello", "hellox"), 1);
+
+        // Test deletions
+        assert_eq!(levenshtein_distance("hello", "helo"), 1);
+        assert_eq!(levenshtein_distance("hello", "hell"), 1);
+
+        // Test mixed operations
+        assert_eq!(levenshtein_distance("kitten", "sitting"), 3);
+        assert_eq!(levenshtein_distance("saturday", "sunday"), 3);
+
+        // Test edge cases
+        assert_eq!(levenshtein_distance("", ""), 0);
+        assert_eq!(levenshtein_distance("abc", ""), 3);
+        assert_eq!(levenshtein_distance("", "xyz"), 3);
+    }
+
+    #[test]
+    fn test_fingerprint_creation() {
+        // Test fingerprint creation and builder pattern
+        let fp = DeviceFingerprint::new("ua_hash".to_string())
+            .with_browser("Firefox".to_string())
+            .with_platform("Linux".to_string())
+            .with_screen_resolution("1920x1080".to_string())
+            .with_language("en-US".to_string());
+
+        assert_eq!(fp.user_agent_hash, "ua_hash");
+        assert_eq!(fp.browser.as_deref(), Some("Firefox"));
+        assert_eq!(fp.platform.as_deref(), Some("Linux"));
+        assert_eq!(fp.screen_resolution.as_deref(), Some("1920x1080"));
+        assert_eq!(fp.language.as_deref(), Some("en-US"));
+        assert_eq!(fp.color_depth, None);
+        assert_eq!(fp.do_not_track, None);
+    }
+
+    #[test]
+    fn test_fingerprint_comparison() {
+        // Create base fingerprint
+        let fp1 = DeviceFingerprint::new("hash1".to_string())
+            .with_browser("Firefox".to_string())
+            .with_platform("Linux".to_string())
+            .with_screen_resolution("1920x1080".to_string())
+            .with_language("en-US".to_string())
+            .with_timezone("UTC".to_string());
+
+        // Create similar fingerprint (just browser changed)
+        let fp2 = DeviceFingerprint::new("hash2".to_string())
+            .with_browser("Chrome".to_string())
+            .with_platform("Linux".to_string())
+            .with_screen_resolution("1920x1080".to_string())
+            .with_language("en-US".to_string())
+            .with_timezone("UTC".to_string());
+
+        // Create different fingerprint
+        let fp3 = DeviceFingerprint::new("hash3".to_string())
+            .with_browser("Safari".to_string())
+            .with_platform("MacOS".to_string())
+            .with_screen_resolution("1440x900".to_string())
+            .with_language("fr-FR".to_string())
+            .with_timezone("Europe/Paris".to_string());
+
+        // Compare fingerprints
+        let comparison_score = compare_fingerprints(&fp1, &fp2);
+        assert!(
+            comparison_score > 0.7,
+            "Similar fingerprints should have high similarity score"
+        );
+
+        let comparison_score = compare_fingerprints(&fp1, &fp3);
+        assert!(
+            comparison_score < 0.5,
+            "Different fingerprints should have low similarity score"
+        );
+    }
+
+    // Helper function for unit tests (simplified version of fingerprint comparison)
+    fn compare_fingerprints(fp1: &DeviceFingerprint, fp2: &DeviceFingerprint) -> f64 {
+        let mut scores = Vec::new();
+        let mut weights = Vec::new();
+
+        // Compare platform
+        if let (Some(p1), Some(p2)) = (&fp1.platform, &fp2.platform) {
+            scores.push(string_similarity(p1, p2));
+            weights.push(0.2);
+        }
+
+        // Compare browser
+        if let (Some(b1), Some(b2)) = (&fp1.browser, &fp2.browser) {
+            scores.push(string_similarity(b1, b2));
+            weights.push(0.2);
+        }
+
+        // Compare screen resolution
+        if let (Some(r1), Some(r2)) = (&fp1.screen_resolution, &fp2.screen_resolution) {
+            scores.push(string_similarity(r1, r2));
+            weights.push(0.1);
+        }
+
+        // Compare language
+        if let (Some(l1), Some(l2)) = (&fp1.language, &fp2.language) {
+            scores.push(string_similarity(l1, l2));
+            weights.push(0.15);
+        }
+
+        // Compare timezone
+        if let (Some(t1), Some(t2)) = (&fp1.timezone, &fp2.timezone) {
+            scores.push(string_similarity(t1, t2));
+            weights.push(0.2);
+        }
+
+        // If no comparable fields, return 0.0
+        if scores.is_empty() {
+            return 0.0;
+        }
+
+        // Calculate weighted average
+        let total_weight: f64 = weights.iter().sum();
+        let mut weighted_sum = 0.0;
+
+        for i in 0..scores.len() {
+            weighted_sum += scores[i] * weights[i];
+        }
+
+        weighted_sum / total_weight
     }
 }

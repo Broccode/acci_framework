@@ -65,6 +65,11 @@ hyper = { version = "1.0.1", features = ["full"] }
 futures = { workspace = true }
 tower = { workspace = true }
 uuid = { workspace = true }
+bytes = "1.5.0"
+http-body-util = "0.1.1"
+hmac = "0.12.1"
 
 [dev-dependencies]
 rstest = { workspace = true }
+mockall = "0.12.1" 
+tokio-test = "0.4.3"

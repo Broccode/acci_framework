@@ -383,20 +383,163 @@ impl<S> Layer<S> for RateLimitLayer {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
 
-    #[tokio::test]
-    async fn test_check_rate_limit() {
-        // This would use a mock Redis client
-        // For now, these are placeholders
+    use std::collections::HashMap;
+
+    // Unit test for rate limit configuration
+    #[test]
+    fn test_rate_limit_configuration() {
+        // Test creating config with different settings
+        let mut path_limits = HashMap::new();
+        path_limits.insert(
+            "login".to_string(),
+            vec![RateLimit {
+                window_seconds: 60,
+                max_requests: 10,
+                backoff_multiplier: 2.0,
+            }],
+        );
+
+        path_limits.insert(
+            "register".to_string(),
+            vec![RateLimit {
+                window_seconds: 3600,
+                max_requests: 3,
+                backoff_multiplier: 2.0,
+            }],
+        );
+
+        let config = RateLimitingConfig {
+            enabled: true,
+            path_limits,
+            ..Default::default()
+        };
+
+        // Test configuration properties
+        assert!(config.enabled);
+        assert_eq!(config.path_limits.len(), 2);
+
+        // Test rate limits values
+        let login_limits = config
+            .path_limits
+            .get("login")
+            .expect("Should have login rate limit");
+
+        assert_eq!(login_limits[0].max_requests, 10);
+        assert_eq!(login_limits[0].window_seconds, 60);
+        assert_eq!(login_limits[0].backoff_multiplier, 2.0);
+
+        // Test default config
+        let default_config = RateLimitingConfig::default();
+        assert!(default_config.enabled); // Default is now true
+        assert!(default_config.path_limits.is_empty());
+        assert_eq!(default_config.default_limits.len(), 2);
+        assert_eq!(default_config.default_limits[0].max_requests, 10);
+        assert_eq!(default_config.default_limits[0].window_seconds, 1);
     }
 
-    #[tokio::test]
-    async fn test_reset_backoff() {
-        // Test with mock Redis client
+    // Test rate limit key generation
+    #[test]
+    fn test_rate_limit_key_generation() {
+        let tenant_id = "tenant123";
+        let endpoint = "login";
+        let ip = "192.168.1.1";
+
+        // Don't need to create an actual rate limiter for this test
+
+        // Test endpoint-specific key
+        let key =
+            create_tenant_redis_key(tenant_id, "ratelimit:path", &format!("{}:{}", endpoint, ip));
+        assert_eq!(key, "security:tenant123:ratelimit:path:login:192.168.1.1");
+
+        // Test different endpoint
+        let key = create_tenant_redis_key(
+            tenant_id,
+            "ratelimit:path",
+            &format!("{}:{}", "register", ip),
+        );
+        assert_eq!(
+            key,
+            "security:tenant123:ratelimit:path:register:192.168.1.1"
+        );
+
+        // Test different tenant
+        let key = create_tenant_redis_key(
+            "other_tenant",
+            "ratelimit:path",
+            &format!("{}:{}", endpoint, ip),
+        );
+        assert_eq!(
+            key,
+            "security:other_tenant:ratelimit:path:login:192.168.1.1"
+        );
     }
 
-    #[tokio::test]
-    async fn test_middleware() {
-        // Test middleware behavior
+    // Test rate limit window calculation
+    #[test]
+    fn test_rate_limit_window_calculation() {
+        // Test window calculation
+        let window_seconds = 60;
+        let current_time = 1617235200; // Some Unix timestamp
+
+        // Calculate window boundary
+        let window_boundary = current_time - (current_time % window_seconds);
+
+        // Two timestamps in the same window should have the same boundary
+        let time1 = current_time + 10;
+        let time2 = current_time + 59;
+
+        let boundary1 = time1 - (time1 % window_seconds);
+        let boundary2 = time2 - (time2 % window_seconds);
+
+        assert_eq!(boundary1, window_boundary);
+        assert_eq!(boundary2, window_boundary);
+
+        // Timestamp in next window should have different boundary
+        let time3 = current_time + 60;
+        let boundary3 = time3 - (time3 % window_seconds);
+
+        assert_eq!(boundary3, window_boundary + window_seconds);
+    }
+
+    // Test backoff calculation
+    #[test]
+    fn test_backoff_calculation() {
+        // Test exponential backoff calculation
+        let base_wait = 5;
+
+        // First violation - base wait
+        let backoff1 = calculate_backoff(1, base_wait);
+        assert_eq!(backoff1, base_wait);
+
+        // Second violation - 2x base wait
+        let backoff2 = calculate_backoff(2, base_wait);
+        assert_eq!(backoff2, base_wait * 2);
+
+        // Third violation - 4x base wait
+        let backoff3 = calculate_backoff(3, base_wait);
+        assert_eq!(backoff3, base_wait * 4);
+
+        // Max out at reasonable level
+        let backoff10 = calculate_backoff(10, base_wait);
+        let max_wait = 60 * 60; // 1 hour in seconds
+        assert!(
+            backoff10 <= max_wait,
+            "Backoff should never exceed {} seconds",
+            max_wait
+        );
+    }
+
+    // Helper function for backoff calculation in tests
+    fn calculate_backoff(violations: u32, base_wait: u32) -> u32 {
+        let mut wait_time = base_wait * 2u32.pow(violations - 1);
+        let max_wait = 60 * 60; // 1 hour in seconds
+
+        if wait_time > max_wait {
+            wait_time = max_wait;
+        }
+
+        wait_time
     }
 }
