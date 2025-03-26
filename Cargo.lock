@@ -68,6 +68,7 @@ dependencies = [
  "redis",
  "regex",
  "reqwest",
+ "rstest",
  "serde",
  "serde_json",
  "sha2",

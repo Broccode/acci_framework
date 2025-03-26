@@ -65,3 +65,6 @@ hyper = { version = "1.0.1", features = ["full"] }
 futures = { workspace = true }
 tower = { workspace = true }
 uuid = { workspace = true }
+
+[dev-dependencies]
+rstest = { workspace = true }
