@@ -135,8 +135,11 @@ impl PostgresFingerprintRepository {
         let timestamp = offset.unix_timestamp();
         let nanos = offset.nanosecond();
 
-        DateTime::from_timestamp(timestamp, nanos)
-            .unwrap_or_else(|| DateTime::from_timestamp(0, 0).unwrap())
+        let dt = DateTime::from_timestamp(timestamp, nanos as u32)
+            .unwrap_or_else(|| DateTime::from_timestamp(0, 0)
+                .expect("Failed to create fallback timestamp"));
+
+        dt
     }
 
     /// Convert chrono::DateTime<Utc> to OffsetDateTime
@@ -156,7 +159,8 @@ impl PostgresFingerprintRepository {
     fn ip_addr_to_network(addr: IpAddr) -> IpNetwork {
         match addr {
             IpAddr::V4(ipv4) => IpNetwork::new(IpAddr::V4(ipv4), 32).unwrap_or_else(|_| {
-                IpNetwork::V4(Ipv4Network::new(std::net::Ipv4Addr::new(0, 0, 0, 0), 32).unwrap())
+                IpNetwork::V4(Ipv4Network::new(std::net::Ipv4Addr::new(0, 0, 0, 0), 32)
+                    .expect("Failed to create fallback IPv4 network"))
             }),
             IpAddr::V6(ipv6) => IpNetwork::new(IpAddr::V6(ipv6), 128).unwrap_or_else(|_| {
                 IpNetwork::V6(

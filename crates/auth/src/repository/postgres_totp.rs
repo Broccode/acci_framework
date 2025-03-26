@@ -131,12 +131,8 @@ impl TotpSecretRepository for PostgresTotpRepository {
 
             Ok(Some(TotpSecret {
                 id: row.id,
-                user_id: row.user_id.try_into().map_err(|_| {
-                    RepositoryError::DeserializationError("Invalid user ID".to_string())
-                })?,
-                tenant_id: row.tenant_id.try_into().map_err(|_| {
-                    RepositoryError::DeserializationError("Invalid tenant ID".to_string())
-                })?,
+                user_id: row.user_id,
+                tenant_id: row.tenant_id,
                 secret: row.secret,
                 algorithm: row.algorithm,
                 digits: row.digits as u32,
@@ -210,12 +206,8 @@ impl TotpSecretRepository for PostgresTotpRepository {
 
             secrets.push(TotpSecret {
                 id: row.id,
-                user_id: row.user_id.try_into().map_err(|_| {
-                    RepositoryError::DeserializationError("Invalid user ID".to_string())
-                })?,
-                tenant_id: row.tenant_id.try_into().map_err(|_| {
-                    RepositoryError::DeserializationError("Invalid tenant ID".to_string())
-                })?,
+                user_id: row.user_id,
+                tenant_id: row.tenant_id,
                 secret: row.secret,
                 algorithm: row.algorithm,
                 digits: row.digits as u32,
@@ -256,12 +248,8 @@ impl TotpSecretRepository for PostgresTotpRepository {
 
             Ok(Some(TotpSecret {
                 id: row.id,
-                user_id: row.user_id.try_into().map_err(|_| {
-                    RepositoryError::DeserializationError("Invalid user ID".to_string())
-                })?,
-                tenant_id: row.tenant_id.try_into().map_err(|_| {
-                    RepositoryError::DeserializationError("Invalid tenant ID".to_string())
-                })?,
+                user_id: row.user_id,
+                tenant_id: row.tenant_id,
                 secret: row.secret,
                 algorithm: row.algorithm,
                 digits: row.digits as u32,
