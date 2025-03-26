@@ -316,7 +316,7 @@ impl TenantRepository for PostgresTenantRepository {
         if existing.is_none() {
             return Err(TenantError::NotFound);
         }
-        let existing = existing.unwrap();
+        let existing = existing.expect("Expected existing entity");
 
         // Check if new subdomain is already taken (if changing)
         if let Some(subdomain) = &tenant.subdomain {

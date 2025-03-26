@@ -147,9 +147,9 @@ impl PostgresFingerprintRepository {
         match OffsetDateTime::from_unix_timestamp(timestamp) {
             Ok(odt) => match odt.replace_nanosecond(nanos) {
                 Ok(result) => result,
-                Err(_) => OffsetDateTime::from_unix_timestamp(0).unwrap(),
+                Err(_) => OffsetDateTime::from_unix_timestamp(0).expect("Failed to create Unix timestamp from 0"),
             },
-            Err(_) => OffsetDateTime::from_unix_timestamp(0).unwrap(),
+            Err(_) => OffsetDateTime::from_unix_timestamp(0).expect("Failed to create Unix timestamp from 0"),
         }
     }
 
@@ -164,7 +164,7 @@ impl PostgresFingerprintRepository {
             }),
             IpAddr::V6(ipv6) => IpNetwork::new(IpAddr::V6(ipv6), 128).unwrap_or_else(|_| {
                 IpNetwork::V6(
-                    Ipv6Network::new(std::net::Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0), 128).unwrap(),
+                    Ipv6Network::new(std::net::Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 0), 128).expect("Failed to create IPv6 network"),
                 )
             }),
         }
@@ -236,7 +236,7 @@ impl FingerprintRepository for PostgresFingerprintRepository {
                 let ip_parts: Vec<&str> = ip_str.split('/').collect();
                 ip_parts[0]
                     .parse::<IpAddr>()
-                    .unwrap_or_else(|_| "0.0.0.0".parse().unwrap())
+                    .unwrap_or_else(|_| "0.0.0.0".parse().expect("Failed to parse fallback IP address"))
             };
 
             fingerprints.push(StoredFingerprint {
@@ -360,7 +360,7 @@ impl FingerprintService {
                 // Parse the IP address
                 let ip_addr = ip_address
                     .parse::<IpAddr>()
-                    .unwrap_or_else(|_| "0.0.0.0".parse().unwrap());
+                    .unwrap_or_else(|_| "0.0.0.0".parse().expect("Failed to parse fallback IP address"));
                 updated.last_ip = ip_addr;
 
                 updated.session_id = session_id;
@@ -377,7 +377,7 @@ impl FingerprintService {
         // Parse the IP address
         let ip_addr = ip_address
             .parse::<IpAddr>()
-            .unwrap_or_else(|_| "0.0.0.0".parse().unwrap());
+            .unwrap_or_else(|_| "0.0.0.0".parse().expect("Failed to parse fallback IP address"));
 
         let stored = StoredFingerprint {
             id: fp_id,
@@ -703,8 +703,8 @@ fn levenshtein_distance(s1: &str, s2: &str) -> usize {
 
     let mut matrix = vec![vec![0; len2 + 1]; len1 + 1];
 
-    for i in 0..=len1 {
-        matrix[i][0] = i;
+    for (i, row) in matrix.iter_mut().enumerate().take(len1 + 1) {
+        row[0] = i;
     }
 
     for j in 0..=len2 {

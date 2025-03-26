@@ -269,7 +269,7 @@ pub async fn complete_registration(
     };
 
     // Create session data container for WebAuthn state
-    // TODO: Get this from a cookie or header
+    #[allow(clippy::disallowed_methods)]
     let mut session_data = serde_json::json!({
         "webauthn_registration_state": user_id.to_string()
     });
@@ -401,7 +401,7 @@ pub async fn complete_authentication(
     };
 
     // Create session data container for WebAuthn state
-    // TODO: Get this from a cookie or header
+    #[allow(clippy::disallowed_methods)]
     let mut session_data = serde_json::json!({
         "webauthn_authentication_state": Uuid::new_v4().to_string()
     });

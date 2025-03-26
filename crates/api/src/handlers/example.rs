@@ -18,10 +18,9 @@ use tracing::{debug, info, warn};
 use uuid::Uuid;
 use validator::Validate;
 
-/// Beispiel für einen Produkt-Handler mit Fehlerbehandlung
-/// und Tests
-
-/// Produkt-Datenstruktur
+/// Example of a product handler with error handling
+/// and tests
+/// Product data structure
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Product {
     pub id: String,
@@ -34,7 +33,7 @@ pub struct Product {
 /// Produkt-Service (Beispiel)
 #[derive(Clone)]
 pub struct ProductService {
-    // In einer echten Anwendung würde hier ein Repository oder eine Datenbank-Verbindung stehen
+    // In a real application, there would be a repository or database connection here
 }
 
 impl Default for ProductService {
@@ -48,7 +47,7 @@ impl ProductService {
         Self {}
     }
 
-    /// Produkt nach ID suchen
+    /// Find product by ID
     pub async fn find_by_id(&self, id: &str) -> Result<Option<Product>, String> {
         // Simuliere Datenbankabfrage
         if id == "not-found" {
@@ -56,23 +55,23 @@ impl ProductService {
         }
 
         if id == "error" {
-            return Err("Datenbankfehler".to_string());
+            return Err("Database error".to_string());
         }
 
         Ok(Some(Product {
             id: id.to_string(),
-            name: "Beispielprodukt".to_string(),
-            description: Some("Ein Beispielprodukt für die API".to_string()),
+            name: "Example product".to_string(),
+            description: Some("An example product for the API".to_string()),
             price: 19.99,
             stock: 100,
         }))
     }
 
-    /// Produkt erstellen
+    /// Create product
     pub async fn create(&self, product: CreateProductRequest) -> Result<Product, String> {
         // Simuliere Produkterstellung
-        if product.name.to_lowercase() == "fehler" {
-            return Err("Produkt konnte nicht erstellt werden".to_string());
+        if product.name.to_lowercase() == "error" {
+            return Err("Product could not be created".to_string());
         }
 
         Ok(Product {
@@ -85,45 +84,45 @@ impl ProductService {
     }
 }
 
-/// Produkt-App-State
+/// Product app state
 #[derive(Clone)]
 pub struct ProductAppState {
     pub product_service: Arc<ProductService>,
 }
 
-/// Anfrage zum Erstellen eines Produkts
+/// Request to create a product
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreateProductRequest {
     #[validate(length(
         min = 3,
         max = 100,
-        message = "Produktname muss zwischen 3 und 100 Zeichen lang sein"
+        message = "Product name must be between 3 and 100 characters long"
     ))]
     pub name: String,
 
     pub description: Option<String>,
 
-    #[validate(range(min = 0.01, message = "Preis muss größer als 0 sein"))]
+    #[validate(range(min = 0.01, message = "Price must be greater than 0"))]
     pub price: f64,
 
     pub stock: Option<i32>,
 }
 
-/// Handler zum Abrufen eines Produkts nach ID
+/// Handler for retrieving a product by ID
 #[axum::debug_handler]
 pub async fn get_product(State(state): State<ProductAppState>, Path(id): Path<String>) -> Response {
-    debug!("Produkt mit ID {} wird abgerufen", id);
+    debug!("Retrieving product with ID {}", id);
 
-    // Request-ID generieren
+    // Generate request ID
     let request_id = generate_request_id();
 
-    // Produkt abrufen
+    // Retrieve product
     match state.product_service.find_by_id(&id).await {
         Ok(Some(product)) => {
             info!(
                 request_id = %request_id,
                 product_id = %product.id,
-                "Produkt erfolgreich abgerufen"
+                "Product successfully retrieved"
             );
 
             let api_response = ApiResponse::success(product, request_id);
@@ -133,7 +132,7 @@ pub async fn get_product(State(state): State<ProductAppState>, Path(id): Path<St
             warn!(
                 request_id = %request_id,
                 product_id = %id,
-                "Produkt nicht gefunden"
+                "Product not found"
             );
 
             ApiError::not_found_error("Product", request_id).into_response()
@@ -143,12 +142,12 @@ pub async fn get_product(State(state): State<ProductAppState>, Path(id): Path<St
                 request_id = %request_id,
                 error = %err,
                 product_id = %id,
-                "Fehler beim Abrufen des Produkts"
+                "Error retrieving product"
             );
 
             ApiError::new(
                 StatusCode::INTERNAL_SERVER_ERROR,
-                "Fehler beim Abrufen des Produkts",
+                "Error retrieving product",
                 "DATABASE_ERROR",
                 request_id,
             )
@@ -206,65 +205,65 @@ pub async fn create_product(
     }
 }
 
-/// Suchparameter für Produkte
+/// Search parameters for products
 #[derive(Debug, Deserialize, Validate)]
 pub struct ProductSearchParams {
-    #[validate(length(min = 3, message = "Suchbegriff muss mindestens 3 Zeichen lang sein"))]
+    #[validate(length(min = 3, message = "Search term must be at least 3 characters long"))]
     pub query: Option<String>,
 
     #[validate(range(
         min = 0.0,
         max = 1000.0,
-        message = "Preisbereich muss zwischen 0 und 1000 liegen"
+        message = "Price range must be between 0 and 1000"
     ))]
     pub min_price: Option<f64>,
 
     #[validate(range(
         min = 0.0,
         max = 10000.0,
-        message = "Preisbereich muss zwischen 0 und 10000 liegen"
+        message = "Price range must be between 0 and 10000"
     ))]
     pub max_price: Option<f64>,
 }
 
-/// Handler zum Suchen von Produkten
+/// Handler for searching products
 #[axum::debug_handler]
 pub async fn search_products(
     State(_state): State<ProductAppState>,
     query_params: Query<ProductSearchParams>,
 ) -> Response {
-    debug!("Produktsuche wird durchgeführt");
+    debug!("Performing product search");
 
-    // Request-ID generieren
+    // Generate request ID
     let request_id = generate_request_id();
 
-    // Validierung der Suchparameter
+    // Validate search parameters
     if let Err(validation_errors) = query_params.validate() {
         warn!(
             request_id = %request_id,
             validation_errors = %validation_errors,
-            "Ungültige Suchparameter"
+            "Invalid search parameters"
         );
 
-        // Validierungsfehler in eine strukturierte Antwort umwandeln
+        // Convert validation errors to a structured response
         let error_response = ApiError::validation_error(validation_errors.to_string(), request_id);
 
         return error_response.into_response();
     }
 
-    // Beispielantwort (in einer echten Anwendung würde hier eine Datenbankabfrage stehen)
+    // Example response (in a real application, there would be a database query here)
     let products = vec![
         Product {
             id: Uuid::new_v4().to_string(),
-            name: "Beispielprodukt 1".to_string(),
-            description: Some("Ein Beispielprodukt für die API".to_string()),
+            name: "Example product 1".to_string(),
+            description: Some("An example product for the API".to_string()),
             price: 19.99,
             stock: 100,
         },
         Product {
             id: Uuid::new_v4().to_string(),
-            name: "Beispielprodukt 2".to_string(),
-            description: Some("Ein weiteres Beispielprodukt".to_string()),
+            name: "Example product 2".to_string(),
+            description: Some("Another example product".to_string()),
             price: 29.99,
             stock: 50,
         },
@@ -273,7 +272,7 @@ pub async fn search_products(
     info!(
         request_id = %request_id,
         count = products.len(),
-        "Produkte erfolgreich gesucht"
+        "Products successfully searched"
     );
 
     let api_response = ApiResponse::success(products, request_id);
@@ -286,24 +285,30 @@ pub async fn make_json_request<T: Serialize + Send>(
     uri: &str,
     json: Option<T>,
 ) -> Response {
-    let method = Method::from_bytes(method.as_bytes()).unwrap();
+    let method = Method::from_bytes(method.as_bytes())
+        .expect("Invalid HTTP method string");
     let mut req = Request::builder()
         .method(method)
         .uri(uri)
         .body(Body::empty())
-        .unwrap();
+        .expect("Failed to build HTTP request");
 
     if let Some(json) = json {
-        *req.body_mut() = Body::from(serde_json::to_vec(&json).unwrap());
+        *req.body_mut() = Body::from(serde_json::to_vec(&json)
+            .expect("Failed to serialize JSON to bytes"));
         req.headers_mut()
-            .insert(header::CONTENT_TYPE, "application/json".parse().unwrap());
+            .insert(
+                header::CONTENT_TYPE, 
+                "application/json".parse().expect("Failed to parse content-type header")
+            );
     }
 
     let app = app.with_state(ProductAppState {
         product_service: Arc::new(ProductService::new()),
     });
 
-    app.into_service().oneshot(req).await.unwrap()
+    app.into_service().oneshot(req).await
+        .expect("Failed to process HTTP request")
 }
 
 #[cfg(test)]

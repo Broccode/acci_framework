@@ -263,7 +263,8 @@ impl SessionRepository for PostgresSessionRepository {
 
         let result: Result<Session, SessionError> = async {
             let device_fingerprint_json =
-                device_fingerprint.map(|fp| serde_json::to_value(fp).unwrap());
+                device_fingerprint.map(|fp| serde_json::to_value(fp)
+                    .expect("Failed to serialize device fingerprint to JSON"));
             let now = SystemTime::now();
             let now_offset = system_time_to_offset_date_time(now);
             let expires_at_offset = system_time_to_offset_date_time(expires_at);
@@ -326,11 +327,13 @@ impl SessionRepository for PostgresSessionRepository {
                 device_id: row.device_id,
                 device_fingerprint: row
                     .device_fingerprint
-                    .map(|v| serde_json::from_value(v).unwrap()),
+                    .map(|v| serde_json::from_value(v)
+                        .expect("Failed to deserialize session data from JSON value")),
                 is_valid: row.is_valid,
                 invalidated_reason: row
                     .invalidated_reason
-                    .map(|r| serde_json::from_str(&r.to_string()).unwrap()),
+                    .map(|r| serde_json::from_str(&r.to_string())
+                        .expect("Failed to deserialize session invalidation reason from string")),
                 metadata: row.metadata,
                 mfa_status,
             })
@@ -408,11 +411,13 @@ impl SessionRepository for PostgresSessionRepository {
                     device_id: row.device_id,
                     device_fingerprint: row
                         .device_fingerprint
-                        .map(|v| serde_json::from_value(v).unwrap()),
+                        .map(|v| serde_json::from_value(v)
+                            .expect("Failed to deserialize session data from JSON value")),
                     is_valid: row.is_valid,
                     invalidated_reason: row
                         .invalidated_reason
-                        .map(|r| serde_json::from_str(&r.to_string()).unwrap()),
+                        .map(|r| serde_json::from_str(&r.to_string())
+                            .expect("Failed to deserialize session invalidation reason from string")),
                     metadata: row.metadata,
                     mfa_status,
                 }
@@ -493,11 +498,13 @@ impl SessionRepository for PostgresSessionRepository {
                     device_id: row.device_id,
                     device_fingerprint: row
                         .device_fingerprint
-                        .map(|v| serde_json::from_value(v).unwrap()),
+                        .map(|v| serde_json::from_value(v)
+                            .expect("Failed to deserialize session data from JSON value")),
                     is_valid: row.is_valid,
                     invalidated_reason: row
                         .invalidated_reason
-                        .map(|r| serde_json::from_str(&r.to_string()).unwrap()),
+                        .map(|r| serde_json::from_str(&r.to_string())
+                            .expect("Failed to deserialize session invalidation reason from string")),
                     metadata: row.metadata,
                     mfa_status,
                 }
@@ -590,11 +597,13 @@ impl SessionRepository for PostgresSessionRepository {
                         device_id: row.device_id,
                         device_fingerprint: row
                             .device_fingerprint
-                            .map(|v| serde_json::from_value(v).unwrap()),
+                            .map(|v| serde_json::from_value(v)
+                                .expect("Failed to deserialize session data from JSON value")),
                         is_valid: row.is_valid,
                         invalidated_reason: row
                             .invalidated_reason
-                            .map(|r| serde_json::from_str(&r.to_string()).unwrap()),
+                            .map(|r| serde_json::from_str(&r.to_string())
+                                .expect("Failed to deserialize session invalidation reason from string")),
                         metadata: row.metadata,
                         mfa_status,
                     }

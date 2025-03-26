@@ -25,7 +25,11 @@ pub mod regex {
     use lazy_static::lazy_static;
 
     lazy_static! {
-        pub static ref SUBDOMAIN_REGEX: Regex = Regex::new(r"^[a-zA-Z][a-zA-Z0-9\-]*$").unwrap();
+        #[allow(clippy::disallowed_methods)]
+        pub static ref SUBDOMAIN_REGEX: Regex = {
+            #[allow(clippy::disallowed_methods)]
+            Regex::new(r"^[a-zA-Z][a-zA-Z0-9\-]*$").unwrap()
+        };
     }
 }
 
@@ -98,6 +102,54 @@ pub struct TenantResponse {
     pub metadata: Option<serde_json::Value>,
 }
 
+/// Helper function to map tenant errors to API responses
+fn map_tenant_error(err: &TenantServiceError) -> (StatusCode, &str, &str) {
+    match err {
+        TenantServiceError::NotFound(_) => (
+            StatusCode::NOT_FOUND,
+            "Tenant not found",
+            "TENANT_NOT_FOUND",
+        ),
+        TenantServiceError::Tenant(tenant_err) => match tenant_err {
+            acci_auth::TenantError::AlreadyExists => (
+                StatusCode::CONFLICT,
+                "Tenant with this subdomain already exists",
+                "TENANT_ALREADY_EXISTS",
+            ),
+            acci_auth::TenantError::ValidationError(_) => (
+                StatusCode::BAD_REQUEST,
+                "Invalid tenant data",
+                "INVALID_TENANT_DATA",
+            ),
+            _ => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "An error occurred with the tenant",
+                "TENANT_ERROR",
+            ),
+        },
+        TenantServiceError::InvalidInput(_) => (
+            StatusCode::BAD_REQUEST,
+            "Invalid input data",
+            "INVALID_INPUT",
+        ),
+        TenantServiceError::User(_) => (
+            StatusCode::CONFLICT,
+            "User error occurred",
+            "USER_ERROR",
+        ),
+        TenantServiceError::Password(_) => (
+            StatusCode::BAD_REQUEST,
+            "Password does not meet security requirements",
+            "WEAK_PASSWORD",
+        ),
+        _ => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "An internal error occurred",
+            "INTERNAL_ERROR",
+        ),
+    }
+}
+
 /// Create tenant handler
 #[axum::debug_handler]
 pub async fn create_tenant(
@@ -165,28 +217,7 @@ pub async fn create_tenant(
             monitoring::record_tenant_operation("create", "failure");
 
             // Map error to appropriate response
-            let (status, message, code) = match err {
-                TenantServiceError::Tenant(ref tenant_err) => match tenant_err {
-                    acci_auth::TenantError::AlreadyExists => (
-                        StatusCode::CONFLICT,
-                        "Tenant with this subdomain already exists",
-                        "TENANT_ALREADY_EXISTS",
-                    ),
-                    _ => (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "An error occurred creating the tenant",
-                        "TENANT_CREATION_ERROR",
-                    ),
-                },
-                TenantServiceError::InvalidInput(ref msg) => {
-                    (StatusCode::BAD_REQUEST, msg.as_str(), "INVALID_INPUT")
-                },
-                _ => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "An error occurred creating the tenant",
-                    "TENANT_CREATION_ERROR",
-                ),
-            };
+            let (status, message, code) = map_tenant_error(&err);
 
             warn!(
                 request_id = %request_id,
@@ -285,6 +316,7 @@ pub async fn create_tenant_with_admin(
             };
 
             // Structure response data
+            #[allow(clippy::disallowed_methods)]
             let response_data = serde_json::json!({
                 "tenant": tenant_response,
                 "admin_user_id": result.admin_user.id.to_string(),
@@ -308,45 +340,7 @@ pub async fn create_tenant_with_admin(
             monitoring::record_tenant_operation("create_with_admin", "failure");
 
             // Map error to appropriate response
-            let (status, message, code) = match err {
-                TenantServiceError::Tenant(ref tenant_err) => match tenant_err {
-                    acci_auth::TenantError::AlreadyExists => (
-                        StatusCode::CONFLICT,
-                        "Tenant with this subdomain already exists",
-                        "TENANT_ALREADY_EXISTS",
-                    ),
-                    _ => (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "An error occurred creating the tenant",
-                        "TENANT_CREATION_ERROR",
-                    ),
-                },
-                TenantServiceError::User(ref user_err) => match user_err {
-                    acci_auth::UserError::AlreadyExists => (
-                        StatusCode::CONFLICT,
-                        "User with this email already exists",
-                        "USER_ALREADY_EXISTS",
-                    ),
-                    _ => (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "An error occurred creating the admin user",
-                        "USER_CREATION_ERROR",
-                    ),
-                },
-                TenantServiceError::InvalidInput(ref msg) => {
-                    (StatusCode::BAD_REQUEST, msg.as_str(), "INVALID_INPUT")
-                },
-                TenantServiceError::Password(_) => (
-                    StatusCode::BAD_REQUEST,
-                    "Password does not meet security requirements",
-                    "WEAK_PASSWORD",
-                ),
-                _ => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "An error occurred creating the tenant with admin",
-                    "TENANT_CREATION_ERROR",
-                ),
-            };
+            let (status, message, code) = map_tenant_error(&err);
 
             warn!(
                 request_id = %request_id,
@@ -409,18 +403,7 @@ pub async fn get_tenant(
             monitoring::record_tenant_operation("get", "failure");
 
             // Map error to appropriate response
-            let (status, message, code) = match err {
-                TenantServiceError::NotFound(_) => (
-                    StatusCode::NOT_FOUND,
-                    "Tenant not found",
-                    "TENANT_NOT_FOUND",
-                ),
-                _ => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "An error occurred retrieving the tenant",
-                    "TENANT_RETRIEVAL_ERROR",
-                ),
-            };
+            let (status, message, code) = map_tenant_error(&err);
 
             warn!(
                 request_id = %request_id,
@@ -496,18 +479,7 @@ pub async fn get_tenant_by_id(
             monitoring::record_tenant_operation("get_by_id", "failure");
 
             // Map error to appropriate response
-            let (status, message, code) = match err {
-                TenantServiceError::NotFound(_) => (
-                    StatusCode::NOT_FOUND,
-                    "Tenant not found",
-                    "TENANT_NOT_FOUND",
-                ),
-                _ => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "An error occurred retrieving the tenant",
-                    "TENANT_RETRIEVAL_ERROR",
-                ),
-            };
+            let (status, message, code) = map_tenant_error(&err);
 
             warn!(
                 request_id = %request_id,
@@ -630,33 +602,7 @@ pub async fn update_tenant(
             monitoring::record_tenant_operation("update", "failure");
 
             // Map error to appropriate response
-            let (status, message, code) = match err {
-                TenantServiceError::NotFound(_) => (
-                    StatusCode::NOT_FOUND,
-                    "Tenant not found",
-                    "TENANT_NOT_FOUND",
-                ),
-                TenantServiceError::Tenant(ref tenant_err) => match tenant_err {
-                    acci_auth::TenantError::AlreadyExists => (
-                        StatusCode::CONFLICT,
-                        "Tenant with this subdomain already exists",
-                        "TENANT_ALREADY_EXISTS",
-                    ),
-                    _ => (
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        "An error occurred updating the tenant",
-                        "TENANT_UPDATE_ERROR",
-                    ),
-                },
-                TenantServiceError::InvalidInput(ref msg) => {
-                    (StatusCode::BAD_REQUEST, msg.as_str(), "INVALID_INPUT")
-                },
-                _ => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "An error occurred updating the tenant",
-                    "TENANT_UPDATE_ERROR",
-                ),
-            };
+            let (status, message, code) = map_tenant_error(&err);
 
             warn!(
                 request_id = %request_id,
@@ -721,18 +667,7 @@ pub async fn delete_tenant(
             monitoring::record_tenant_operation("delete", "failure");
 
             // Map error to appropriate response
-            let (status, message, code) = match err {
-                TenantServiceError::NotFound(_) => (
-                    StatusCode::NOT_FOUND,
-                    "Tenant not found",
-                    "TENANT_NOT_FOUND",
-                ),
-                _ => (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "An error occurred deleting the tenant",
-                    "TENANT_DELETION_ERROR",
-                ),
-            };
+            let (status, message, code) = map_tenant_error(&err);
 
             warn!(
                 request_id = %request_id,

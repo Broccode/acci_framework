@@ -322,7 +322,7 @@ impl<T: Serialize> IntoResponse for ApiResponse<T> {
                 Response::builder()
                     .status(StatusCode::INTERNAL_SERVER_ERROR)
                     .body("Internal Server Error".into())
-                    .unwrap()
+                    .expect("Failed to create 500 error response")
             })
     }
 }

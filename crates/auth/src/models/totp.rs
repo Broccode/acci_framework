@@ -2,6 +2,7 @@ use crate::models::{TenantId, UserId};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use uuid::Uuid;
+use std::fmt;
 
 /// A Time-based One-Time Password (TOTP) secret for a user
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -93,12 +94,12 @@ pub enum Algorithm {
     SHA512,
 }
 
-impl ToString for Algorithm {
-    fn to_string(&self) -> String {
+impl fmt::Display for Algorithm {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Algorithm::SHA1 => "SHA1".to_string(),
-            Algorithm::SHA256 => "SHA256".to_string(),
-            Algorithm::SHA512 => "SHA512".to_string(),
+            Algorithm::SHA1 => write!(f, "SHA1"),
+            Algorithm::SHA256 => write!(f, "SHA256"),
+            Algorithm::SHA512 => write!(f, "SHA512"),
         }
     }
 }

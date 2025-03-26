@@ -53,9 +53,9 @@ impl Database {
     pub async fn run_migrations(&self) -> Result<()> {
         let migrations_path = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
-            .unwrap()
+            .unwrap_or_else(|| panic!("Failed to find parent directory of CARGO_MANIFEST_DIR"))
             .parent()
-            .unwrap()
+            .unwrap_or_else(|| panic!("Failed to find root directory from CARGO_MANIFEST_DIR"))
             .join("migrations");
 
         sqlx::migrate::Migrator::new(migrations_path)

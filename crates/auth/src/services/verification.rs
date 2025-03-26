@@ -94,7 +94,7 @@ impl VerificationService {
     ) -> Self {
         // Create rate limiter with 3 requests per minute
         let limiter = Arc::new(RateLimiter::direct(Quota::per_minute(
-            NonZeroU32::new(3).unwrap(),
+            NonZeroU32::new(3).expect("Fixed value 3 should be non-zero"),
         )));
 
         Self {
@@ -331,7 +331,7 @@ impl VerificationService {
         let before = OffsetDateTime::now_utc();
         // Use a default tenant ID for cleanup since we don't have a specific tenant
         let default_tenant_id =
-            uuid::Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap();
+            uuid::Uuid::parse_str("00000000-0000-0000-0000-000000000000").expect("Failed to parse zero UUID constant");
         let count = self
             .repo
             .delete_expired(before, default_tenant_id, context)

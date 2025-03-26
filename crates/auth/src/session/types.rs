@@ -31,12 +31,12 @@ impl Type<Postgres> for MfaStatus {
     }
 }
 
-impl ToString for MfaStatus {
-    fn to_string(&self) -> String {
+impl fmt::Display for MfaStatus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            MfaStatus::None => "NONE".to_string(),
-            MfaStatus::Required => "REQUIRED".to_string(),
-            MfaStatus::Verified => "VERIFIED".to_string(),
+            MfaStatus::None => write!(f, "NONE"),
+            MfaStatus::Required => write!(f, "REQUIRED"),
+            MfaStatus::Verified => write!(f, "VERIFIED"),
         }
     }
 }

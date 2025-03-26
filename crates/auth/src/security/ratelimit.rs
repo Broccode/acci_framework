@@ -214,8 +214,7 @@ impl<S> RateLimitMiddleware<S> {
             .get("Authorization")
             .and_then(|v| v.to_str().ok())
         {
-            if auth.starts_with("Bearer ") {
-                let token = &auth[7..];
+            if let Some(token) = auth.strip_prefix("Bearer ") {
                 return format!("token:{}", token);
             }
         }

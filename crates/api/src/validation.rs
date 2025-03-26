@@ -91,12 +91,13 @@ impl IntoResponse for ValidationError {
                 let message = format!("Invalid JSON: {}", rejection);
                 monitoring::record_validation_error("json_error", "parse_error");
 
-                let body = serde_json::json!({
+                #[allow(clippy::disallowed_methods)]
+                let body = serde_json::to_value(serde_json::json!({
                     "status": "error",
                     "message": message,
                     "code": status.as_u16(),
                     "request_id": generate_request_id(),
-                });
+                })).expect("Failed to create JSON error response");
 
                 (status, Json(body)).into_response()
             },
@@ -104,12 +105,13 @@ impl IntoResponse for ValidationError {
                 let status = StatusCode::BAD_REQUEST;
                 monitoring::record_validation_error("validation_error", "constraint_violation");
 
-                let body = serde_json::json!({
+                #[allow(clippy::disallowed_methods)]
+                let body = serde_json::to_value(serde_json::json!({
                     "status": "error",
                     "message": format!("Validation failed: {}", err),
                     "code": status.as_u16(),
                     "request_id": generate_request_id(),
-                });
+                })).expect("Failed to create JSON validation error response");
 
                 (status, Json(body)).into_response()
             },

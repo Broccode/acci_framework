@@ -241,12 +241,7 @@ impl<S> ReplayProtectionMiddleware<S> {
     fn requires_protection<B>(&self, request: &Request<B>) -> bool {
         // Only protect certain methods
         let method = request.method().as_str();
-        match method {
-            "GET" => false,
-            "HEAD" => false,
-            "OPTIONS" => false,
-            _ => true,
-        }
+        !matches!(method, "GET" | "HEAD" | "OPTIONS")
     }
 }
 

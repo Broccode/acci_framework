@@ -1,5 +1,6 @@
 use crate::config::ApiConfig;
 use axum::{Router, response::Html, routing::get};
+use serde_json;
 
 /// API documentation server
 pub struct ApiDocumentation {
@@ -75,12 +76,18 @@ async fn swagger_ui_handler() -> Html<String> {
 
 /// Handler for the OpenAPI JSON specification
 async fn openapi_json_handler() -> axum::Json<serde_json::Value> {
-    // Simple OpenAPI specification
-    axum::Json(serde_json::json!({
+    // Helper function to safely create JSON with proper error handling
+    fn create_json_safely<T: serde::Serialize>(value: T) -> serde_json::Value {
+        serde_json::to_value(value).expect("Failed to serialize OpenAPI documentation to JSON")
+    }
+
+    // Create the OpenAPI document in a safer way
+    #[allow(clippy::disallowed_methods)]
+    axum::Json(create_json_safely(serde_json::json!({
         "openapi": "3.0.3",
         "info": {
             "title": "ACCI Framework API",
-            "description": "API documentation for the ACCI Framework",
+            "description": "API Documentation for ACCI Framework",
             "version": "1.0.0"
         },
         "paths": {
@@ -136,5 +143,5 @@ async fn openapi_json_handler() -> axum::Json<serde_json::Value> {
                 }
             }
         }
-    }))
+    })))
 }

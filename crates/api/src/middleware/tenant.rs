@@ -256,7 +256,7 @@ async fn resolve_tenant_id_from_all_sources(
 ) -> Result<Option<Uuid>, TenantError> {
     // Try to resolve from subdomain
     if state.config.check_subdomain && host.is_some() {
-        let host = host.unwrap();
+        let host = host.expect("Host header must be present");
         if let Some(tenant_id) = resolve_from_subdomain(state, &host).await? {
             return Ok(Some(tenant_id));
         }
@@ -264,7 +264,7 @@ async fn resolve_tenant_id_from_all_sources(
 
     // Try to resolve from header
     if state.config.check_header && tenant_header.is_some() {
-        let tenant_header = tenant_header.unwrap();
+        let tenant_header = tenant_header.expect("Tenant header must be present");
         if let Some(tenant_id) = resolve_from_header(state, &tenant_header).await? {
             return Ok(Some(tenant_id));
         }
@@ -272,7 +272,7 @@ async fn resolve_tenant_id_from_all_sources(
 
     // Try to resolve from JWT
     if state.config.check_jwt && auth_header.is_some() {
-        let auth_header = auth_header.unwrap();
+        let auth_header = auth_header.expect("Authorization header must be present");
         if let Some(tenant_id) = resolve_from_jwt(&auth_header)? {
             return Ok(Some(tenant_id));
         }
@@ -346,8 +346,8 @@ async fn resolve_from_header(
 /// Resolves tenant ID from JWT claims
 fn resolve_from_jwt(auth_header: &str) -> Result<Option<Uuid>, TenantError> {
     // Handle "Bearer" prefix
-    let token = if auth_header.starts_with("Bearer ") {
-        &auth_header[7..] // Skip "Bearer " prefix
+    let token = if let Some(stripped) = auth_header.strip_prefix("Bearer ") {
+        stripped
     } else {
         auth_header
     };

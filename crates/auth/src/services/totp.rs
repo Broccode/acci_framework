@@ -70,7 +70,7 @@ impl TotpService {
             user_id,
             secret,
             urlencoding::encode(&self.config.issuer),
-            self.config.algorithm.to_string(),
+            self.config.algorithm,
             self.config.digits,
             self.config.period
         );
@@ -249,7 +249,8 @@ impl TotpService {
                 .map(|chunk| {
                     chunk
                         .iter()
-                        .map(|&b| alphabet.chars().nth((b as usize) % alphabet.len()).unwrap())
+                        .map(|&b| alphabet.chars().nth((b as usize) % alphabet.len())
+                            .expect("Failed to get character from alphabet"))
                         .collect()
                 })
                 .collect();

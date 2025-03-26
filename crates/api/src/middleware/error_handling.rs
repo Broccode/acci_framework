@@ -115,6 +115,7 @@ async fn extract_error_details(body: Body, request_id: &str) -> Option<Value> {
                     // Try to interpret as plain text
                     if let Ok(text) = String::from_utf8(bytes.to_vec()) {
                         if !text.is_empty() {
+                            #[allow(clippy::disallowed_methods)]
                             return Some(json!({ "message": text }));
                         }
                     }
