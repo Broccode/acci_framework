@@ -257,6 +257,7 @@ impl BruteForceProtection {
 
 /// Pattern detector for more sophisticated brute force detection
 pub struct PatternDetector {
+    #[allow(dead_code)]
     redis_client: Arc<redis::Client>,
 }
 
