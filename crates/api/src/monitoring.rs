@@ -37,21 +37,21 @@ pub fn init_metrics() -> Result<(), String> {
     }
 
     let builder = PrometheusBuilder::new();
-    
+
     // Multiple initializations can cause conflicts
     // We catch the error and return OK if it's a re-initialization
     let handle = match builder.install_recorder() {
         Ok(handle) => handle,
         Err(err) => {
             let err_msg = err.to_string();
-            
+
             // If metrics are already initialized, it's not an error for us
             if err_msg.contains("already initialized") {
                 // We create an empty handle so we can set it for our tests
                 return Ok(());
             }
             return Err(format!("Failed to install metrics recorder: {}", err));
-        }
+        },
     };
 
     // We try to set the handle - if an error occurs,
