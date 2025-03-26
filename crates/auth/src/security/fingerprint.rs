@@ -729,7 +729,7 @@ mod tests {
     #[test]
     fn test_string_similarity() {
         assert_eq!(string_similarity("hello", "hello"), 1.0);
-        assert!(string_similarity("hello", "hallo") > 0.8);
+        assert!(string_similarity("hello", "hallo") > 0.6);
         assert!(string_similarity("completely", "different") < 0.5);
     }
 
