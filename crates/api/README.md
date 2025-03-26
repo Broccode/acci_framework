@@ -1,23 +1,23 @@
-# API-Modul des ACCI Frameworks
+# ACCI Framework API Module
 
-Das API-Modul implementiert die grundlegende Infrastruktur und Routing-Logik für RESTful APIs im ACCI Framework.
+The API module implements the basic infrastructure and routing logic for RESTful APIs in the ACCI Framework.
 
-## Fehlerbehandlung im API-Modul
+## Error Handling in the API Module
 
-### Standardisierte API-Fehler
+### Standardized API Errors
 
-Das API-Modul verwendet ein standardisiertes Fehlerformat für alle Antworten:
+The API module uses a standardized error format for all responses:
 
 ```json
 {
   "status": "error",
-  "message": "Die Fehlerbeschreibung",
-  "code": "FEHLER_CODE",
+  "message": "The error description",
+  "code": "ERROR_CODE",
   "request_id": "req-12345"
 }
 ```
 
-Bei Validierungsfehlern werden zusätzliche Details bereitgestellt:
+For validation errors, additional details are provided:
 
 ```json
 {
@@ -32,67 +32,67 @@ Bei Validierungsfehlern werden zusätzliche Details bereitgestellt:
 }
 ```
 
-### Fehlertypen
+### Error Types
 
-| HTTP Status | Code | Beschreibung |
-|-------------|------|--------------|
-| 400 | INVALID_REQUEST | Allgemeiner Fehler für ungültige Anfragen |
-| 400 | INVALID_JSON | Ungültiges JSON-Format in der Anfrage |
-| 401 | AUTHENTICATION_REQUIRED | Authentifizierung erforderlich |
-| 403 | AUTHORIZATION_ERROR | Keine Berechtigung für die angeforderte Ressource |
-| 404 | RESOURCE_NOT_FOUND | Die angeforderte Ressource wurde nicht gefunden |
-| 422 | VALIDATION_ERROR | Die Anfrage enthält ungültige Daten |
-| 429 | RATE_LIMIT_EXCEEDED | Zu viele Anfragen wurden gesendet |
-| 500 | INTERNAL_SERVER_ERROR | Ein interner Serverfehler ist aufgetreten |
+| HTTP Status | Code | Description |
+|-------------|------|-------------|
+| 400 | INVALID_REQUEST | General error for invalid requests |
+| 400 | INVALID_JSON | Invalid JSON format in the request |
+| 401 | AUTHENTICATION_REQUIRED | Authentication required |
+| 403 | AUTHORIZATION_ERROR | No permission for the requested resource |
+| 404 | RESOURCE_NOT_FOUND | The requested resource was not found |
+| 422 | VALIDATION_ERROR | The request contains invalid data |
+| 429 | RATE_LIMIT_EXCEEDED | Too many requests were sent |
+| 500 | INTERNAL_SERVER_ERROR | An internal server error occurred |
 
-### Verwendung der Fehlerbehandlung
+### Using Error Handling
 
-Um die API-Fehlerbehandlung zu nutzen, gibt es mehrere Möglichkeiten:
+There are several ways to use the API error handling:
 
-1. **ApiError-Struktur verwenden**:
+1. **Using ApiError Structure**:
 
 ```rust
 use acci_api::response::ApiError;
 use axum::http::StatusCode;
 
-// In einem Handler:
+// In a handler:
 fn error_example() -> impl IntoResponse {
     let request_id = generate_request_id();
     ApiError::new(
         StatusCode::BAD_REQUEST,
-        "Ungültige Parameter",
+        "Invalid parameters",
         "INVALID_PARAMETERS",
         request_id
     )
 }
 ```
 
-2. **API-Fehlerhelfer verwenden**:
+2. **Using API Error Helpers**:
 
 ```rust
 use acci_api::response::ApiError;
 
-// Vordefinierte Fehlertypen
+// Predefined error types
 fn not_found_example() -> impl IntoResponse {
     let request_id = generate_request_id();
     ApiError::not_found_error("User", request_id)
 }
 ```
 
-3. **Fehlerbehandlungsmiddleware**:
+3. **Error Handling Middleware**:
 
-Das API-Modul enthält eine Fehlerbehandlungsmiddleware, die automatisch Fehlerantworten standardisiert.
+The API module contains an error handling middleware that automatically standardizes error responses.
 
 ```rust
 use axum::{Router, middleware::from_fn};
 use acci_api::middleware::error_handling::error_handling_middleware;
 
 let app = Router::new()
-    // ... Routen hinzufügen ...
+    // ... add routes ...
     .layer(from_fn(error_handling_middleware));
 ```
 
-4. **Validierung mit error_handling**:
+4. **Validation with error_handling**:
 
 ```rust
 use acci_api::validation::validate_json_payload;
@@ -101,28 +101,28 @@ use axum::Json;
 async fn create_item(
     Json(payload): Json<CreateItemRequest>
 ) -> impl IntoResponse {
-    // Validierung mit detaillierten Fehlerberichten
+    // Validation with detailed error reports
     let validated = validate_json_payload(Json(payload)).await?;
     
-    // Mit validated.0 auf validierte Daten zugreifen
+    // Access validated data with validated.0
     let item = create_item_in_db(validated.0).await?;
     
-    // Erfolgsantwort zurückgeben
+    // Return success response
     // ...
 }
 ```
 
-### Metriken und Protokollierung
+### Metrics and Logging
 
-Die API-Fehlerbehandlung zeichnet automatisch Fehlermetriken und erstellt Log-Einträge:
+The API error handling automatically records error metrics and creates log entries:
 
-1. **Fehlermetriken**: `api.errors.client`, `api.errors.server`, `api.validation.errors`
-2. **Protokollierung**: Je nach Fehlerart werden Fehler als ERROR, WARN oder INFO protokolliert
-3. **Request-IDs**: Jeder Fehler erhält eine eindeutige Request-ID für Nachverfolgbarkeit
+1. **Error Metrics**: `api.errors.client`, `api.errors.server`, `api.validation.errors`
+2. **Logging**: Depending on the error type, errors are logged as ERROR, WARN, or INFO
+3. **Request IDs**: Each error receives a unique request ID for traceability
 
-### Erweiterungen
+### Extensions
 
-Mit dem Feature-Flag `extended_errors` können zusätzliche Fehlerdetails in der Antwort eingeschlossen werden:
+With the feature flag `extended_errors`, additional error details can be included in the response:
 
 ```toml
 [dependencies]
