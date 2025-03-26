@@ -178,8 +178,12 @@ impl fmt::Display for SessionInvalidationReason {
             SessionInvalidationReason::ForcedLogout => f.write_str("FORCED_LOGOUT"),
             SessionInvalidationReason::AccountLocked => f.write_str("ACCOUNT_LOCKED"),
             SessionInvalidationReason::PrivilegeChange => f.write_str("PRIVILEGE_CHANGE"),
-            SessionInvalidationReason::ComplianceRequirement => f.write_str("COMPLIANCE_REQUIREMENT"),
-            SessionInvalidationReason::SecurityPolicyChange => f.write_str("SECURITY_POLICY_CHANGE"),
+            SessionInvalidationReason::ComplianceRequirement => {
+                f.write_str("COMPLIANCE_REQUIREMENT")
+            },
+            SessionInvalidationReason::SecurityPolicyChange => {
+                f.write_str("SECURITY_POLICY_CHANGE")
+            },
             SessionInvalidationReason::EmergencyTermination => f.write_str("EMERGENCY_TERMINATION"),
         }
     }

@@ -571,7 +571,7 @@ mod tests {
         ) -> Result<(), SessionError> {
             Ok(())
         }
-        
+
         /// Dummy implementation for invalidate_all_user_sessions
         async fn invalidate_all_user_sessions(
             &self,
@@ -580,7 +580,7 @@ mod tests {
         ) -> Result<u64, SessionError> {
             Ok(0)
         }
-        
+
         /// Dummy implementation for invalidate_sessions_by_filter
         async fn invalidate_sessions_by_filter(
             &self,
@@ -589,7 +589,7 @@ mod tests {
         ) -> Result<u64, SessionError> {
             Ok(0)
         }
-        
+
         /// Dummy implementation for invalidate_sessions_by_ip
         async fn invalidate_sessions_by_ip(
             &self,

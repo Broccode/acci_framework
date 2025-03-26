@@ -77,10 +77,7 @@ impl RateStore {
 
         // Get multiplier from Redis (for backoff)
         let multiplier_key = format!("{}:multiplier", redis_key);
-        let multiplier: f32 = match conn.get(&multiplier_key).await {
-            Ok(val) => val,
-            Err(_) => 1.0,
-        };
+        let multiplier: f32 = (conn.get(&multiplier_key).await).unwrap_or(1.0);
 
         // Calculate remaining and reset time
         let effective_limit = (rate_limit.max_requests as f32 / multiplier) as u32;
@@ -280,7 +277,7 @@ where
             let mut rate_limit_info: Option<RateLimitInfo> = None;
 
             for limit in &limits {
-                match store.check_rate_limit(&tenant_id, &client_id, &limit).await {
+                match store.check_rate_limit(&tenant_id, &client_id, limit).await {
                     Ok(info) => {
                         // Add rate limit headers for the most restrictive limit
                         if let Some(current_info) = &rate_limit_info {

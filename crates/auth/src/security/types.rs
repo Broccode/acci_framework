@@ -4,9 +4,10 @@ use std::fmt;
 use thiserror::Error;
 
 /// Risk level enum for security assessment
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Default)]
 pub enum RiskLevel {
     /// Low risk - normal operation
+    #[default]
     Low,
     /// Medium risk - some suspicious signals
     Medium,
@@ -24,12 +25,6 @@ impl fmt::Display for RiskLevel {
             RiskLevel::High => write!(f, "High"),
             RiskLevel::Critical => write!(f, "Critical"),
         }
-    }
-}
-
-impl Default for RiskLevel {
-    fn default() -> Self {
-        RiskLevel::Low
     }
 }
 

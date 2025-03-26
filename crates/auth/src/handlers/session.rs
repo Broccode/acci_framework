@@ -1,12 +1,12 @@
-use std::sync::Arc;
-use uuid::Uuid;
 use axum::{
+    Json,
     extract::{Path, State},
     http::StatusCode,
     response::IntoResponse,
-    Json,
 };
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+use uuid::Uuid;
 
 use crate::{
     services::session::{SessionService, SessionServiceError},
@@ -57,15 +57,18 @@ pub struct ErrorResponse {
 impl IntoResponse for SessionServiceError {
     fn into_response(self) -> axum::response::Response {
         let (status, error_message) = match self {
-            SessionServiceError::Repository(err) => {
-                (StatusCode::INTERNAL_SERVER_ERROR, format!("Repository error: {}", err))
-            }
-            SessionServiceError::TokenGeneration => {
-                (StatusCode::INTERNAL_SERVER_ERROR, "Failed to generate token".to_string())
-            }
-            SessionServiceError::TokenHashing => {
-                (StatusCode::INTERNAL_SERVER_ERROR, "Failed to hash token".to_string())
-            }
+            SessionServiceError::Repository(err) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Repository error: {}", err),
+            ),
+            SessionServiceError::TokenGeneration => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to generate token".to_string(),
+            ),
+            SessionServiceError::TokenHashing => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Failed to hash token".to_string(),
+            ),
         };
 
         let body = Json(ErrorResponse {
@@ -147,11 +150,7 @@ pub async fn terminate_sessions_by_filter(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        config::AuthConfig,
-        session::Session,
-        services::session::SessionService,
-    };
+    use crate::{config::AuthConfig, services::session::SessionService, session::Session};
     use std::time::SystemTime;
 
     // Mock session repository for testing
@@ -265,25 +264,26 @@ mod tests {
         let config = Arc::new(AuthConfig::default());
         let service = Arc::new(SessionService::new(repo, config));
         let state = SessionServiceState { service };
-        
+
         let user_id = Uuid::new_v4();
         let request = TerminateUserSessionsRequest {
             reason: SessionInvalidationReason::AdminAction,
         };
-        
+
         // Execute
-        let result = terminate_user_sessions(
-            State(state),
-            Path(user_id),
-            Json(request),
-        ).await.unwrap();
-        
+        let result = terminate_user_sessions(State(state), Path(user_id), Json(request))
+            .await
+            .unwrap();
+
         // Assert
         let response: SessionTerminationResponse = serde_json::from_slice(
-            &axum::body::to_bytes(result.into_response().into_body(), usize::MAX).await.unwrap()
-        ).unwrap();
-        
+            &axum::body::to_bytes(result.into_response().into_body(), usize::MAX)
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+
         assert_eq!(response.terminated_count, 3);
         assert!(response.success);
     }
-} 
+}

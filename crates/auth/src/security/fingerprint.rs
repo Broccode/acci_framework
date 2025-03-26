@@ -8,7 +8,7 @@ use sqlx::{
 use std::collections::HashMap;
 use std::net::IpAddr;
 use std::sync::Arc;
-use time::{OffsetDateTime, ext::NumericalDuration};
+use time::OffsetDateTime;
 use tracing::info;
 use uuid::Uuid;
 
@@ -134,10 +134,9 @@ impl PostgresFingerprintRepository {
     fn offset_to_chrono_utc(offset: OffsetDateTime) -> DateTime<Utc> {
         let timestamp = offset.unix_timestamp();
         let nanos = offset.nanosecond();
-        DateTime::<Utc>::from_utc(
-            chrono::NaiveDateTime::from_timestamp_opt(timestamp, nanos as u32).unwrap_or_default(),
-            Utc,
-        )
+
+        DateTime::from_timestamp(timestamp, nanos)
+            .unwrap_or_else(|| DateTime::from_timestamp(0, 0).unwrap())
     }
 
     /// Convert chrono::DateTime<Utc> to OffsetDateTime
@@ -360,7 +359,7 @@ impl FingerprintService {
                     .unwrap_or_else(|_| "0.0.0.0".parse().unwrap());
                 updated.last_ip = ip_addr;
 
-                updated.session_id = session_id.clone();
+                updated.session_id = session_id;
 
                 self.repository.update_fingerprint(&updated).await?;
                 return Ok(updated.id);

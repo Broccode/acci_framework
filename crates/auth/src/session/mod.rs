@@ -160,7 +160,7 @@ pub trait SessionRepository: Send + Sync + 'static {
     ) -> Result<(), SessionError>;
 
     /// Invalidate all sessions for a given user
-    /// 
+    ///
     /// This is useful for security-critical actions like password changes,
     /// privilege escalations, or security breaches.
     async fn invalidate_all_user_sessions(
@@ -168,9 +168,9 @@ pub trait SessionRepository: Send + Sync + 'static {
         user_id: Uuid,
         reason: SessionInvalidationReason,
     ) -> Result<u64, SessionError>;
-    
+
     /// Invalidate all sessions matching a filter with specified reason
-    /// 
+    ///
     /// This can be used to enforce security policies, handle emergency
     /// situations, or implement compliance requirements.
     async fn invalidate_sessions_by_filter(
@@ -178,9 +178,9 @@ pub trait SessionRepository: Send + Sync + 'static {
         filter: SessionFilter,
         reason: SessionInvalidationReason,
     ) -> Result<u64, SessionError>;
-    
+
     /// Invalidate all sessions from a specific IP address
-    /// 
+    ///
     /// This is useful for handling suspicious activities from a specific location.
     async fn invalidate_sessions_by_ip(
         &self,
@@ -731,7 +731,7 @@ impl SessionRepository for PostgresSessionRepository {
     }
 
     /// Invalidate all sessions for a given user
-    /// 
+    ///
     /// This is useful for security-critical actions like password changes,
     /// privilege escalations, or security breaches.
     async fn invalidate_all_user_sessions(
@@ -794,9 +794,9 @@ impl SessionRepository for PostgresSessionRepository {
 
         result
     }
-    
+
     /// Invalidate all sessions matching a filter with specified reason
-    /// 
+    ///
     /// This can be used to enforce security policies, handle emergency
     /// situations, or implement compliance requirements.
     async fn invalidate_sessions_by_filter(
@@ -866,9 +866,9 @@ impl SessionRepository for PostgresSessionRepository {
 
         result
     }
-    
+
     /// Invalidate all sessions from a specific IP address
-    /// 
+    ///
     /// This is useful for handling suspicious activities from a specific location.
     async fn invalidate_sessions_by_ip(
         &self,

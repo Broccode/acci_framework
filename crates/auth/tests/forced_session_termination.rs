@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use acci_auth::{
     config::AuthConfig,
     services::session::SessionService,
@@ -9,7 +8,8 @@ use acci_auth::{
 };
 use async_trait::async_trait;
 use serde_json::Value;
-use std::time::{Duration, SystemTime};
+use std::sync::Arc;
+use std::time::SystemTime;
 use uuid::Uuid;
 
 // Test-Repository mit simulierten Daten
@@ -22,13 +22,13 @@ impl TestSessionRepository {
     fn new() -> Self {
         Self {
             user_sessions: vec![
-                (Uuid::new_v4(), 3),  // User 1 hat 3 Sessions
-                (Uuid::new_v4(), 5),  // User 2 hat 5 Sessions
-                (Uuid::new_v4(), 0),  // User 3 hat keine Sessions
+                (Uuid::new_v4(), 3), // User 1 hat 3 Sessions
+                (Uuid::new_v4(), 5), // User 2 hat 5 Sessions
+                (Uuid::new_v4(), 0), // User 3 hat keine Sessions
             ],
             ip_sessions: vec![
-                ("192.168.1.1".to_string(), 2),  // IP 1 hat 2 Sessions
-                ("10.0.0.1".to_string(), 4),     // IP 2 hat 4 Sessions
+                ("192.168.1.1".to_string(), 2), // IP 1 hat 2 Sessions
+                ("10.0.0.1".to_string(), 4),    // IP 2 hat 4 Sessions
             ],
         }
     }
@@ -54,7 +54,10 @@ impl SessionRepository for TestSessionRepository {
         unimplemented!("Not needed for this test")
     }
 
-    async fn get_session_by_token(&self, _token_hash: &str) -> Result<Option<Session>, SessionError> {
+    async fn get_session_by_token(
+        &self,
+        _token_hash: &str,
+    ) -> Result<Option<Session>, SessionError> {
         unimplemented!("Not needed for this test")
     }
 
@@ -99,8 +102,8 @@ impl SessionRepository for TestSessionRepository {
     ) -> Result<u64, SessionError> {
         // Simuliere Filterergebnisse basierend auf dem Filter
         match filter {
-            SessionFilter::All => Ok(10), // Alle Sessions
-            SessionFilter::Active => Ok(8), // Nur aktive Sessions
+            SessionFilter::All => Ok(10),     // Alle Sessions
+            SessionFilter::Active => Ok(8),   // Nur aktive Sessions
             SessionFilter::Inactive => Ok(2), // Nur inaktive Sessions
         }
     }
@@ -142,25 +145,29 @@ async fn test_force_terminate_user_sessions() {
     let repo = Arc::new(TestSessionRepository::new());
     let config = Arc::new(AuthConfig::default());
     let service = SessionService::new(repo.clone(), config);
-    
+
     // Test: Beenden aller Sessions für Benutzer 1
     let user_id = repo.user_sessions[0].0;
     let expected_count = repo.user_sessions[0].1;
-    
+
     let count = service
         .force_terminate_user_sessions(user_id, SessionInvalidationReason::SecurityBreach)
         .await
         .expect("Die Beendigung der Sessions sollte erfolgreich sein");
-    
-    assert_eq!(count, expected_count, "Es sollten genau {} Sessions beendet werden", expected_count);
-    
+
+    assert_eq!(
+        count, expected_count,
+        "Es sollten genau {} Sessions beendet werden",
+        expected_count
+    );
+
     // Test: Benutzer ohne Sessions
     let user_id = repo.user_sessions[2].0;
     let count = service
         .force_terminate_user_sessions(user_id, SessionInvalidationReason::SecurityBreach)
         .await
         .expect("Die Beendigung der Sessions sollte erfolgreich sein");
-    
+
     assert_eq!(count, 0, "Es sollten keine Sessions beendet werden");
 }
 
@@ -170,24 +177,28 @@ async fn test_force_terminate_sessions_by_ip() {
     let repo = Arc::new(TestSessionRepository::new());
     let config = Arc::new(AuthConfig::default());
     let service = SessionService::new(repo.clone(), config);
-    
+
     // Test: Beenden aller Sessions für IP 1
     let ip_address = &repo.ip_sessions[0].0;
     let expected_count = repo.ip_sessions[0].1;
-    
+
     let count = service
         .force_terminate_sessions_by_ip(ip_address, SessionInvalidationReason::SuspiciousLocation)
         .await
         .expect("Die Beendigung der Sessions sollte erfolgreich sein");
-    
-    assert_eq!(count, expected_count, "Es sollten genau {} Sessions beendet werden", expected_count);
-    
+
+    assert_eq!(
+        count, expected_count,
+        "Es sollten genau {} Sessions beendet werden",
+        expected_count
+    );
+
     // Test: IP ohne Sessions
     let count = service
         .force_terminate_sessions_by_ip("127.0.0.1", SessionInvalidationReason::SuspiciousLocation)
         .await
         .expect("Die Beendigung der Sessions sollte erfolgreich sein");
-    
+
     assert_eq!(count, 0, "Es sollten keine Sessions beendet werden");
 }
 
@@ -197,28 +208,43 @@ async fn test_force_terminate_sessions_by_filter() {
     let repo = Arc::new(TestSessionRepository::new());
     let config = Arc::new(AuthConfig::default());
     let service = SessionService::new(repo.clone(), config);
-    
+
     // Test: Beenden aller aktiven Sessions
     let count = service
-        .force_terminate_sessions_by_filter(SessionFilter::Active, SessionInvalidationReason::SecurityPolicyChange)
+        .force_terminate_sessions_by_filter(
+            SessionFilter::Active,
+            SessionInvalidationReason::SecurityPolicyChange,
+        )
         .await
         .expect("Die Beendigung der Sessions sollte erfolgreich sein");
-    
-    assert_eq!(count, 8, "Es sollten genau 8 aktive Sessions beendet werden");
-    
+
+    assert_eq!(
+        count, 8,
+        "Es sollten genau 8 aktive Sessions beendet werden"
+    );
+
     // Test: Beenden aller inaktiven Sessions
     let count = service
-        .force_terminate_sessions_by_filter(SessionFilter::Inactive, SessionInvalidationReason::SecurityPolicyChange)
+        .force_terminate_sessions_by_filter(
+            SessionFilter::Inactive,
+            SessionInvalidationReason::SecurityPolicyChange,
+        )
         .await
         .expect("Die Beendigung der Sessions sollte erfolgreich sein");
-    
-    assert_eq!(count, 2, "Es sollten genau 2 inaktive Sessions beendet werden");
-    
+
+    assert_eq!(
+        count, 2,
+        "Es sollten genau 2 inaktive Sessions beendet werden"
+    );
+
     // Test: Beenden aller Sessions
     let count = service
-        .force_terminate_sessions_by_filter(SessionFilter::All, SessionInvalidationReason::EmergencyTermination)
+        .force_terminate_sessions_by_filter(
+            SessionFilter::All,
+            SessionInvalidationReason::EmergencyTermination,
+        )
         .await
         .expect("Die Beendigung der Sessions sollte erfolgreich sein");
-    
+
     assert_eq!(count, 10, "Es sollten genau 10 Sessions beendet werden");
-} 
+}

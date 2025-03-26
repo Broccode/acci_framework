@@ -179,7 +179,10 @@ impl SessionRepository for MockSessionRepository {
     ) -> std::result::Result<u64, SessionError> {
         let mut sessions = self.sessions.lock().unwrap();
         let mut count = 0;
-        for session in sessions.iter_mut().filter(|s| s.user_id == user_id && s.is_valid) {
+        for session in sessions
+            .iter_mut()
+            .filter(|s| s.user_id == user_id && s.is_valid)
+        {
             session.is_valid = false;
             session.invalidated_reason = Some(reason.clone());
             count += 1;
@@ -216,7 +219,10 @@ impl SessionRepository for MockSessionRepository {
     ) -> std::result::Result<u64, SessionError> {
         let mut sessions = self.sessions.lock().unwrap();
         let mut count = 0;
-        for session in sessions.iter_mut().filter(|s| s.ip_address.as_deref() == Some(ip_address) && s.is_valid) {
+        for session in sessions
+            .iter_mut()
+            .filter(|s| s.ip_address.as_deref() == Some(ip_address) && s.is_valid)
+        {
             session.is_valid = false;
             session.invalidated_reason = Some(reason.clone());
             count += 1;

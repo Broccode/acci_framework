@@ -7,8 +7,11 @@ use governor::{
 use std::num::NonZeroU32;
 use std::sync::Arc;
 use thiserror::Error;
-use time::{OffsetDateTime, Duration};
-use tracing::{debug, error, info, instrument, warn};
+use time::OffsetDateTime;
+use tracing::{debug, error, info, instrument};
+
+#[cfg(not(test))]
+use {time::Duration, tracing::warn};
 
 use crate::models::{TenantId, UserId, VerificationCode, VerificationConfig, VerificationType};
 use crate::repository::{TenantAwareContext, VerificationCodeRepository};
@@ -127,10 +130,10 @@ impl VerificationService {
     /// Check if a user has exceeded the rate limit
     async fn check_rate_limit(
         &self,
-        user_id: UserId,
-        verification_type: VerificationType,
-        tenant_id: TenantId,
-        context: &dyn TenantAwareContext,
+        _user_id: UserId,
+        _verification_type: VerificationType,
+        _tenant_id: TenantId,
+        _context: &dyn TenantAwareContext,
     ) -> Result<()> {
         // In tests, we'll skip all the rate limiting checks
         #[cfg(test)]
@@ -140,7 +143,7 @@ impl VerificationService {
         {
             // Check in-memory rate limiter first
             if self.limiter.check().is_err() {
-                warn!("Rate limit exceeded for user {}", user_id);
+                warn!("Rate limit exceeded for user {}", _user_id);
                 return Err(VerificationError::RateLimitExceeded.into());
             }
 
@@ -148,11 +151,11 @@ impl VerificationService {
             let since = OffsetDateTime::now_utc() - Duration::seconds(self.config.throttle_seconds);
             let attempt_count = self
                 .repo
-                .count_recent_attempts(user_id, verification_type, since, tenant_id, context)
+                .count_recent_attempts(_user_id, _verification_type, since, _tenant_id, _context)
                 .await?;
 
             if attempt_count >= 3 {
-                warn!("Database rate limit exceeded for user {}", user_id);
+                warn!("Database rate limit exceeded for user {}", _user_id);
                 return Err(VerificationError::RateLimitExceeded.into());
             }
 

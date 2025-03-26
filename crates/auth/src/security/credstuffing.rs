@@ -335,6 +335,12 @@ pub struct ChallengeProvider {
     // Placeholder for integrations with CAPTCHA providers, etc.
 }
 
+impl Default for ChallengeProvider {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ChallengeProvider {
     /// Create a new challenge provider
     pub fn new() -> Self {

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Main security configuration structure
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct SecurityConfig {
     /// Brute force protection configuration
     #[serde(default)]
@@ -23,18 +23,6 @@ pub struct SecurityConfig {
     /// Replay protection configuration
     #[serde(default)]
     pub replay_protection: ReplayProtectionConfig,
-}
-
-impl Default for SecurityConfig {
-    fn default() -> Self {
-        Self {
-            brute_force: BruteForceConfig::default(),
-            rate_limiting: RateLimitingConfig::default(),
-            credential_stuffing: CredentialStuffingConfig::default(),
-            fingerprinting: FingerprintingConfig::default(),
-            replay_protection: ReplayProtectionConfig::default(),
-        }
-    }
 }
 
 /// Configuration for brute force protection
