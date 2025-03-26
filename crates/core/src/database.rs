@@ -38,8 +38,9 @@ impl Database {
     #[cfg(test)]
     pub async fn new_test() -> Result<Self> {
         dotenvy::dotenv().ok();
-        let database_url = std::env::var("DATABASE_URL")
-            .unwrap_or_else(|_| "postgres://postgres:postgres@localhost:5432/acci_test".to_string());
+        let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+            "postgres://postgres:postgres@localhost:5432/acci_test".to_string()
+        });
         Self::new(&database_url).await
     }
 
