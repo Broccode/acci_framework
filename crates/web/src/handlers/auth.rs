@@ -47,7 +47,8 @@ pub async fn handle_login(
             let mut response = Redirect::to("/").into_response();
             response.headers_mut().insert(
                 header::SET_COOKIE,
-                header::HeaderValue::from_str(&cookie).expect("Failed to create header value from cookie string"),
+                header::HeaderValue::from_str(&cookie)
+                    .expect("Failed to create header value from cookie string"),
             );
             response
         },
@@ -107,7 +108,8 @@ pub async fn handle_logout() -> impl IntoResponse {
     let mut response = Redirect::to("/login").into_response();
     response.headers_mut().insert(
         header::SET_COOKIE,
-        header::HeaderValue::from_str(cookie).expect("Failed to create header value from cookie string"),
+        header::HeaderValue::from_str(cookie)
+            .expect("Failed to create header value from cookie string"),
     );
     response
 }

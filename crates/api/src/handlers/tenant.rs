@@ -132,11 +132,7 @@ fn map_tenant_error(err: &TenantServiceError) -> (StatusCode, &str, &str) {
             "Invalid input data",
             "INVALID_INPUT",
         ),
-        TenantServiceError::User(_) => (
-            StatusCode::CONFLICT,
-            "User error occurred",
-            "USER_ERROR",
-        ),
+        TenantServiceError::User(_) => (StatusCode::CONFLICT, "User error occurred", "USER_ERROR"),
         TenantServiceError::Password(_) => (
             StatusCode::BAD_REQUEST,
             "Password does not meet security requirements",

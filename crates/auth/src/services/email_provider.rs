@@ -142,6 +142,7 @@ impl MessageProvider for SendGridEmailProvider {
         let from_name = self.config.sender_name.clone();
 
         // Construct the SendGrid API payload
+        #[allow(clippy::disallowed_methods)]
         let payload = serde_json::json!({
             "personalizations": [{
                 "to": [{

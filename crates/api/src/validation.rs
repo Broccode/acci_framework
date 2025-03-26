@@ -97,7 +97,8 @@ impl IntoResponse for ValidationError {
                     "message": message,
                     "code": status.as_u16(),
                     "request_id": generate_request_id(),
-                })).expect("Failed to create JSON error response");
+                }))
+                .expect("Failed to create JSON error response");
 
                 (status, Json(body)).into_response()
             },
@@ -111,7 +112,8 @@ impl IntoResponse for ValidationError {
                     "message": format!("Validation failed: {}", err),
                     "code": status.as_u16(),
                     "request_id": generate_request_id(),
-                })).expect("Failed to create JSON validation error response");
+                }))
+                .expect("Failed to create JSON validation error response");
 
                 (status, Json(body)).into_response()
             },

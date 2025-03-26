@@ -33,7 +33,7 @@ impl ApiRouter {
         tenant_state: Option<TenantAppState>,
         verification_state: Option<VerificationAppState>,
         #[cfg(feature = "enable_webauthn")] webauthn_state: Option<WebAuthnAppState>,
-        #[cfg(not(feature = "enable_webauthn"))] webauthn_state: Option<()>,
+        #[cfg(not(feature = "enable_webauthn"))] _webauthn_state: Option<()>,
     ) -> Router {
         // Create auth routes
         let auth_routes = Router::new()

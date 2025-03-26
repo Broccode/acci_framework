@@ -330,8 +330,8 @@ impl VerificationService {
     pub async fn cleanup_expired(&self, context: &dyn TenantAwareContext) -> Result<u64> {
         let before = OffsetDateTime::now_utc();
         // Use a default tenant ID for cleanup since we don't have a specific tenant
-        let default_tenant_id =
-            uuid::Uuid::parse_str("00000000-0000-0000-0000-000000000000").expect("Failed to parse zero UUID constant");
+        let default_tenant_id = uuid::Uuid::parse_str("00000000-0000-0000-0000-000000000000")
+            .expect("Failed to parse zero UUID constant");
         let count = self
             .repo
             .delete_expired(before, default_tenant_id, context)

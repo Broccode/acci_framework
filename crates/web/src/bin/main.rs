@@ -28,6 +28,10 @@ async fn main() {
     println!("Server running at http://{}", addr);
 
     // Start the server
-    let listener = tokio::net::TcpListener::bind(addr).await.expect("Error binding listener to address");
-    axum::serve(listener, app).await.expect("Error starting axum server");
+    let listener = tokio::net::TcpListener::bind(addr)
+        .await
+        .expect("Error binding listener to address");
+    axum::serve(listener, app)
+        .await
+        .expect("Error starting axum server");
 }

@@ -249,8 +249,12 @@ impl TotpService {
                 .map(|chunk| {
                     chunk
                         .iter()
-                        .map(|&b| alphabet.chars().nth((b as usize) % alphabet.len())
-                            .expect("Failed to get character from alphabet"))
+                        .map(|&b| {
+                            alphabet
+                                .chars()
+                                .nth((b as usize) % alphabet.len())
+                                .expect("Failed to get character from alphabet")
+                        })
                         .collect()
                 })
                 .collect();

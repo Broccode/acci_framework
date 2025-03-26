@@ -1,8 +1,8 @@
 use crate::models::{TenantId, UserId};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 use time::OffsetDateTime;
 use uuid::Uuid;
-use std::fmt;
 
 /// A Time-based One-Time Password (TOTP) secret for a user
 #[derive(Debug, Clone, Serialize, Deserialize)]

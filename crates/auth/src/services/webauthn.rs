@@ -65,18 +65,27 @@ impl RegistrationStateStore {
     }
 
     fn insert(&self, user_id: Uuid, state: RegistrationState) {
-        let mut states = self.states.lock().expect("Failed to acquire lock on WebAuthn states");
+        let mut states = self
+            .states
+            .lock()
+            .expect("Failed to acquire lock on WebAuthn states");
         states.insert(user_id, state);
     }
 
     #[allow(dead_code)]
     fn get(&self, user_id: &Uuid) -> Option<RegistrationState> {
-        let states = self.states.lock().expect("Failed to acquire lock on WebAuthn states");
+        let states = self
+            .states
+            .lock()
+            .expect("Failed to acquire lock on WebAuthn states");
         states.get(user_id).cloned()
     }
 
     fn remove(&self, user_id: &Uuid) -> Option<RegistrationState> {
-        let mut states = self.states.lock().expect("Failed to acquire lock on WebAuthn states");
+        let mut states = self
+            .states
+            .lock()
+            .expect("Failed to acquire lock on WebAuthn states");
         states.remove(user_id)
     }
 }
@@ -95,18 +104,27 @@ impl AuthenticationStateStore {
     }
 
     fn insert(&self, user_id: Uuid, state: AuthenticationState) {
-        let mut states = self.states.lock().expect("Failed to acquire lock on WebAuthn states");
+        let mut states = self
+            .states
+            .lock()
+            .expect("Failed to acquire lock on WebAuthn states");
         states.insert(user_id, state);
     }
 
     #[allow(dead_code)]
     fn get(&self, user_id: &Uuid) -> Option<AuthenticationState> {
-        let states = self.states.lock().expect("Failed to acquire lock on WebAuthn states");
+        let states = self
+            .states
+            .lock()
+            .expect("Failed to acquire lock on WebAuthn states");
         states.get(user_id).cloned()
     }
 
     fn remove(&self, user_id: &Uuid) -> Option<AuthenticationState> {
-        let mut states = self.states.lock().expect("Failed to acquire lock on WebAuthn states");
+        let mut states = self
+            .states
+            .lock()
+            .expect("Failed to acquire lock on WebAuthn states");
         states.remove(user_id)
     }
 }

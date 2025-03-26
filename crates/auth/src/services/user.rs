@@ -148,6 +148,7 @@ impl UserService {
         let mfa_enabled = false;
         if mfa_enabled {
             // Create session with MFA pending status
+            #[allow(clippy::disallowed_methods)]
             let metadata = json!({
                 "login_type": "password",
                 "email": email,
@@ -172,6 +173,7 @@ impl UserService {
         }
 
         // Create session with device information
+        #[allow(clippy::disallowed_methods)]
         let metadata = json!({
             "login_type": "password",
             "email": email,

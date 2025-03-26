@@ -285,8 +285,7 @@ pub async fn make_json_request<T: Serialize + Send>(
     uri: &str,
     json: Option<T>,
 ) -> Response {
-    let method = Method::from_bytes(method.as_bytes())
-        .expect("Invalid HTTP method string");
+    let method = Method::from_bytes(method.as_bytes()).expect("Invalid HTTP method string");
     let mut req = Request::builder()
         .method(method)
         .uri(uri)
@@ -294,20 +293,23 @@ pub async fn make_json_request<T: Serialize + Send>(
         .expect("Failed to build HTTP request");
 
     if let Some(json) = json {
-        *req.body_mut() = Body::from(serde_json::to_vec(&json)
-            .expect("Failed to serialize JSON to bytes"));
-        req.headers_mut()
-            .insert(
-                header::CONTENT_TYPE, 
-                "application/json".parse().expect("Failed to parse content-type header")
-            );
+        *req.body_mut() =
+            Body::from(serde_json::to_vec(&json).expect("Failed to serialize JSON to bytes"));
+        req.headers_mut().insert(
+            header::CONTENT_TYPE,
+            "application/json"
+                .parse()
+                .expect("Failed to parse content-type header"),
+        );
     }
 
     let app = app.with_state(ProductAppState {
         product_service: Arc::new(ProductService::new()),
     });
 
-    app.into_service().oneshot(req).await
+    app.into_service()
+        .oneshot(req)
+        .await
         .expect("Failed to process HTTP request")
 }
 
