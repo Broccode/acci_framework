@@ -171,6 +171,58 @@ impl SessionRepository for MockSessionRepository {
             Err(SessionError::NotFound)
         }
     }
+
+    async fn invalidate_all_user_sessions(
+        &self,
+        user_id: Uuid,
+        reason: SessionInvalidationReason,
+    ) -> std::result::Result<u64, SessionError> {
+        let mut sessions = self.sessions.lock().unwrap();
+        let mut count = 0;
+        for session in sessions.iter_mut().filter(|s| s.user_id == user_id && s.is_valid) {
+            session.is_valid = false;
+            session.invalidated_reason = Some(reason.clone());
+            count += 1;
+        }
+        Ok(count)
+    }
+
+    async fn invalidate_sessions_by_filter(
+        &self,
+        filter: SessionFilter,
+        reason: SessionInvalidationReason,
+    ) -> std::result::Result<u64, SessionError> {
+        let mut sessions = self.sessions.lock().unwrap();
+        let mut count = 0;
+        for session in sessions.iter_mut() {
+            let should_invalidate = match filter {
+                SessionFilter::All => true,
+                SessionFilter::Active => session.is_valid,
+                SessionFilter::Inactive => !session.is_valid,
+            };
+            if should_invalidate {
+                session.is_valid = false;
+                session.invalidated_reason = Some(reason.clone());
+                count += 1;
+            }
+        }
+        Ok(count)
+    }
+
+    async fn invalidate_sessions_by_ip(
+        &self,
+        ip_address: &str,
+        reason: SessionInvalidationReason,
+    ) -> std::result::Result<u64, SessionError> {
+        let mut sessions = self.sessions.lock().unwrap();
+        let mut count = 0;
+        for session in sessions.iter_mut().filter(|s| s.ip_address.as_deref() == Some(ip_address) && s.is_valid) {
+            session.is_valid = false;
+            session.invalidated_reason = Some(reason.clone());
+            count += 1;
+        }
+        Ok(count)
+    }
 }
 
 // Helper function to create services for testing

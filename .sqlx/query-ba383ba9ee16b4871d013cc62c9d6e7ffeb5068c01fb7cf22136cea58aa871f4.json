@@ -1,0 +1,42 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                UPDATE sessions\n                SET\n                    is_valid = false,\n                    invalidated_reason = $2::session_invalidation_reason\n                WHERE ip_address = $1 AND is_valid = true\n                RETURNING id\n                ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Inet",
+        {
+          "Custom": {
+            "name": "session_invalidation_reason",
+            "kind": {
+              "Enum": [
+                "USER_LOGOUT",
+                "ADMIN_ACTION",
+                "PASSWORD_CHANGED",
+                "SECURITY_BREACH",
+                "INACTIVITY_TIMEOUT",
+                "TOKEN_EXPIRED",
+                "DEVICE_CHANGED",
+                "MANUAL_INVALIDATION",
+                "SUSPICIOUS_ACTIVITY",
+                "SUSPICIOUS_LOCATION",
+                "CONCURRENT_SESSION_LIMIT"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "ba383ba9ee16b4871d013cc62c9d6e7ffeb5068c01fb7cf22136cea58aa871f4"
+}

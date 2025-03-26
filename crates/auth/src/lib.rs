@@ -1,4 +1,5 @@
 pub mod config;
+pub mod handlers;
 pub mod models;
 pub mod repository;
 pub mod security;
@@ -7,6 +8,11 @@ pub mod session;
 pub mod utils;
 
 pub use config::AuthConfig;
+pub use handlers::session::{
+    SessionServiceState, TerminateUserSessionsRequest, TerminateSessionsByIpRequest,
+    TerminateSessionsByFilterRequest, SessionTerminationResponse, terminate_user_sessions,
+    terminate_sessions_by_ip, terminate_sessions_by_filter,
+};
 pub use models::tenant::{
     CreateTenantDto, Tenant, TenantError, TenantPlanType, TenantRepository, TenantSubscription,
     TenantUser, UpdateTenantDto,

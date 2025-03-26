@@ -161,6 +161,105 @@ impl SessionService {
         Ok(())
     }
 
+    /// Force terminate all sessions for a specific user
+    ///
+    /// This is useful for security-critical scenarios like:
+    /// - Password changes
+    /// - Suspicious activity detection
+    /// - Security incident responses
+    /// - Compliance enforcement
+    pub async fn force_terminate_user_sessions(
+        &self,
+        user_id: Uuid,
+        reason: SessionInvalidationReason,
+    ) -> Result<u64, SessionServiceError> {
+        debug!(
+            user_id = %user_id,
+            reason = ?reason,
+            "Force terminating all sessions for user"
+        );
+
+        let count = self
+            .repository
+            .invalidate_all_user_sessions(user_id, reason.clone())
+            .await
+            .map_err(SessionServiceError::Repository)?;
+
+        info!(
+            user_id = %user_id,
+            terminated_sessions = count,
+            reason = ?reason,
+            "Successfully terminated all user sessions"
+        );
+
+        Ok(count)
+    }
+
+    /// Force terminate sessions based on filter criteria
+    ///
+    /// This allows for broader termination policies like:
+    /// - Emergency security responses
+    /// - System maintenance shutdowns
+    /// - Policy enforcement actions
+    pub async fn force_terminate_sessions_by_filter(
+        &self,
+        filter: SessionFilter,
+        reason: SessionInvalidationReason,
+    ) -> Result<u64, SessionServiceError> {
+        debug!(
+            filter = ?filter,
+            reason = ?reason,
+            "Force terminating sessions by filter"
+        );
+
+        let count = self
+            .repository
+            .invalidate_sessions_by_filter(filter, reason.clone())
+            .await
+            .map_err(SessionServiceError::Repository)?;
+
+        info!(
+            terminated_sessions = count,
+            reason = ?reason,
+            "Successfully terminated filtered sessions"
+        );
+
+        Ok(count)
+    }
+
+    /// Force terminate all sessions from a specific IP address
+    ///
+    /// This is useful for security responses to:
+    /// - Suspicious IP activity
+    /// - Geographic anomalies
+    /// - Known malicious sources
+    pub async fn force_terminate_sessions_by_ip(
+        &self,
+        ip_address: &str,
+        reason: SessionInvalidationReason,
+    ) -> Result<u64, SessionServiceError> {
+        debug!(
+            ip_address = ip_address,
+            reason = ?reason,
+            "Force terminating sessions by IP address"
+        );
+
+        let count = self
+            .repository
+            .invalidate_sessions_by_ip(ip_address, reason.clone())
+            .await
+            .map_err(SessionServiceError::Repository)?;
+
+        info!(
+            ip_address = ip_address,
+            terminated_sessions = count,
+            reason = ?reason,
+            "Successfully terminated sessions from IP address"
+        );
+
+        Ok(count)
+    }
+
     pub async fn rotate_session_token(
         &self,
         old_token: &str,
@@ -470,7 +569,34 @@ mod tests {
             _id: Uuid,
             _reason: SessionInvalidationReason,
         ) -> Result<(), SessionError> {
-            unimplemented!("Not needed for these tests")
+            Ok(())
+        }
+        
+        /// Dummy implementation for invalidate_all_user_sessions
+        async fn invalidate_all_user_sessions(
+            &self,
+            _user_id: Uuid,
+            _reason: SessionInvalidationReason,
+        ) -> Result<u64, SessionError> {
+            Ok(0)
+        }
+        
+        /// Dummy implementation for invalidate_sessions_by_filter
+        async fn invalidate_sessions_by_filter(
+            &self,
+            _filter: SessionFilter,
+            _reason: SessionInvalidationReason,
+        ) -> Result<u64, SessionError> {
+            Ok(0)
+        }
+        
+        /// Dummy implementation for invalidate_sessions_by_ip
+        async fn invalidate_sessions_by_ip(
+            &self,
+            _ip_address: &str,
+            _reason: SessionInvalidationReason,
+        ) -> Result<u64, SessionError> {
+            Ok(0)
         }
 
         async fn rotate_session_token(

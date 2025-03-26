@@ -83,6 +83,12 @@ pub enum SessionInvalidationReason {
     SuspiciousActivity,
     SuspiciousLocation,
     ConcurrentSessionLimit,
+    ForcedLogout,
+    AccountLocked,
+    PrivilegeChange,
+    ComplianceRequirement,
+    SecurityPolicyChange,
+    EmergencyTermination,
 }
 
 // Add SQLx Type implementation for PostgreSQL
@@ -112,6 +118,12 @@ impl Encode<'_, Postgres> for SessionInvalidationReason {
             SessionInvalidationReason::SuspiciousActivity => "SUSPICIOUS_ACTIVITY",
             SessionInvalidationReason::SuspiciousLocation => "SUSPICIOUS_LOCATION",
             SessionInvalidationReason::ConcurrentSessionLimit => "CONCURRENT_SESSION_LIMIT",
+            SessionInvalidationReason::ForcedLogout => "FORCED_LOGOUT",
+            SessionInvalidationReason::AccountLocked => "ACCOUNT_LOCKED",
+            SessionInvalidationReason::PrivilegeChange => "PRIVILEGE_CHANGE",
+            SessionInvalidationReason::ComplianceRequirement => "COMPLIANCE_REQUIREMENT",
+            SessionInvalidationReason::SecurityPolicyChange => "SECURITY_POLICY_CHANGE",
+            SessionInvalidationReason::EmergencyTermination => "EMERGENCY_TERMINATION",
         };
 
         // Encode as a string with explicit type annotation for Postgres
@@ -135,6 +147,12 @@ impl<'r> Decode<'r, Postgres> for SessionInvalidationReason {
             "SUSPICIOUS_ACTIVITY" => Ok(SessionInvalidationReason::SuspiciousActivity),
             "SUSPICIOUS_LOCATION" => Ok(SessionInvalidationReason::SuspiciousLocation),
             "CONCURRENT_SESSION_LIMIT" => Ok(SessionInvalidationReason::ConcurrentSessionLimit),
+            "FORCED_LOGOUT" => Ok(SessionInvalidationReason::ForcedLogout),
+            "ACCOUNT_LOCKED" => Ok(SessionInvalidationReason::AccountLocked),
+            "PRIVILEGE_CHANGE" => Ok(SessionInvalidationReason::PrivilegeChange),
+            "COMPLIANCE_REQUIREMENT" => Ok(SessionInvalidationReason::ComplianceRequirement),
+            "SECURITY_POLICY_CHANGE" => Ok(SessionInvalidationReason::SecurityPolicyChange),
+            "EMERGENCY_TERMINATION" => Ok(SessionInvalidationReason::EmergencyTermination),
             _ => Err(format!("Unknown session invalidation reason: {}", s).into()),
         }
     }
@@ -157,6 +175,12 @@ impl fmt::Display for SessionInvalidationReason {
             SessionInvalidationReason::ConcurrentSessionLimit => {
                 f.write_str("CONCURRENT_SESSION_LIMIT")
             },
+            SessionInvalidationReason::ForcedLogout => f.write_str("FORCED_LOGOUT"),
+            SessionInvalidationReason::AccountLocked => f.write_str("ACCOUNT_LOCKED"),
+            SessionInvalidationReason::PrivilegeChange => f.write_str("PRIVILEGE_CHANGE"),
+            SessionInvalidationReason::ComplianceRequirement => f.write_str("COMPLIANCE_REQUIREMENT"),
+            SessionInvalidationReason::SecurityPolicyChange => f.write_str("SECURITY_POLICY_CHANGE"),
+            SessionInvalidationReason::EmergencyTermination => f.write_str("EMERGENCY_TERMINATION"),
         }
     }
 }
