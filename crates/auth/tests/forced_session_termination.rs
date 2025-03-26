@@ -3,8 +3,8 @@ use acci_auth::{
     config::AuthConfig,
     services::session::SessionService,
     session::{
-        Session, SessionError, SessionFilter, SessionInvalidationReason, SessionRepository,
-        types::{DeviceFingerprint, MfaStatus},
+        Session, SessionError, SessionFilter, SessionRepository,
+        types::{DeviceFingerprint, MfaStatus, SessionInvalidationReason},
     },
 };
 use async_trait::async_trait;
