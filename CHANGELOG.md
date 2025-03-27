@@ -272,6 +272,13 @@ Create a git tag for the version (e.g., v0.2.0)
 
 ### Fixed
 
+- CI pipeline and development tools issues
+  - Enhanced EditorConfig validation in CI pipeline with proper GitHub token authentication
+  - Improved Node.js setup with explicit version specification
+  - Fixed npm package installation reliability issues
+  - Streamlined development tool installation process
+  - Ensured consistent tool execution across different environments
+
 - Security module implementation issues
   - Fixed Redis command compatibility to support both older and newer Redis versions
   - Resolved type conversion issues between chrono::DateTime and time::OffsetDateTime

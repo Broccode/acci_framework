@@ -27,10 +27,17 @@ jobs:
             exit 1
           }
 
-      - name: Validate EditorConfig
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install and validate EditorConfig
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm install -g editorconfig-checker
-          editorconfig-checker -exclude ".*\/bin\/.*" -format github-actions -color src/ crates/
+          npm install -g @editorconfig/editorconfig-checker
+          ec -exclude ".*\/bin\/.*" src/ crates/
 
       - name: Validate Markdown files
         uses: DavidAnson/markdownlint-cli2-action@v13
