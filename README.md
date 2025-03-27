@@ -238,7 +238,7 @@ Das ACCI Framework bietet eine solide Grundlage für verschiedene Geschäftsanwe
 | Ziel | Beschreibung |
 |------|-------------|
 | 🔄 **Flexibilität und Wiederverwendbarkeit** | Anpassungsfähiges Framework, das mit verschiedenen Produkten und sich entwickelnden Anforderungen durch eine modulare Architektur wächst |
-| 🔒 **Sicherheit und Compliance** | Unternehmenstaugliche Sicherheit mit MFA, Verschlüsselung und Einhaltung von Vorschriften wie GDPR |
+| 🔒 **Sicherheit und Compliance** | Unternehmenstaugliche Sicherheit mit MFA, Verschlüsselung und Einhaltung von Vorschriften wie der DSGVO |
 | 📈 **Skalierbarkeit und Verfügbarkeit** | Unterstützung für wachsende Benutzerzahlen und Datenmengen mit Hochverfügbarkeitsfunktionen |
 | 🔌 **Integration und Erweiterbarkeit** | Nahtlose Integration mit bestehenden Systemen und Erweiterbarkeit durch eine Plugin-Architektur |
 | 👥 **Benutzerorientierte Erfahrung** | Intuitive Benutzeroberflächen mit Mehrsprachenunterstützung und effizienten automatisierten Workflows |
