@@ -53,7 +53,7 @@ sea-query = "0.32.2"
 uuid = { version = "1.14.0", features = ["v4", "serde"] }
 
 # Async Runtime & Utilities
-tokio = { version = "1.43.0", features = ["full"] }
+tokio = { version = "1.44.2", features = ["full"] }
 futures = "0.3.31"
 async-trait = { version = "0.1.77" }
 
